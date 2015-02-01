@@ -161,17 +161,16 @@ namespace Kartet
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_normcdf,			normcdf,		::normcdf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_normcdfinvf,		normcdfinvf,		::normcdfinvf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_normcdfinv,		normcdfinv,		::normcdfinv(a) )
+	STANDARD_UNARY_OPERATOR_DEFINITION(     UnOp_square,			square,			(a*a) )
 
-/*	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_real, 			real,			real(a) )
+	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_real, 			real,			real(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			imag(a) )
-	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			angle,			angle(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			abs(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			absSq(a) )
-
+/*
 	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_buildComplexAngle,		buildComplexAngle,	buildComplexAngle(a) )
 	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_buildComplexAnglePi,	buildComplexAnglePi,	buildComplexAnglePi(a) )
 */
-
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_Cast,			Cast,			a )
 
 // Transform functions : 
@@ -221,8 +220,7 @@ namespace Kartet
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_remainderf,		remainderf,		::remainderf(a,b) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ynf,			ynf,			::ynf(a,b) )
 
-/*	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_buildComplex, 		buildComplex,		buildComplex(a, b) )
-	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_buildComplexPolar,	buildComplexPolar,	buildComplexPolar(a, b) )*/
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToComplex, 		toComplex,		toComplex(a, b) )
 
 } // Namespace Kartet
 

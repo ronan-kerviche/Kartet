@@ -90,6 +90,7 @@ namespace Kartet
 				__host__ __device__ inline index_t getLeadingColumns(void) const;
 				__host__ __device__ inline index_t getLeadingSlices(void) const;
 				__host__ __device__ inline dim3 getDimensions(void) const;
+				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
@@ -151,6 +152,12 @@ namespace Kartet
 			// Other Tools : 
 				__host__ 	    inline dim3 getBlockSize(void) const;
 				__host__ 	    inline dim3 getNumBlock(void) const;
+				__host__	    inline Layout getVectorLayout(void) const;
+				__host__	    inline Layout getSliceLayout(void) const;
+				__host__	    inline Layout getSolidLayout(void) const;
+
+				template<class Op, typename T>
+				__host__ void hostScan(T* ptr, const Op& op) const;
 	};
 
 	int Layout::numThreads = 256;
@@ -189,10 +196,11 @@ namespace Kartet
 				__host__	    inline Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
 				__host__ 	    inline Accessor<T> vector(index_t j, index_t k=0) const;
 				__host__ 	    inline Accessor<T> endVector(index_t k=0) const;
-				__host__ 	    inline Accessor<T> vectors(index_t jBegin, index_t jEnd, index_t k=0, index_t step=1) const;
+				__host__ 	    inline Accessor<T> vectors(index_t jBegin, index_t jEnd, index_t k=0, index_t jStep=1) const;
 				__host__ 	    inline Accessor<T> slice(index_t k=0) const;
 				__host__ 	    inline Accessor<T> endSlice(void) const;
 				__host__ 	    inline Accessor<T> slices(index_t kBegin, index_t kEnd, index_t kStep=1) const;
+				__host__ 	    inline Accessor<T> subArray(index_t iBegin, index_t jBegin, index_t iEnd, index_t jEnd, index_t k=0) const; 
 
 			// Assignment :
 				template<typename TExpr>
@@ -207,16 +215,19 @@ namespace Kartet
 			// Masked assignment : 
 				template<typename TExprMask, typename TExpr>
 				Accessor<T>& maskedAssignment(const TExprMask& exprMask, const TExpr& expr);
+
+				template<class Op>
+				__host__ void hostScan(const Op& op) const;
 	};
 
 	template<typename T>
 	class Array : public Accessor<T>
 	{
 		public :
-				__host__ Array(index_t r, index_t c=1, index_t s=1);
-				__host__ Array(const Layout& layout);
-				__host__ Array(const T* ptr, index_t r, index_t c=1, index_t s=1);
-				//__host__ Array(const Array<T>& a);
+			__host__ Array(index_t r, index_t c=1, index_t s=1);
+			__host__ Array(const Layout& layout);
+			__host__ Array(const T* ptr, index_t r, index_t c=1, index_t s=1);
+			//__host__ Array(const Array<T>& a);
 			//template<typename TIn>
 			//__host__  Array(const Accessor<TIn>& a);
 			__host__ ~Array(void);
@@ -255,8 +266,11 @@ namespace Kartet
 			using Accessor<T>::slice;
 			using Accessor<T>::endSlice;
 			using Accessor<T>::slices;
+			using Accessor<T>::assign;
 			using Accessor<T>::operator=;
-
+			using Accessor<T>::maskedAssignment;
+			using Accessor<T>::hostScan;
+			
 			Accessor<T>& accessor(void);
 	};
 

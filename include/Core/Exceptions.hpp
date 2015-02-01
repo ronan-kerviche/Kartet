@@ -29,13 +29,17 @@
 #ifndef __KARTET_EXCEPTIONS__
 #define __KARTET_EXCEPTIONS__
 
+// Includes :
+	#include <cublas_v2.h>
+
 namespace Kartet
 {
 	enum Exception
 	{	
 		// Cuda Specifics :
 		// cudaSuccess, see NoExceptions
-		#define DEFINE_CUDA_EXCEPTION( x ) C##x = c##x	 	
+		#define DEFINE_CUDA_EXCEPTION( x ) C##x = CudaExceptionsOffset + c##x	
+		CudaExceptionsOffset	= 1024,
 		DEFINE_CUDA_EXCEPTION( udaErrorMissingConfiguration ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorMemoryAllocation ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorInitializationError ), 
@@ -107,21 +111,28 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorLaunchPendingCountExceeded ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotPermitted ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorHardwareStackError ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorIllegalInstruction ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorMisalignedAddress ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorInvalidPc ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorIllegalAddress ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorInvalidPtx ), 
-		//DEFINE_CUDA_EXCEPTION( udaErrorInvalidGraphicsContext ), 
 		#undef DEFINE_CUDA_EXCEPTION
+		// CuBLAS Specifics :
+		CuBLASExceptionOffset	= 2048,
+		CuBLASNotInitialized	= CuBLASExceptionOffset + CUBLAS_STATUS_NOT_INITIALIZED,
+		CuBLASAllocFailed	= CuBLASExceptionOffset + CUBLAS_STATUS_ALLOC_FAILED,
+		CuBLASInvalidValue	= CuBLASExceptionOffset + CUBLAS_STATUS_INVALID_VALUE,
+		CuBLASArchMismatch	= CuBLASExceptionOffset + CUBLAS_STATUS_ARCH_MISMATCH,
+		CuBLASMappingError	= CuBLASExceptionOffset + CUBLAS_STATUS_MAPPING_ERROR,
+		CuBLASExecutionFailed	= CuBLASExceptionOffset + CUBLAS_STATUS_EXECUTION_FAILED,
+		CuBLASInternalError	= CuBLASExceptionOffset + CUBLAS_STATUS_INTERNAL_ERROR,
+		// CuRand Specifics :
+		CuRandExceptionOffset	= 3096,
 		// Kartet Specifics :
 		InvalidNegativeSize,
 		InvalidNegativeStep,
 		OutOfRange,
 		OutOfMemory,
 		InvalidOperation,
+		IncompatibleLayout,
 		InvalidLayoutChange,
+		InvalidBLASContext,
+		InvalidCuRandContext,
 		NullPointer,
 		// Others :
 		NoException = 0,
@@ -134,14 +145,7 @@ namespace Kartet
 	{
 		switch(e)
 		{
-			#define EXCEPTION_MESSAGE(a) case Kartet::a : os << #a; break;
-			EXCEPTION_MESSAGE( InvalidNegativeSize )
-			EXCEPTION_MESSAGE( InvalidNegativeStep )
-			EXCEPTION_MESSAGE( OutOfRange )
-			EXCEPTION_MESSAGE( OutOfMemory )
-			EXCEPTION_MESSAGE( InvalidOperation )
-			EXCEPTION_MESSAGE( InvalidLayoutChange )
-			EXCEPTION_MESSAGE( NullPointer )	
+			#define EXCEPTION_MESSAGE(a) case Kartet::a : os << #a; break;	
 			EXCEPTION_MESSAGE( CudaErrorMissingConfiguration ) 
 			EXCEPTION_MESSAGE( CudaErrorMemoryAllocation ) 
 			EXCEPTION_MESSAGE( CudaErrorInitializationError ) 
@@ -213,6 +217,23 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorLaunchPendingCountExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorNotPermitted ) 
 			EXCEPTION_MESSAGE( CudaErrorNotSupported ) 
+			EXCEPTION_MESSAGE( CuBLASNotInitialized )	
+			EXCEPTION_MESSAGE( CuBLASAllocFailed )
+			EXCEPTION_MESSAGE( CuBLASInvalidValue )
+			EXCEPTION_MESSAGE( CuBLASArchMismatch )
+			EXCEPTION_MESSAGE( CuBLASMappingError )
+			EXCEPTION_MESSAGE( CuBLASExecutionFailed )
+			EXCEPTION_MESSAGE( CuBLASInternalError )
+			EXCEPTION_MESSAGE( InvalidNegativeSize )
+			EXCEPTION_MESSAGE( InvalidNegativeStep )
+			EXCEPTION_MESSAGE( OutOfRange )
+			EXCEPTION_MESSAGE( OutOfMemory )
+			EXCEPTION_MESSAGE( InvalidOperation )
+			EXCEPTION_MESSAGE( IncompatibleLayout )
+			EXCEPTION_MESSAGE( InvalidLayoutChange )
+			EXCEPTION_MESSAGE( InvalidBLASContext )
+			EXCEPTION_MESSAGE( InvalidCuRandContext )
+			EXCEPTION_MESSAGE( NullPointer )
 			EXCEPTION_MESSAGE( NoException )
 			#undef EXCEPTION_MESSAGE
 			default :

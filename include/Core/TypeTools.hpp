@@ -30,22 +30,16 @@
 #define __KARTET_TYPE_TOOLS__
 
 // Includes :
-	/*#include <complex>
-
+	#include <complex>
 	#if defined(__CUDACC__)
 		#include <cufft.h>
-	#endif*/
-
+	#endif
 	#include "Core/MetaList.hpp"
 	#include "Core/MetaAlgorithm.hpp"
 	
 namespace Kartet
 {
-// Prototypes :
-	template<typename T>
-	struct IsComplex;
-	
-// Tools
+// Tools :
 	template<typename T1, typename T2>
 	struct SameTypes
 	{
@@ -56,7 +50,108 @@ namespace Kartet
 	struct SameTypes<T,T>
 	{
 		static const bool test = true;
+	}; 
+
+	template<typename T>
+	struct TypeInfo
+	{
+		typedef T SubType;
+		typedef T BaseType;
+		
+		#if defined(__CUDACC__)
+			typedef cuFloatComplex ComplexType;
+		#else
+			typedef std::complex<float> ComplexType;
+		#endif		
+
+		static const bool 	isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= false;
 	};
+
+	template<>
+	struct TypeInfo<double>
+	{
+		typedef double SubType;
+		typedef double BaseType;
+		
+		#if defined(__CUDACC__)
+			typedef cuDoubleComplex ComplexType;
+		#else
+			typedef std::complex<double> ComplexType;
+		#endif		
+
+		static const bool 	isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= false;
+	};
+
+	template<typename T>
+	struct TypeInfo<T*>
+	{
+		typedef TypeInfo<T> SubType;
+		typedef typename SubType::BaseType BaseType;
+		typedef typename SubType::ComplexType ComplexType;
+
+		static const bool 	isConst 	= SubType::isConst,
+					isPointer 	= true,
+					isReference 	= SubType::isReference,
+					isComplex 	= SubType::isComplex;
+	};
+
+	template<typename T>
+	struct TypeInfo<T&>
+	{
+		typedef TypeInfo<T> SubType;
+		typedef typename SubType::BaseType BaseType;
+		typedef typename SubType::ComplexType ComplexType;
+
+		static const bool 	isConst 	= SubType::isConst,
+					isPointer 	= SubType::isPointe,
+					isReference 	= true,
+					isComplex 	= SubType::isComplex;
+	};
+
+	template<typename T>
+	struct TypeInfo<const T>
+	{
+		typedef TypeInfo<T> SubType;
+		typedef typename SubType::BaseType BaseType;
+		typedef typename SubType::ComplexType ComplexType;
+
+		static const bool 	isConst 	= true,
+					isPointer 	= SubType::isPointer,
+					isReference 	= SubType::isReference,
+					isComplex 	= SubType::isComplex;
+	};
+
+	#if defined(__CUDACC__)
+		template<>
+		struct TypeInfo<cuFloatComplex>
+		{
+			typedef float SubType;
+			typedef float BaseType;
+			typedef cuFloatComplex ComplexType;
+			static const bool 	isConst 	= false,
+						isPointer 	= false,
+						isReference 	= false,
+						isComplex 	= true;
+		};
+
+		template<>
+		struct TypeInfo<cuDoubleComplex>
+		{
+			typedef double SubType;
+			typedef double BaseType;
+			typedef cuDoubleComplex ComplexType;
+			static const bool 	isConst 	= false,
+						isPointer 	= false,
+						isReference 	= false,
+						isComplex 	= true;
+		};
+	#endif
 
 	template<typename T>
 	struct RemovePointer
@@ -91,7 +186,6 @@ namespace Kartet
 		TypeList< float,
 		TypeList< double,
 		TypeList< long double,
-		/*TypeList< std::complex<float>
 		#if defined(__CUDACC__)
 			TypeList< cuFloatComplex,
 			TypeList< std::complex<double>,
@@ -99,12 +193,12 @@ namespace Kartet
 			Void
 			> > >
 		#else
+			TypeList< std::complex<float>,
 			TypeList< std::complex<double>,
 			Void
-			>
-		#endif*/
-		Void
-		/*>*/ > > > > > > > > > > > > > > > > > > > > TypesSortedByAccuracy;
+			> >
+		#endif
+		> > > > > > > > > > > > > > > > > > > > TypesSortedByAccuracy;
 
 	template<typename T>
 	struct ResultingTypeOf
@@ -127,17 +221,18 @@ namespace Kartet
 
 			static const bool test1 = (i1>=i2); // First type has higher accuracy.
 			typedef typename MetaIf<test1, pT1, pT2>::TValue StdType;
-			//static const bool test2 = (IsComplex<T1>::test && SameTypes<typename RemovePointer<T2>::Type ,double>::test) || (IsComplex<T2>::test && SameTypes<typename RemovePointer<T1>::Type ,double>::test);
+			static const bool test2 = (TypeInfo<T1>::isComplex && SameTypes<typename RemovePointer<T2>::Type ,double>::test) || (TypeInfo<T2>::isComplex && SameTypes<typename RemovePointer<T1>::Type ,double>::test);
 		public :
 			#if defined(__CUDACC__)
-				//typedef typename MetaIf<test2, cuDoubleComplex, StdType>::TValue Type;
-				typedef StdType Type;
+				typedef typename MetaIf<test2, cuDoubleComplex, StdType>::TValue Type;
 			#else
 				typedef StdType Type;
 			#endif
 	};
 
 } // Namespace Kartet
+
+	#include "ComplexOperators.hpp"
 
 #endif
 

@@ -317,17 +317,10 @@ namespace Kartet
 				p = array.getIndex();
 
 			ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
-			/*T v;
 
-			GetPart<T>::real(v) = GetPart<ReturnType>::real(t);
-			if(IsComplex<T>::test)
-				if(IsComplex<ReturnType>::test)
-					GetPart<T>::imag(v) = GetPart<ReturnType>::imag(t);
-				else
-					GetPart<T>::imag(v) = 0.0;
-
-			array.dataCurrent() = v;*/
-			array.data() = t;
+			T buffer;
+			complexCopy(buffer, t);
+			array.data() = buffer;
 		}
 	}
 
@@ -350,17 +343,10 @@ namespace Kartet
 			if(test)
 			{
 				ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
-				/*T v;
-
-				GetPart<T>::real(v) = GetPart<ReturnType>::real(t);
-				if(IsComplex<T>::test)
-					if(IsComplex<ReturnType>::test)
-						GetPart<T>::imag(v) = GetPart<ReturnType>::imag(t);
-					else
-						GetPart<T>::imag(v) = 0.0;
-
-				array.dataCurrent() = v;*/
-				array.data() = t;
+				
+				T buffer;
+				complexCopy(buffer, t);
+				array.data() = buffer;
 			}
 		}
 	}

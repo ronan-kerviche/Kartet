@@ -36,23 +36,16 @@ namespace Kartet
 	template<typename TExpr>
 	Accessor<T>& Accessor<T>::assign(const TExpr& expr, cudaStream_t stream)
 	{
-		/*if(IsComplex< typename ExpressionEvaluation<TExpr>::ReturnType >::test && !IsComplex<T>::test)
-			throw Exception("Accessor<T>::assign - Input data is complex but output is real.", __FILE__, __LINE__);*/
-
+		// Make sure we are not computing complex numbers to store in a real array :
+		STATIC_ASSERT( !(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex) )
 		evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
-		
 		return *this;
 	}
 
 	template<typename T>
 	Accessor<T>& Accessor<T>::assign(const Accessor<T>& a, cudaStream_t stream)
 	{
-		// Check validity :
-		/*if(getWidth()!=a.getWidth() || getHeight()!=a.getHeight() || getNumSlices()!=a.getNumSlices())
-			throw Exception("Accessor<T>::assign - Input sizes is different from output size.", __FILE__, __LINE__);*/
-
 		evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
-
 		return *this;
 	}
 
@@ -74,12 +67,9 @@ namespace Kartet
 	template<typename TExprMask, typename TExpr>
 	Accessor<T>& Accessor<T>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr)
 	{
-		// Check validity :
-		/*if(IsComplex< typename ExpressionEvaluation<TExpr>::ReturnType >::test && !IsComplex<T>::test)
-			throw Exception("Accessor<T>::assign - Input data is complex but output is real.", __FILE__, __LINE__);*/
-
+		// Make sure we are not computing complex numbers to store in a real array :
+		STATIC_ASSERT( !(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex) )
 		evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
-
 		return *this;
 	}
 
@@ -113,13 +103,13 @@ namespace Kartet
 			static const StaticAssert<	SameTypes<enforceT3,void>::test || SameTypes<enforceT3,T3>::test>	test6;
 
 			// Test validity :
-			/*static const StaticAssert<	!(inputMustBeReal && IsComplex<T1>::test) >				test_ir1;
-			static const StaticAssert<	!(inputMustBeReal && IsComplex<T2>::test) >				test_ir2;
-			static const StaticAssert<	!(inputMustBeReal && IsComplex<T3>::test) >				test_ir3;
+			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T1>::isComplex) >				test_ir1;
+			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T2>::isComplex) >				test_ir2;
+			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T3>::isComplex) >				test_ir3;
 
-			static const StaticAssert<	!(inputMustBeComplex && !IsComplex<T1>::test) >				test_ic1;
-			static const StaticAssert<	!(inputMustBeComplex && !IsComplex<T2>::test) >				test_ic2;
-			static const StaticAssert<	!(inputMustBeComplex && !IsComplex<T3>::test) >				test_ic3;*/
+			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T1>::isComplex) >			test_ic1;
+			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T2>::isComplex) >			test_ic2;
+			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T3>::isComplex) >			test_ic3;
 			
 			// Test for dimensionality (value, pointers, etc.) :
 
@@ -128,10 +118,8 @@ namespace Kartet
 			typedef typename ResultingTypeOf2<Type1,T3>::Type 							Type2;
 
 			// Force output type according to request :
-			//typedef typename MetaIf<preferRealOutput, typename ComplexAssociation<Type2>::Type, Type2 >::TValue	Type3;
-			//typedef typename MetaIf<preferComplexOutput, typename RealAssociation<Type3>::Type, Type3 >::TValue	Type4;
-			typedef Type2 Type3; // Always real for the moment.
-			typedef Type2 Type4; 
+			typedef typename MetaIf<preferRealOutput, typename TypeInfo<Type2>::ComplexType, Type2 >::TValue	Type3;
+			typedef typename MetaIf<preferComplexOutput, typename TypeInfo<Type3>::BaseType, Type3 >::TValue	Type4;
 			StaticAssert<!preferComplexOutput> C1;
 
 			typedef typename MetaIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue	Type5;

@@ -108,6 +108,11 @@ namespace Kartet
 		return dim3(numRows, numColumns, numSlices);
 	}
 
+	__host__ __device__ inline bool Layout::isMonolithic(void) const
+	{
+		return (leadingColumns==numRows || numColumns==1) && (leadingSlices==(numRows*numColumns) || numSlices==1);
+	}
+
 	__host__ inline void Layout::reinterpretLayout(index_t r, index_t c, index_t s)
 	{
 		if(r!=numRows && numRows!=leadingColumns) // Modification of the number of rows while interlaced into a larger memory area.
@@ -397,6 +402,45 @@ namespace Kartet
 		return d;
 	}
 
+	__host__ inline Layout Layout::getVectorLayout(void) const
+	{
+		return Layout(getNumRows());
+	}
+
+	__host__ inline Layout Layout::getSliceLayout(void) const
+	{
+		return Layout(getNumRows(), getNumColumns(), 1, getLeadingColumns());
+	}
+
+	__host__ inline Layout Layout::getSolidLayout(void) const
+	{
+		return Layout(getNumRows(), getNumColumns(), getNumSlices());
+	}
+
+	template<class Op, typename T>
+	__host__ void Layout::hostScan(T* ptr, const Op& op) const
+	{
+		// Op should have a function :
+		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const;
+		if(getNumRows()==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
+			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
+		else if(getNumRows()==getLeadingColumns())
+		{
+			const Layout sliceLayout = getSliceLayout();
+			for(index_t k=0; k<getNumSlices(); k++)
+				op.apply(*this, sliceLayout, ptr, k*getLeadingSlices(), 0, 0, k);	
+		}
+		else
+		{
+			const Layout vectorLayout = getVectorLayout();
+			for(index_t k=0; k<getNumSlices(); k++)
+			{
+				for(index_t j=0; j<getNumColumns(); j++)
+					op.apply(*this, vectorLayout, ptr, (k*getLeadingSlices() + j*getLeadingColumns()), 0, j, k);
+			}
+		}
+	}
+
 // Accessor :
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls)
@@ -484,6 +528,44 @@ namespace Kartet
 		return ptr;
 	}
 
+	// Tools for the memcpy :
+		template<typename T>
+		struct MemCpyToolBox
+		{			
+			const cudaMemcpyKind 	kind;
+			const T			*from;
+			T			*to;
+			const Layout		deviceLayout,
+						solidLayout;
+
+			__host__ MemCpyToolBox(const cudaMemcpyKind _k, T* _to, const T* _from, const Layout& _deviceLayout)
+			 :	kind(_k), 
+				from(_from),
+				to(_to),
+				deviceLayout(_deviceLayout),
+				solidLayout(_deviceLayout.getSolidLayout())
+			{ }
+			
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const
+			{
+				size_t	toOffset = 0,
+					fromOffset = 0;
+				if(kind==cudaMemcpyDeviceToHost)
+				{
+					toOffset	= solidLayout.getIndex(i, j, k);
+					fromOffset	= deviceLayout.getIndex(i, j, k);
+				}
+				else
+				{
+					toOffset	= deviceLayout.getIndex(i, j, k);
+					fromOffset	= solidLayout.getIndex(i, j, k);
+				}
+				cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T), kind);
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
+			}
+		};
+
 	template<typename T>
 	void Accessor<T>::getData(T* ptr) const
 	{
@@ -491,34 +573,8 @@ namespace Kartet
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-
-		if(getNumRows()==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
-		{
-			cudaError_t err = cudaMemcpy(ptr, gpu_ptr, getNumElements()*sizeof(T), cudaMemcpyDeviceToHost);
-			if(err!=cudaSuccess)
-				throw static_cast<Exception>(err);
-		}		
-		else if(getNumRows()==getLeadingColumns())
-		{
-			for(index_t k=0; k<getNumSlices(); k++)
-			{
-				cudaError_t err = cudaMemcpy((ptr + k*getNumElementsPerSlice()), (gpu_ptr + k*getLeadingSlices()), getNumElementsPerSlice()*sizeof(T), cudaMemcpyDeviceToHost);
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(err);
-			}
-		}
-		else
-		{
-			for(index_t k=0; k<getNumSlices(); k++)
-			{
-				for(index_t j=0; j<getNumColumns(); j++)
-				{
-					cudaError_t err = cudaMemcpy((ptr + k*getNumElementsPerSlice() + j*getNumRows()), (gpu_ptr + k*getLeadingSlices() + j*getLeadingColumns()), getNumRows()*sizeof(T), cudaMemcpyDeviceToHost);
-					if(err!=cudaSuccess)
-						throw static_cast<Exception>(err);
-				}
-			}
-		}
+		MemCpyToolBox<T> toolbox(cudaMemcpyDeviceToHost, ptr, gpu_ptr, *this);
+		hostScan(toolbox);
 	}
 
 	template<typename T>
@@ -528,34 +584,8 @@ namespace Kartet
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-
-		if(getNumRows()==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
-		{
-			cudaError_t err = cudaMemcpy(gpu_ptr, ptr, getNumElements()*sizeof(T), cudaMemcpyHostToDevice);
-			if(err!=cudaSuccess)
-				throw static_cast<Exception>(err);
-		}
-		else if(getNumRows()==getLeadingColumns())
-		{
-			for(index_t k=0; k<getNumSlices(); k++)
-			{
-				cudaError_t err = cudaMemcpy((gpu_ptr + k*getLeadingSlices()), (ptr + k*getNumElementsPerSlice()), getNumElementsPerSlice()*sizeof(T), cudaMemcpyHostToDevice);
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(err);
-			}
-		}
-		else
-		{
-			for(index_t k=0; k<getNumSlices(); k++)
-			{
-				for(index_t j=0; j<getNumColumns(); j++)
-				{
-					cudaError_t err = cudaMemcpy((gpu_ptr + k*getLeadingSlices() + j*getLeadingColumns()), (ptr + k*getNumElementsPerSlice() + j*getNumRows()), getNumRows()*sizeof(T), cudaMemcpyHostToDevice);
-					if(err!=cudaSuccess)
-						throw static_cast<Exception>(err);
-				}
-			}
-		}
+		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, ptr, gpu_ptr, *this);
+		hostScan(toolbox);
 	}
 
 	template<typename T>
@@ -588,12 +618,12 @@ namespace Kartet
 	template<typename T>
 	__host__ inline Accessor<T> Accessor<T>::vectors(index_t jBegin, index_t jEnd, index_t k, index_t jStep) const
 	{
-		if(jStep<0 || jBegin>=jEnd)
+		if(jStep<=0 || jBegin>=jEnd)
 			throw InvalidNegativeStep;
 		if(!validColumnIndex(jBegin) || !validColumnIndex(jEnd) || !validSliceIndex(k))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,jBegin,k), getNumRows(), (jBegin - jEnd + 1)/jStep, 1, jStep*getLeadingColumns());
+		return Accessor<T>(gpu_ptr + getIndex(0,jBegin,k), getNumRows(), (jEnd - jBegin + 1)/static_cast<double>(jStep) + 0.5, 1, jStep*getLeadingColumns());
 	}
 
 	template<typename T>
@@ -619,7 +649,25 @@ namespace Kartet
 		if(!validSliceIndex(kBegin) || !validSliceIndex(kEnd))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), (kBegin - kEnd + 1)/kStep, getLeadingColumns(), kStep*getLeadingSlices());
+		return Accessor<T>(gpu_ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), (kEnd - kBegin + 1)/static_cast<double>(kStep) + 0.5, getLeadingColumns(), kStep*getLeadingSlices());
+	}
+
+	template<typename T>
+	__host__ inline Accessor<T> Accessor<T>::subArray(index_t iBegin, index_t jBegin, index_t iEnd, index_t jEnd, index_t k) const
+	{
+		if(iBegin>=iEnd || jBegin>=jEnd)
+			throw InvalidNegativeStep;
+		if(!validRowIndex(iBegin) || !validRowIndex(iEnd) || !validColumnIndex(jBegin) || !validColumnIndex(jEnd) || !validSliceIndex(k))
+			throw OutOfRange;
+		
+		return Accessor<T>(gpu_ptr + getIndex(iBegin,jBegin,k), (iEnd - iBegin + 1), (jEnd - jBegin + 1), 1, getLeadingColumns());
+	}
+
+	template<typename T>
+	template<class Op>
+	__host__ void Accessor<T>::hostScan(const Op& op) const
+	{
+		Layout::hostScan(gpu_ptr, op);
 	}
 
 // Array :
@@ -629,7 +677,7 @@ namespace Kartet
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
-			throw static_cast<Exception>(err);
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
 	}
 	
 	template<typename T>
@@ -638,7 +686,7 @@ namespace Kartet
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
-			throw static_cast<Exception>(err);
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
 	}
 
 	template<typename T>
@@ -647,7 +695,7 @@ namespace Kartet
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
-			throw static_cast<Exception>(err);
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		setData(ptr);
 	}
 
@@ -657,7 +705,7 @@ namespace Kartet
 		cudaDeviceSynchronize();	
 		cudaError_t err = cudaFree(this->gpu_ptr);
 		if(err!=cudaSuccess)
-			throw static_cast<Exception>(err);
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		this->gpu_ptr = NULL;
 	}
 

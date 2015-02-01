@@ -29,14 +29,9 @@
 #ifndef __KARTET_MAIN__
 #define __KARTET_MAIN__
 
-	//#include "./CuException.hpp"
-	//#include "./MultiCUDACards.hpp"
-	//#include "./CuTimer.hpp"
-	#include "./Core/Array.hpp"
-	//#include "./CuFFT.hpp"
-	//#include "./SurfaceGenerator.hpp"
-	//#include "./UnitaryTests.hpp"
-	//#include "./MatlabTools.hpp"
+	#include "Core/Array.hpp"
+	#include "Core/BLAS.hpp"
+	#include "Core/RandomSource.hpp"
 
 #endif
 
