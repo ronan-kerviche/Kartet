@@ -511,6 +511,22 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+	template<typename T>
+	__host__ void gemm(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C)
+	{
+		const T alpha = complexCopy<T>(1),
+			beta = complexCopy<T>(0);
+		gemm(alpha, A, transa, B, transb, beta, C);
+	}
+
+	template<typename T>
+	__host__ void gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+	{
+		const T alpha = complexCopy<T>(1),
+			beta = complexCopy<T>(0);
+		gemm(alpha, A, CUBLAS_OP_N, B, CUBLAS_OP_N, beta, C);
+	}
+
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void symm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C)
 	{

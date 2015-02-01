@@ -83,6 +83,24 @@ namespace Kartet
 		}
 	}
 
+	template<typename TOut, typename TIn>
+	ALL_PLATFORMS TOut complexCopy(const TIn& b)
+	{
+		// If the input type is complex, the output type must be complex :
+		STATIC_ASSERT( !(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex) )
+		
+		TOut res;
+		realRef(res) = real(b);
+		if(TypeInfo<TOut>::isComplex)
+		{
+			if(TypeInfo<TIn>::isComplex)
+				imagRef(res) = imag(b);
+			else
+				imagRef(res) = static_cast<typename TypeInfo<TOut>::BaseType>(0);
+		}
+		return res;
+	}
+
 	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
 		template<> \
 		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
@@ -150,6 +168,7 @@ namespace Kartet
 			return tmp; \
 		}
 
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( short )
@@ -162,6 +181,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
+	//BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
 
 	#undef BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE
 
@@ -237,6 +257,15 @@ namespace Kartet
 	template<typename T>
 	ALL_PLATFORMS typename TypeInfo<T>::BaseType absSq(const T& a);
 
+	template<typename T>
+	ALL_PLATFORMS typename TypeInfo<T>::BaseType abs(const T& a);
+	
+	template<typename T>
+	ALL_PLATFORMS typename TypeInfo<T>::ComplexType angleToComplex(const T& a);
+
+	template<typename T>
+	ALL_PLATFORMS typename TypeInfo<T>::ComplexType piAngleToComplex(const T& a);
+
 	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
 		template<> \
 		ALL_PLATFORMS TypeName conj<TypeName>(const TypeName& a) \
@@ -248,8 +277,33 @@ namespace Kartet
 		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
 		{ \
 			return a*a; \
+		} \
+		\
+		template<> \
+		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
+		{ \
+			return (TypeInfo<TypeName>::isSigned && a>=0) ? a : (-a); \
+		} \
+		\
+		template<> \
+		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType angleToComplex<TypeName>(const TypeName& a) \
+		{ \
+			TypeInfo<typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
+			sincos(a, &s, &c); \
+			TypeInfo<TypeName>::ComplexType tmp = {c, s}; \
+			return tmp; \
+		} \
+		\
+		template<> \
+		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType piAngleToComplex<TypeName>(const TypeName& a) \
+		{ \
+			TypeInfo<typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
+			sincospi(a, &s, &c); \
+			TypeInfo<TypeName>::ComplexType tmp = {c, s}; \
+			return tmp; \
 		}
 
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( short )
@@ -262,6 +316,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
+	//BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
 
 	#undef BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE
 
@@ -285,15 +340,19 @@ namespace Kartet
 
 		#undef BUILD_SPECIALIZATION_FROM_COMPLEX_TYPE
 
-		ALL_PLATFORMS inline float abs(const cuFloatComplex& a)
+		template<>
+		ALL_PLATFORMS typename TypeInfo<cuFloatComplex>::BaseType abs(const cuFloatComplex& a)
 		{
 			return sqrtf(a.x*a.x + a.y*a.y);
 		}
 
-		ALL_PLATFORMS inline double abs(const cuDoubleComplex& a)
+		template<>
+		ALL_PLATFORMS typename TypeInfo<cuDoubleComplex>::BaseType abs(const cuDoubleComplex& a)
 		{
 			return sqrt(a.x*a.x + a.y*a.y);
 		}
+
+		
 	#endif
 
 // Template for the operators : 

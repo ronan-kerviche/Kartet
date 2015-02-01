@@ -463,7 +463,7 @@ namespace Kartet
 	template<typename T>
 	__host__ Accessor<T>::Accessor(const Array<T>& a)
 	 :	Layout(a), 
-		gpu_ptr(a.getPtr())
+		gpu_ptr(a.gpu_ptr)
 	{ }
 
 	template<typename T>
@@ -578,7 +578,7 @@ namespace Kartet
 	}
 
 	template<typename T>
-	void Accessor<T>::setData(const T* ptr)
+	void Accessor<T>::setData(const T* ptr) const
 	{
 		if(ptr==NULL)
 			throw NullPointer;
@@ -589,7 +589,7 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::value(index_t i, index_t j, index_t k) const
+	__host__ Accessor<T> Accessor<T>::value(index_t i, index_t j, index_t k) const
 	{
 		if(!inside(i, j, k))
 			throw OutOfRange;		
@@ -598,36 +598,33 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::vector(index_t j, index_t k) const
+	__host__ Accessor<T> Accessor<T>::vector(index_t j) const
 	{
-		if(!validColumnIndex(j) || !validSliceIndex(k))
+		if(!validColumnIndex(j))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,j,k), getNumRows());
+		return Accessor<T>(gpu_ptr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices());
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::endVector(index_t k) const
+	__host__ Accessor<T> Accessor<T>::endVector(void) const
 	{
-		if(!validSliceIndex(k))
-			throw OutOfRange;
-	
-		return Accessor<T>(gpu_ptr + getIndex(0,getNumRows()-1,k), getNumRows());
+		return vector(getNumColumns()-1);
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::vectors(index_t jBegin, index_t jEnd, index_t k, index_t jStep) const
+	__host__ Accessor<T> Accessor<T>::vectors(index_t jBegin, index_t numVectors, index_t jStep) const
 	{
-		if(jStep<=0 || jBegin>=jEnd)
+		if(jStep<=0 || numVectors<=0)
 			throw InvalidNegativeStep;
-		if(!validColumnIndex(jBegin) || !validColumnIndex(jEnd) || !validSliceIndex(k))
+		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,jBegin,k), getNumRows(), (jEnd - jBegin + 1)/static_cast<double>(jStep) + 0.5, 1, jStep*getLeadingColumns());
+		return Accessor<T>(gpu_ptr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices());
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::slice(index_t k) const
+	__host__ Accessor<T> Accessor<T>::slice(index_t k) const
 	{
 		if(!validSliceIndex(k))
 			throw OutOfRange;
@@ -636,31 +633,45 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::endSlice(void) const
+	__host__ Accessor<T> Accessor<T>::endSlice(void) const
 	{
-		return Accessor<T>(gpu_ptr + getIndex(0,0,getNumSlices()-1), getNumColumns(), 1, getLeadingColumns());
+		return slice(getNumSlices()-1);
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::slices(index_t kBegin, index_t kEnd, index_t kStep) const
+	__host__ Accessor<T> Accessor<T>::slices(index_t kBegin, index_t numSlices, index_t kStep) const
 	{
-		if(kStep<0 || kBegin>=kEnd)
+		if(kStep<0 || numSlices<=0)
 			throw InvalidNegativeStep;
-		if(!validSliceIndex(kBegin) || !validSliceIndex(kEnd))
+		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), (kEnd - kBegin + 1)/static_cast<double>(kStep) + 0.5, getLeadingColumns(), kStep*getLeadingSlices());
+		return Accessor<T>(gpu_ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices());
 	}
 
 	template<typename T>
-	__host__ inline Accessor<T> Accessor<T>::subArray(index_t iBegin, index_t jBegin, index_t iEnd, index_t jEnd, index_t k) const
+	__host__ Accessor<T> Accessor<T>::subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const
 	{
-		if(iBegin>=iEnd || jBegin>=jEnd)
+		if(numRows<=0 || numColumns<=0)
 			throw InvalidNegativeStep;
-		if(!validRowIndex(iBegin) || !validRowIndex(iEnd) || !validColumnIndex(jBegin) || !validColumnIndex(jEnd) || !validSliceIndex(k))
+		if(!validRowIndex(iBegin) || !validRowIndex(iBegin+numRows-1) || !validColumnIndex(jBegin) || !validColumnIndex(jBegin+numColumns-1))
 			throw OutOfRange;
 		
-		return Accessor<T>(gpu_ptr + getIndex(iBegin,jBegin,k), (iEnd - iBegin + 1), (jEnd - jBegin + 1), 1, getLeadingColumns());
+		return Accessor<T>(gpu_ptr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices());
+	}
+
+	template<typename T>
+	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t numVectors, index_t jBegin) const
+	{
+		std::vector< Accessor<T> > pages;
+
+		if(!validColumnIndex(jBegin))
+			throw OutOfRange;
+
+		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
+			pages.push_back( Accessor<T>(gpu_ptr + getIndex(0,jBegin,0), getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices()) );
+
+		return pages;
 	}
 
 	template<typename T>
@@ -668,6 +679,43 @@ namespace Kartet
 	__host__ void Accessor<T>::hostScan(const Op& op) const
 	{
 		Layout::hostScan(gpu_ptr, op);
+	}
+
+	template<typename T>
+	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T>& A)
+	{
+		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
+		const int maxWidth = 8;
+		const char fillCharacter = ' ';
+		const char* spacing = "  ";
+		const Kartet::Layout l = A.getSolidLayout();
+		T* tmp = A.getData();
+
+		os << std::endl;
+		if(l.getNumSlices()>1)
+			os << "Array of size (" << A.getNumRows() << ", " << A.getNumColumns() << ", " << A.getNumSlices() << ") : " << std::endl;
+		else if(l.getNumColumns()>1)
+			os << "Array of size (" << A.getNumRows() << ", " << A.getNumColumns() << ") : " << std::endl;
+		else
+			os << "Array of size (" << A.getNumRows() << ") : " << std::endl;
+
+		for(int k=0; k<l.getNumSlices(); k++)
+		{
+			if(l.getNumSlices()>1)
+				os << "Slice " << k << " : "<< std::endl;
+	
+			for(int i=0; i<l.getNumRows(); i++)
+			{
+				for(int j=0; j<(l.getNumColumns()-1); j++)
+					os << FMT << tmp[l.getIndex(i,j,k)] << spacing;
+				os << FMT << tmp[l.getIndex(i,l.getNumColumns()-1,k)] << std::endl;
+			}
+			if(k<(l.getNumSlices()-1))
+				os << std::endl;
+		}
+
+		delete[] tmp;
+		return os;
 	}
 
 // Array :
@@ -700,6 +748,27 @@ namespace Kartet
 	}
 
 	template<typename T>
+	Array<T>::Array(const Array<T>& A)
+	 :	Accessor<T>(A)
+	{
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		if(err!=cudaSuccess)
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		(*this) = A;
+	}
+
+	template<typename T>
+	template<typename TIn>
+	Array<T>::Array(const Accessor<TIn>& A)
+	 : 	Accessor<T>(A)
+	{
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		if(err!=cudaSuccess)
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		(*this) = A;
+	}
+
+	template<typename T>
 	__host__ Array<T>::~Array(void)
 	{
 		cudaDeviceSynchronize();	
@@ -714,41 +783,6 @@ namespace Kartet
 	{
 		return (*this);
 	}
-
-	/*template<typename T>
-	Array<T>::Array(const Array<T>& a)
-	 : Accessor<T>(NULL, a.getWidth(), a.getHeight(), a.getNumSlices())
-	{
-		#ifdef __DEBUG__
-			std::cout << "Array<T>::Array - Allocation of array : " << getWidth() << 'x' << getHeight() << 'x' << getNumSlices() << " (copy constructor)" << std::endl;
-		#endif 
-
-		cudaMalloc((void**)&this->gpu_ptr, getNumElements()*sizeof(T));
-		*this = a;
-	}
-
-	template<typename T>
-	template<typename Tin>
-	Array<T>::Array(const Accessor<Tin>& a)
-	 : Accessor<T>(NULL, a.getWidth(), a.getHeight(), a.getNumSlices())
-	{
-		#ifdef __DEBUG__
-			std::cout << "Array<T>::Array - Allocation of array : " << getWidth() << 'x' << getHeight() << 'x' << getNumSlices() << " (copy constructor)" << std::endl;
-		#endif 
-
-		cudaMalloc((void**)&this->gpu_ptr, getNumElements()*sizeof(T));
-		*this = a;
-	}*/
-
-
-/*	template<typename T>
-	Array<T>::Array(const std::string& filename)
-	 : Accessor<T>()
-	{
-		load(filename);
-		checkForCudaErrors();
-	}
-*/
 
 } // Namespace Kartet
 

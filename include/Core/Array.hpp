@@ -28,8 +28,11 @@
 
 #ifndef __KARTET_MAIN_ARRAY__
 #define __KARTET_MAIN_ARRAY__
-	
-	#include <iostream>	
+
+// Includes :
+	#include <iostream>
+	#include <iomanip>
+	#include <vector>
 	#include "Exceptions.hpp"
 	#include "TemplateSharedMemory.hpp"
 
@@ -190,17 +193,18 @@ namespace Kartet
 					 __device__ inline T& dataFFTInverseShift(void) const;
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr) const;
-				__host__                   void setData(const T* ptr);
+				__host__                   void setData(const T* ptr) const;
 	
 			// Layout tools :
-				__host__	    inline Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
-				__host__ 	    inline Accessor<T> vector(index_t j, index_t k=0) const;
-				__host__ 	    inline Accessor<T> endVector(index_t k=0) const;
-				__host__ 	    inline Accessor<T> vectors(index_t jBegin, index_t jEnd, index_t k=0, index_t jStep=1) const;
-				__host__ 	    inline Accessor<T> slice(index_t k=0) const;
-				__host__ 	    inline Accessor<T> endSlice(void) const;
-				__host__ 	    inline Accessor<T> slices(index_t kBegin, index_t kEnd, index_t kStep=1) const;
-				__host__ 	    inline Accessor<T> subArray(index_t iBegin, index_t jBegin, index_t iEnd, index_t jEnd, index_t k=0) const; 
+				__host__	           Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
+				__host__ 	           Accessor<T> vector(index_t j) const;
+				__host__ 	           Accessor<T> endVector(void) const;
+				__host__ 	           Accessor<T> vectors(index_t jBegin, index_t numVectors, index_t jStep=1) const;
+				__host__ 	           Accessor<T> slice(index_t k=0) const;
+				__host__ 	           Accessor<T> endSlice(void) const;
+				__host__ 	           Accessor<T> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
+				__host__ 	           Accessor<T> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
+				__host__ 	           std::vector< Accessor<T> > splitPages(index_t numVectors, index_t jBegin=0) const;
 
 			// Assignment :
 				template<typename TExpr>
@@ -218,6 +222,10 @@ namespace Kartet
 
 				template<class Op>
 				__host__ void hostScan(const Op& op) const;
+
+			// Other tools :
+				template<typename TBis>
+				__host__ friend std::ostream& operator<<(std::ostream& os, const Accessor<TBis>& A); // For debug, not for performance.
 	};
 
 	template<typename T>
@@ -227,9 +235,9 @@ namespace Kartet
 			__host__ Array(index_t r, index_t c=1, index_t s=1);
 			__host__ Array(const Layout& layout);
 			__host__ Array(const T* ptr, index_t r, index_t c=1, index_t s=1);
-			//__host__ Array(const Array<T>& a);
-			//template<typename TIn>
-			//__host__  Array(const Accessor<TIn>& a);
+			__host__ Array(const Array<T>& a);
+			template<typename TIn>
+			__host__  Array(const Accessor<TIn>& a);
 			__host__ ~Array(void);
 
 			// From Accessor<T>::Layout

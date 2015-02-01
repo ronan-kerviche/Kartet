@@ -118,11 +118,10 @@ namespace Kartet
 			typedef typename ResultingTypeOf2<Type1,T3>::Type 							Type2;
 
 			// Force output type according to request :
-			typedef typename MetaIf<preferRealOutput, typename TypeInfo<Type2>::ComplexType, Type2 >::TValue	Type3;
-			typedef typename MetaIf<preferComplexOutput, typename TypeInfo<Type3>::BaseType, Type3 >::TValue	Type4;
-			StaticAssert<!preferComplexOutput> C1;
+			typedef typename MetaIf<preferRealOutput, typename TypeInfo<Type2>::BaseType, Type2 >::TValue		Type3;
+			typedef typename MetaIf<preferComplexOutput, typename TypeInfo<Type3>::ComplexType, Type3 >::TValue	Type4;
 
-			typedef typename MetaIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue	Type5;
+			typedef typename MetaIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue		Type5;
 		public :
 			static const int arity = 	(SameTypes<T1,void>::test) ? 0 : (
 							(SameTypes<T2,void>::test) ? 1 : (

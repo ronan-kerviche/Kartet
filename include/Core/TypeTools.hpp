@@ -30,6 +30,7 @@
 #define __KARTET_TYPE_TOOLS__
 
 // Includes :
+	#include <limits>
 	#include <complex>
 	#if defined(__CUDACC__)
 		#include <cufft.h>
@@ -57,14 +58,15 @@ namespace Kartet
 	{
 		typedef T SubType;
 		typedef T BaseType;
-		
+		typedef std::numeric_limits<BaseType> BaseLimits;
 		#if defined(__CUDACC__)
 			typedef cuFloatComplex ComplexType;
 		#else
 			typedef std::complex<float> ComplexType;
 		#endif		
 
-		static const bool 	isConst 	= false,
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false;
@@ -75,14 +77,15 @@ namespace Kartet
 	{
 		typedef double SubType;
 		typedef double BaseType;
-		
+		typedef std::numeric_limits<BaseType> BaseLimits;
 		#if defined(__CUDACC__)
 			typedef cuDoubleComplex ComplexType;
 		#else
 			typedef std::complex<double> ComplexType;
 		#endif		
 
-		static const bool 	isConst 	= false,
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false;
@@ -91,11 +94,14 @@ namespace Kartet
 	template<typename T>
 	struct TypeInfo<T*>
 	{
+		typedef std::numeric_limits<T> Limits;
 		typedef TypeInfo<T> SubType;
 		typedef typename SubType::BaseType BaseType;
 		typedef typename SubType::ComplexType ComplexType;
+		typedef std::numeric_limits<BaseType> BaseLimits;
 
-		static const bool 	isConst 	= SubType::isConst,
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= SubType::isConst,
 					isPointer 	= true,
 					isReference 	= SubType::isReference,
 					isComplex 	= SubType::isComplex;
@@ -107,8 +113,10 @@ namespace Kartet
 		typedef TypeInfo<T> SubType;
 		typedef typename SubType::BaseType BaseType;
 		typedef typename SubType::ComplexType ComplexType;
+		typedef std::numeric_limits<BaseType> BaseLimits;
 
-		static const bool 	isConst 	= SubType::isConst,
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= SubType::isConst,
 					isPointer 	= SubType::isPointe,
 					isReference 	= true,
 					isComplex 	= SubType::isComplex;
@@ -120,8 +128,10 @@ namespace Kartet
 		typedef TypeInfo<T> SubType;
 		typedef typename SubType::BaseType BaseType;
 		typedef typename SubType::ComplexType ComplexType;
+		typedef std::numeric_limits<BaseType> BaseLimits;
 
-		static const bool 	isConst 	= true,
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= true,
 					isPointer 	= SubType::isPointer,
 					isReference 	= SubType::isReference,
 					isComplex 	= SubType::isComplex;
@@ -134,7 +144,10 @@ namespace Kartet
 			typedef float SubType;
 			typedef float BaseType;
 			typedef cuFloatComplex ComplexType;
-			static const bool 	isConst 	= false,
+			typedef std::numeric_limits<BaseType> BaseLimits;
+
+			static const bool 	isSigned	= BaseLimits::is_signed,
+						isConst 	= false,
 						isPointer 	= false,
 						isReference 	= false,
 						isComplex 	= true;
@@ -146,7 +159,10 @@ namespace Kartet
 			typedef double SubType;
 			typedef double BaseType;
 			typedef cuDoubleComplex ComplexType;
-			static const bool 	isConst 	= false,
+			typedef std::numeric_limits<BaseType> BaseLimits;
+
+			static const bool 	isSigned	= BaseLimits::is_signed,
+						isConst 	= false,
 						isPointer 	= false,
 						isReference 	= false,
 						isComplex 	= true;
