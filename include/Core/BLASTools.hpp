@@ -42,14 +42,15 @@ namespace Kartet
 // Type tools :
 	#define ALLOWED_TYPES_VERIFICATION	STATIC_ASSERT( Belongs<CuBLASKnownTypes, T>::Value )
 	#define TYPE_MUST_BE_COMPLEX		STATIC_ASSERT( TypeInfo<T>::isComplex )
-	#define TEST_CONTEXT			if(BLAS::singleton==NULL) throw InvalidBLASContext;
+	#define TEST_CONTEXT			if(BLASContext::StaticContainer<void>::singleton==NULL) throw InvalidBLASContext;
 	#define TEST_MONOLITHIC(x)		if(!(x).isMonolithic()) throw IncompatibleLayout;
 	#define TEST_SINGLE_SLICE(x)		if((x).getNumSlices()>1) throw IncompatibleLayout; 
+	//#define TEST_PRODUCT(A,B,C)		if(A.getNumRows()!=C.getNumRows() || B.getNumColumns()!=C.getNumColumns() || A.getNumColumns()!=B.getNumRows()) throw InvalidOperation;
 	#define IF_FLOAT			if(SameTypes<T, float>::test)
 	#define IF_DOUBLE			if(SameTypes<T, double>::test)
 	#define IF_CX_FLOAT			if(SameTypes<T, cuFloatComplex>::test)
 	#define IF_CX_DOUBLE			if(SameTypes<T, cuDoubleComplex>::test)
-	#define HDL				(BLAS::singleton->handle)
+	#define HDL				(BLASContext::StaticContainer<void>::singleton->handle)
 	#define FCST(x)				const float _##x = static_cast<float>(x);
 	#define DCST(x)				const double _##x = static_cast<double>(x);
 	#define CCST(x)				const cuFloatComplex _##x = toFloatComplex(x);
@@ -61,23 +62,23 @@ namespace Kartet
 	#define TEST_EXCEPTION(x)		if(x!=CUBLAS_STATUS_SUCCESS) throw static_cast<Exception>(CuBLASExceptionOffset + x);
 
 // BLAS :
-	__host__ inline BLAS::BLAS(void)
+	__host__ inline BLASContext::BLASContext(void)
 	 : 	handle(NULL)
 	{
-		if(singleton==NULL)
+		if(StaticContainer<void>::singleton==NULL)
 		{
 			cublasStatus_t err = cublasCreate(&handle);	
 			if(err!=CUBLAS_STATUS_SUCCESS)
 				throw static_cast<Exception>(CuBLASExceptionOffset + err);
-			singleton = this;
+			StaticContainer<void>::singleton = this;
 		}
 	}
 
-	__host__ inline BLAS::~BLAS(void)
+	__host__ inline BLASContext::~BLASContext(void)
 	{
-		if(singleton==this)
+		if(StaticContainer<void>::singleton==this)
 		{
-			singleton = NULL;
+			StaticContainer<void>::singleton = NULL;
 			cublasStatus_t err = cublasDestroy(handle);
 			if(err!=CUBLAS_STATUS_SUCCESS)
 				throw static_cast<Exception>(CuBLASExceptionOffset + err);

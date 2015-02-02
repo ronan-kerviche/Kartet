@@ -7,8 +7,6 @@ int main(int argc, char** argv)
 	std::cout << "Kartet Test" << std::endl;
 	std::cout << "Build : " << __DATE__ << ' ' << __TIME__ << std::endl;
 
-	cuFloatComplex c = Kartet::toComplex<float>(1.0);
-
 	try
 	{
 		Kartet::Array<double> A(5, 3), B(5, 3);
@@ -21,10 +19,10 @@ int main(int argc, char** argv)
 		C = Kartet::IndexI();
 		std::cout << C << std::endl;
 
-		C = Kartet::cast<unsigned char>( Kartet::IndexI()*64 );
+		C = Kartet::cast<unsigned char>(Kartet::IndexI()*64);
 		std::cout << C << std::endl;
 
-		Kartet::BLAS Context;
+		Kartet::BLASContext Context;
 		C = 4 - absSq(Kartet::IndexI()-13) / 100.0;
 		std::cout << C << std::endl;
 		int idx = Kartet::amax(C);
@@ -45,26 +43,22 @@ int main(int argc, char** argv)
 		std::cout << A << std::endl;
 
 		A = Kartet::IndexI() + Kartet::IndexJ();
-		// Select the vectors from 0 to 2 with a step of 2 (1st and 3rd vectors).
+		// Select 2 vectors starting at 0 with a step of 2 (1st and 3rd vectors).
 		Kartet::Accessor<double> S = A.vectors(0, 2, 2);
 		uniformSource >> S;
-		std::cout << "S is : " << S << std::endl;
-		std::cout << "A is : " << A << std::endl;
+		std::cout << "S = " << S << std::endl;
+		std::cout << "A = " << A << std::endl;
 
-		Kartet::Accessor<double> T = A.subArray(1,0,3,3);
-		std::cout << T << std::endl;
-		T = -23.0;
+		A.subArray(1,0,3,3) = -23.0;
 		std::cout << A << std::endl;
 
 		Kartet::Array<float> D(4, 4, 3);
 		Kartet::NormalSource normalSource(2.0, 10.0);
 		normalSource >> D;
 		std::cout << D << std::endl;
-		Kartet::Accessor<float> E = D.vectors(0, 2, 2);
-		E = 0;
+		D.vectors(0, 2, 2) = 0;
 		std::cout << D << std::endl;
-		Kartet::Accessor<float> F = E.slice(1);
-		F = 1.0;
+		D.vectors(0, 2, 2).slice(1) = 1.0;
 		std::cout << D << std::endl;
 
 		D = real(piAngleToComplex(Kartet::IndexI() + Kartet::IndexJ()));
@@ -73,6 +67,16 @@ int main(int argc, char** argv)
 		std::cout << D.slice(0) << std::endl;
 		D.slice(1) = (D.slice(1) + D.slice(0))/2.0;
 		std::cout << D << std::endl;
+
+		Kartet::Array<cuDoubleComplex> CxA(4, 4);
+		CxA = 1.0 + Kartet::IndexJ();
+		CxA = angleToComplex(real(CxA));
+		std::cout << CxA << std::endl;
+		Kartet::Array<double> CxAbs(CxA.layout());
+		CxAbs = abs(CxA) - real(CxA);
+		std::cout << CxAbs << std::endl;
+		CxAbs = angle(CxA);
+		std::cout << CxAbs << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

@@ -166,11 +166,12 @@ namespace Kartet
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			imag(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			abs(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			absSq(a) )
+	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			angle,			angle(a) )
 
-	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_AngleToComplex,		angleToComplex,		angleToComplex(a) )
-	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_PiAngleToComplex,		piAngleToComplex,	piAngleToComplex(a) )
+	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_angleToComplex,		angleToComplex,		angleToComplex(a) )
+	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_piAngleToComplex,		piAngleToComplex,	piAngleToComplex(a) )
 
-	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_Cast,			cast,			a )
+	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
 // Transform functions : 
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			p = l.getIndicesFFTShift(i, j, k); )

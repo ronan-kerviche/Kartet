@@ -351,14 +351,14 @@ namespace Kartet
 		return getIndexFFTInverseShift(getI(), getJ(), getK());
 	}
 
-	__host__ __device__ inline bool Layout::inside(index_t i, index_t j, index_t k) const
+	__host__ __device__ inline bool Layout::isInside(index_t i, index_t j, index_t k) const
 	{
 		return (i>=0 && i<numRows && j>=0 && j<numColumns && k>=0 && k<numSlices);
 	}
 
-	__device__ inline bool Layout::inside(void) const
+	__device__ inline bool Layout::isInside(void) const
 	{
-		return  inside(getI(), getJ(), getK());
+		return  isInside(getI(), getJ(), getK());
 	}
 
 	__host__ __device__ inline bool Layout::validRowIndex(index_t i) const	
@@ -376,7 +376,7 @@ namespace Kartet
 		return (k>=0 && k<numSlices);
 	}
 
-	__host__ __device__ inline void Layout::unpackIndex(index_t index, index_t& i, index_t& j, index_t& k)
+	__host__ __device__ inline void Layout::unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const
 	{
 		index_t tmp = index/numRows;
 		j = index - tmp*numRows;
@@ -388,7 +388,7 @@ namespace Kartet
 	{
 		dim3 d;
 		d.x = 1;
-		d.y = min(static_cast<index_t>(numThreads), getNumRows());
+		d.y = min(static_cast<index_t>(StaticContainer<void>::numThreads), getNumRows());
 		d.z = 1;
 		return d;
 	}
@@ -397,7 +397,7 @@ namespace Kartet
 	{
 		dim3 d;
 		d.x = getNumColumns(); 
-		d.y = ceil(static_cast<double>(getNumRows())/static_cast<double>(numThreads));
+		d.y = ceil(static_cast<double>(getNumRows())/static_cast<double>(StaticContainer<void>::numThreads));
 		d.z = getNumSlices();
 		return d;
 	}
@@ -584,17 +584,50 @@ namespace Kartet
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, ptr, gpu_ptr, *this);
+		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, gpu_ptr, ptr, *this);
 		hostScan(toolbox);
+	}
+
+	template<typename T>
+	__host__ const Layout& Accessor<T>::layout(void) const
+	{
+		return (*this);
 	}
 
 	template<typename T>
 	__host__ Accessor<T> Accessor<T>::value(index_t i, index_t j, index_t k) const
 	{
-		if(!inside(i, j, k))
+		if(!isInside(i, j, k))
 			throw OutOfRange;		
 
 		return Accessor<T>(gpu_ptr + getIndex(i, j, k), 1, 1, 1);
+	}
+
+	template<typename T>
+	__host__ Accessor<T> Accessor<T>::elements(index_t p, index_t numElements) const
+	{
+		if(p<0 || numElements<0 || p>=getNumElements() || (p+numElements)>=getNumElements())
+			throw OutOfRange;
+
+		// Test if the block is fully in this accessor :
+		if(!isMonolithic())
+		{
+			index_t i = 0,
+				j = 0,
+				k = 0;
+			unpackIndex(p, i, j, k);
+			if(getNumRows()!=getLeadingColumns())
+			{
+				if(numElements>getNumRows())
+					throw OutOfRange;
+			}
+			else if(getNumElementsPerSlice()!=getLeadingColumns())
+			{
+				if(numElements>getNumElementsPerSlice())
+					throw OutOfRange;
+			}
+		}
+		return Accessor<T>(gpu_ptr + p, numElements, 1, 1);
 	}
 
 	template<typename T>
@@ -691,14 +724,12 @@ namespace Kartet
 		const Kartet::Layout l = A.getSolidLayout();
 		T* tmp = A.getData();
 
-		os << std::endl;
 		if(l.getNumSlices()>1)
-			os << "Array of size (" << A.getNumRows() << ", " << A.getNumColumns() << ", " << A.getNumSlices() << ") : " << std::endl;
+			os << "(Array of size [" << A.getNumRows() << ", " << A.getNumColumns() << ", " << A.getNumSlices() << "]) : " << std::endl;
 		else if(l.getNumColumns()>1)
-			os << "Array of size (" << A.getNumRows() << ", " << A.getNumColumns() << ") : " << std::endl;
+			os << "(Array of size [" << A.getNumRows() << ", " << A.getNumColumns() << "]) : " << std::endl;
 		else
-			os << "Array of size (" << A.getNumRows() << ") : " << std::endl;
-
+			os << "(Array of size [" << A.getNumRows() << "]) : " << std::endl;
 		for(int k=0; k<l.getNumSlices(); k++)
 		{
 			if(l.getNumSlices()>1)
@@ -710,8 +741,6 @@ namespace Kartet
 					os << FMT << tmp[l.getIndex(i,j,k)] << spacing;
 				os << FMT << tmp[l.getIndex(i,l.getNumColumns()-1,k)] << std::endl;
 			}
-			if(k<(l.getNumSlices()-1))
-				os << std::endl;
 		}
 
 		delete[] tmp;
@@ -749,7 +778,7 @@ namespace Kartet
 
 	template<typename T>
 	Array<T>::Array(const Array<T>& A)
-	 :	Accessor<T>(A)
+	 :	Accessor<T>(A.getSolidLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
@@ -760,7 +789,7 @@ namespace Kartet
 	template<typename T>
 	template<typename TIn>
 	Array<T>::Array(const Accessor<TIn>& A)
-	 : 	Accessor<T>(A)
+	 : 	Accessor<T>(A.getSolidLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)

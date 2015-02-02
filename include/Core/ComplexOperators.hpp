@@ -38,37 +38,37 @@ namespace Kartet
 	#endif
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType real(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType real(const T& a);
 	
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType imag(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType imag(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType& realRef(T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType& realRef(T& a);
 	
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType& imagRef(T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType& imagRef(T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::ComplexType toComplex(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::ComplexType toComplex(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::ComplexType toComplex(const T& a, const T& b);
+	ALL_PLATFORMS inline typename TypeInfo<T>::ComplexType toComplex(const T& a, const T& b);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<float>::ComplexType toFloatComplex(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<float>::ComplexType toFloatComplex(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<float>::ComplexType toFloatComplex(const T& a, const T& b);
+	ALL_PLATFORMS inline typename TypeInfo<float>::ComplexType toFloatComplex(const T& a, const T& b);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<double>::ComplexType toDoubleComplex(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<double>::ComplexType toDoubleComplex(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<double>::ComplexType toDoubleComplex(const T& a, const T& b);
+	ALL_PLATFORMS inline typename TypeInfo<double>::ComplexType toDoubleComplex(const T& a, const T& b);
 	
 	template<typename TOut, typename TIn>
-	ALL_PLATFORMS void complexCopy(TOut& a, const TIn& b)
+	ALL_PLATFORMS inline void complexCopy(TOut& a, const TIn& b)
 	{
 		// If the input type is complex, the output type must be complex :
 		STATIC_ASSERT( !(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex) )
@@ -84,7 +84,7 @@ namespace Kartet
 	}
 
 	template<typename TOut, typename TIn>
-	ALL_PLATFORMS TOut complexCopy(const TIn& b)
+	ALL_PLATFORMS inline TOut complexCopy(const TIn& b)
 	{
 		// If the input type is complex, the output type must be complex :
 		STATIC_ASSERT( !(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex) )
@@ -103,66 +103,66 @@ namespace Kartet
 
 	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
 		{ \
 			return a; \
 		} \
 		 \
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType imag(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType imag(const TypeName& a) \
 		{ \
 			return static_cast<TypeName>(0); \
 		} \
 		 \
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType& realRef(TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType& realRef(TypeName& a) \
 		{ \
 			return a; \
 		} \
 		 \
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType& imagRef(TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType& imagRef(TypeName& a) \
 		{ \
 			return a; \
 		} \
 		 \
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a) \
 		{ \
 			TypeInfo<TypeName>::ComplexType tmp = {a, static_cast<TypeName>(0)}; \
 			return tmp; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a, const TypeName& b) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a, const TypeName& b) \
 		{ \
 			TypeInfo<TypeName>::ComplexType tmp = {a, b}; \
 			return tmp; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a) \
 		{ \
 			TypeInfo<float>::ComplexType tmp = {static_cast<float>(a), 0.0f}; \
 			return tmp; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a, const TypeName& b) \
+		ALL_PLATFORMS inline typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a, const TypeName& b) \
 		{ \
 			TypeInfo<float>::ComplexType tmp = {static_cast<float>(a), static_cast<float>(b)}; \
 			return tmp; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a) \
 		{ \
 			TypeInfo<double>::ComplexType tmp = {static_cast<double>(a), 0.0}; \
 			return tmp; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a, const TypeName& b) \
+		ALL_PLATFORMS inline typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a, const TypeName& b) \
 		{ \
 			TypeInfo<double>::ComplexType tmp = {static_cast<double>(a), static_cast<double>(b)}; \
 			return tmp; \
@@ -201,44 +201,44 @@ namespace Kartet
 	#if defined(__CUDACC__)
 		#define BUILD_SPECIALIZATION_FROM_COMPLEX_TYPE(TypeName) \
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
 			{ \
 				return a.x; \
 			} \
 			 \
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType imag(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType imag(const TypeName& a) \
 			{ \
 				return a.y; \
 			} \
 			 \
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType& realRef(TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType& realRef(TypeName& a) \
 			{ \
 				return a.x; \
 			} \
 			 \
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType& imagRef(TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType& imagRef(TypeName& a) \
 			{ \
 				return a.y; \
 			} \
 			 \
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a) \
 			{ \
 				return a; \
 			} \
 			\
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<float>::ComplexType toFloatComplex(const TypeName& a) \
 			{ \
 				TypeInfo<float>::ComplexType tmp = {static_cast<float>(a.x), static_cast<float>(a.y)}; \
 				return tmp; \
 			} \
 			\
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<double>::ComplexType toDoubleComplex(const TypeName& a) \
 			{ \
 				TypeInfo<double>::ComplexType tmp = {static_cast<double>(a.x), static_cast<double>(a.y)}; \
 				return tmp; \
@@ -252,41 +252,50 @@ namespace Kartet
 
 // Other functions :
 	template<typename T>
-	ALL_PLATFORMS T conj(const T& a);
+	ALL_PLATFORMS inline T conj(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType absSq(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType absSq(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::BaseType abs(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType abs(const T& a);
 	
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::ComplexType angleToComplex(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::BaseType angle(const T& a);
 
 	template<typename T>
-	ALL_PLATFORMS typename TypeInfo<T>::ComplexType piAngleToComplex(const T& a);
+	ALL_PLATFORMS inline typename TypeInfo<T>::ComplexType angleToComplex(const T& a);
+
+	template<typename T>
+	ALL_PLATFORMS inline typename TypeInfo<T>::ComplexType piAngleToComplex(const T& a);
 
 	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
 		template<> \
-		ALL_PLATFORMS TypeName conj<TypeName>(const TypeName& a) \
+		ALL_PLATFORMS inline TypeName conj<TypeName>(const TypeName& a) \
 		{ \
 			return a; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
 		{ \
 			return a*a; \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
 		{ \
 			return (TypeInfo<TypeName>::isSigned && a>=0) ? a : (-a); \
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType angleToComplex<TypeName>(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType angle<TypeName>(const TypeName& a) \
+		{ \
+			return static_cast<typename TypeInfo<TypeName>::BaseType>(0); \
+		} \
+		\
+		template<> \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::ComplexType angleToComplex<TypeName>(const TypeName& a) \
 		{ \
 			TypeInfo<typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
 			sincos(a, &s, &c); \
@@ -295,7 +304,7 @@ namespace Kartet
 		} \
 		\
 		template<> \
-		ALL_PLATFORMS typename TypeInfo<TypeName>::ComplexType piAngleToComplex<TypeName>(const TypeName& a) \
+		ALL_PLATFORMS inline typename TypeInfo<TypeName>::ComplexType piAngleToComplex<TypeName>(const TypeName& a) \
 		{ \
 			TypeInfo<typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
 			sincospi(a, &s, &c); \
@@ -323,16 +332,24 @@ namespace Kartet
 	#if defined(__CUDACC__)
 		#define BUILD_SPECIALIZATION_FROM_COMPLEX_TYPE(TypeName) \
 			template<> \
-			ALL_PLATFORMS TypeName conj<TypeName>(const TypeName& a) \
+			ALL_PLATFORMS inline TypeName conj<TypeName>(const TypeName& a) \
 			{ \
 				TypeName tmp = {a.x, -a.y}; \
 				return tmp; \
 			} \
 			\
 			template<> \
-			ALL_PLATFORMS typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
+			ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
 			{ \
 				return a.x*a.x + a.y*a.y; \
+			} \
+			\
+			inline std::ostream& operator<<(std::ostream& os, const TypeName& a) \
+			{ \
+				const int width = os.width(); \
+				const char fillCharacter = os.fill(); \
+				os << std::right << std::setfill(fillCharacter) << std::setw(width) << a.x << " + " << std::right << std::setfill(fillCharacter) << std::setw(width) << a.y << " i"; \
+				return os; \
 			}
 
 		BUILD_SPECIALIZATION_FROM_COMPLEX_TYPE(cuFloatComplex)
@@ -341,17 +358,28 @@ namespace Kartet
 		#undef BUILD_SPECIALIZATION_FROM_COMPLEX_TYPE
 
 		template<>
-		ALL_PLATFORMS typename TypeInfo<cuFloatComplex>::BaseType abs(const cuFloatComplex& a)
+		ALL_PLATFORMS inline typename TypeInfo<cuFloatComplex>::BaseType angle<cuFloatComplex>(const cuFloatComplex& a)
+		{
+			return atan2f(a.y, a.x);
+		}
+
+		template<>
+		ALL_PLATFORMS inline typename TypeInfo<cuDoubleComplex>::BaseType angle<cuDoubleComplex>(const cuDoubleComplex& a)
+		{
+			return atan2(a.y, a.x);
+		}
+
+		template<>
+		ALL_PLATFORMS inline typename TypeInfo<cuFloatComplex>::BaseType abs<cuFloatComplex>(const cuFloatComplex& a)
 		{
 			return sqrtf(a.x*a.x + a.y*a.y);
 		}
 
 		template<>
-		ALL_PLATFORMS typename TypeInfo<cuDoubleComplex>::BaseType abs(const cuDoubleComplex& a)
+		ALL_PLATFORMS inline typename TypeInfo<cuDoubleComplex>::BaseType abs<cuDoubleComplex>(const cuDoubleComplex& a)
 		{
 			return sqrt(a.x*a.x + a.y*a.y);
 		}
-
 		
 	#endif
 

@@ -35,6 +35,8 @@
 	#include <vector>
 	#include "Exceptions.hpp"
 	#include "TemplateSharedMemory.hpp"
+	#include "MetaAlgorithm.hpp"
+	#include "TypeTools.hpp"
 
 namespace Kartet
 {
@@ -75,7 +77,12 @@ namespace Kartet
 				leadingSlices;		// Number of elements between the start of each slice.
 
 		public :
-			static int numThreads;
+			template<typename T>
+			struct StaticContainer
+			{
+				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
+				static int numThreads;
+			};
 
 			// Constructors :
 				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
@@ -145,12 +152,12 @@ namespace Kartet
 				__host__ __device__ inline index_t getIndexWarped(index_t i, index_t j, index_t k=0) const;
 					 __device__ inline index_t getIndexFFTShift(void) const;
 					 __device__ inline index_t getIndexFFTInverseShift(void) const;
-				__host__ __device__ inline bool inside(index_t i, index_t j, index_t k=1) const;
-					 __device__ inline bool inside(void) const;
+				__host__ __device__ inline bool isInside(index_t i, index_t j, index_t k=0) const;
+					 __device__ inline bool isInside(void) const;
 				__host__ __device__ inline bool validRowIndex(index_t i) const;
 				__host__ __device__ inline bool validColumnIndex(index_t j) const;
 				__host__ __device__ inline bool validSliceIndex(index_t k) const;
-				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k);
+				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const;
 
 			// Other Tools : 
 				__host__ 	    inline dim3 getBlockSize(void) const;
@@ -163,7 +170,9 @@ namespace Kartet
 				__host__ void hostScan(T* ptr, const Op& op) const;
 	};
 
-	int Layout::numThreads = 256;
+	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
+	template<typename T>
+	int Layout::StaticContainer<T>::numThreads = 256;
 
 	// To compute on a specific layout : 
 	#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
@@ -196,7 +205,9 @@ namespace Kartet
 				__host__                   void setData(const T* ptr) const;
 	
 			// Layout tools :
+				__host__	           const Layout& layout(void) const;
 				__host__	           Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
+				__host__	           Accessor<T> elements(index_t p, index_t numElements) const;
 				__host__ 	           Accessor<T> vector(index_t j) const;
 				__host__ 	           Accessor<T> endVector(void) const;
 				__host__ 	           Accessor<T> vectors(index_t jBegin, index_t numVectors, index_t jStep=1) const;
@@ -255,7 +266,7 @@ namespace Kartet
 			using Accessor<T>::Layout::getJ;
 			using Accessor<T>::Layout::getK;
 			using Accessor<T>::Layout::getIndex;
-			using Accessor<T>::Layout::inside;
+			using Accessor<T>::Layout::isInside;
 			using Accessor<T>::Layout::validRowIndex;
 			using Accessor<T>::Layout::validColumnIndex;
 			using Accessor<T>::Layout::validSliceIndex;
@@ -284,7 +295,7 @@ namespace Kartet
 
 } // namespace Kartet
 
-// Include subdefinitions : 
+// Include sub-definitions : 
 	#include "Core/TypeTools.hpp"
 	#include "Core/ArrayTools.hpp"
 	#include "Core/ArrayExpressions.hpp"

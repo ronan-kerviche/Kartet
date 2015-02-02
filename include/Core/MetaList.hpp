@@ -29,6 +29,8 @@
 #ifndef __KARTET_META_LIST__
 #define __KARTET_META_LIST__
 
+namespace Kartet
+{
 	// Symbols : 
 	struct Void
 	{};
@@ -252,6 +254,8 @@
 	{
 		typedef DropAllElements<Queue, Elmt> TValue;
 	};
+
+} // namespace Kartet
 
 #endif
 

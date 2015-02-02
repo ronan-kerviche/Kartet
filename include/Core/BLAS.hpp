@@ -34,11 +34,17 @@
 
 namespace Kartet
 {
-// BLAS Handle :
-	class BLAS
+// BLASContext :
+	class BLASContext
 	{
 		private :
-			static BLAS* singleton;
+			template<typename T>
+			struct StaticContainer
+			{
+				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
+				static BLASContext* singleton;
+			};
+
 			cublasHandle_t 	handle;	
 
 		// Friends :
@@ -127,11 +133,12 @@ namespace Kartet
 			__host__ friend void dgmm(cublasSideMode_t mode, const Accessor<T>& A, const Accessor<T>& v, const Accessor<T>& C);
 
 		public :
-			__host__ inline BLAS(void);
-			__host__ inline ~BLAS(void);
+			__host__ inline BLASContext(void);
+			__host__ inline ~BLASContext(void);
 	};
-
-	BLAS* BLAS::singleton = NULL;
+	
+	template<typename T>
+	BLASContext* BLASContext::StaticContainer<T>::singleton = NULL;
 } // namespace Kartet
 
 	#include "BLASTools.hpp"

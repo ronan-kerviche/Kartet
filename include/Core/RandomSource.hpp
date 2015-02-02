@@ -86,7 +86,13 @@ namespace Kartet
 	class RandomSourceContext
 	{
 		private :
-			static RandomSourceContext* singleton;
+			template<typename T>
+			struct StaticContainer
+			{
+				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
+				static RandomSourceContext* singleton;
+			};
+
 			curandGenerator_t gen;
 
 			friend class UniformSource;
@@ -98,28 +104,29 @@ namespace Kartet
 			__host__ inline ~RandomSourceContext(void);
 	};
 
-	RandomSourceContext* RandomSourceContext::singleton = NULL;
+	template<typename T>
+	RandomSourceContext* RandomSourceContext::StaticContainer<T>::singleton = NULL;
 
 // Implementation :
-	#define TEST_CONTEXT		if(RandomSourceContext::singleton==NULL) throw InvalidCuRandContext;
-	#define GEN			(RandomSourceContext::singleton->gen)
+	#define TEST_CONTEXT		if(RandomSourceContext::StaticContainer<void>::singleton==NULL) throw InvalidCuRandContext;
+	#define GEN			(RandomSourceContext::StaticContainer<void>::singleton->gen)
 	#define TEST_EXCEPTION(x)	if(x!=CURAND_STATUS_SUCCESS) throw static_cast<Exception>(CuRandExceptionOffset + x);
 
 	__host__ inline RandomSourceContext::RandomSourceContext(const curandRngType_t& rng_type)
 	{
-		if(singleton==NULL)
+		if(StaticContainer<void>::singleton==NULL)
 		{
 			curandStatus_t err = curandCreateGenerator(&gen, rng_type);
 			TEST_EXCEPTION(err)
-			singleton = this;
+			StaticContainer<void>::singleton = this;
 		}
 	}
 
 	__host__ inline RandomSourceContext::~RandomSourceContext(void)
 	{
-		if(singleton==this)
+		if(StaticContainer<void>::singleton==this)
 		{
-			singleton = NULL;
+			StaticContainer<void>::singleton = NULL;
 			curandStatus_t err = curandDestroyGenerator(gen);
 			TEST_EXCEPTION(err)
 		}
@@ -232,3 +239,4 @@ namespace Kartet
 } // namespace Kartet
 
 #endif
+

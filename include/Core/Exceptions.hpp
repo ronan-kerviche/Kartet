@@ -31,6 +31,8 @@
 
 // Includes :
 	#include <cublas_v2.h>
+	#include <curand.h>
+	#include <cufft.h>
 
 namespace Kartet
 {
@@ -113,16 +115,39 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ), 
 		#undef DEFINE_CUDA_EXCEPTION
 		// CuBLAS Specifics :
-		CuBLASExceptionOffset	= 2048,
-		CuBLASNotInitialized	= CuBLASExceptionOffset + CUBLAS_STATUS_NOT_INITIALIZED,
-		CuBLASAllocFailed	= CuBLASExceptionOffset + CUBLAS_STATUS_ALLOC_FAILED,
-		CuBLASInvalidValue	= CuBLASExceptionOffset + CUBLAS_STATUS_INVALID_VALUE,
-		CuBLASArchMismatch	= CuBLASExceptionOffset + CUBLAS_STATUS_ARCH_MISMATCH,
-		CuBLASMappingError	= CuBLASExceptionOffset + CUBLAS_STATUS_MAPPING_ERROR,
-		CuBLASExecutionFailed	= CuBLASExceptionOffset + CUBLAS_STATUS_EXECUTION_FAILED,
-		CuBLASInternalError	= CuBLASExceptionOffset + CUBLAS_STATUS_INTERNAL_ERROR,
+		CuBLASExceptionOffset		= 2048,
+		CuBLASNotInitialized		= CuBLASExceptionOffset + CUBLAS_STATUS_NOT_INITIALIZED,
+		CuBLASAllocFailed		= CuBLASExceptionOffset + CUBLAS_STATUS_ALLOC_FAILED,
+		CuBLASInvalidValue		= CuBLASExceptionOffset + CUBLAS_STATUS_INVALID_VALUE,
+		CuBLASArchMismatch		= CuBLASExceptionOffset + CUBLAS_STATUS_ARCH_MISMATCH,
+		CuBLASMappingError		= CuBLASExceptionOffset + CUBLAS_STATUS_MAPPING_ERROR,
+		CuBLASExecutionFailed		= CuBLASExceptionOffset + CUBLAS_STATUS_EXECUTION_FAILED,
+		CuBLASInternalError		= CuBLASExceptionOffset + CUBLAS_STATUS_INTERNAL_ERROR,
 		// CuRand Specifics :
-		CuRandExceptionOffset	= 3096,
+		CuRandExceptionOffset		= 3072,
+		CuRandVersionMismatch		= CuRandExceptionOffset + CURAND_STATUS_VERSION_MISMATCH,
+		CuRandNotInitialized		= CuRandExceptionOffset + CURAND_STATUS_NOT_INITIALIZED,
+		CuRandAllocationFailed		= CuRandExceptionOffset + CURAND_STATUS_ALLOCATION_FAILED,
+		CuRandTypeError			= CuRandExceptionOffset + CURAND_STATUS_TYPE_ERROR,
+		CuRandOutOfRange		= CuRandExceptionOffset + CURAND_STATUS_OUT_OF_RANGE,
+		CuRandLengthNotMultiple		= CuRandExceptionOffset + CURAND_STATUS_LENGTH_NOT_MULTIPLE,
+		CuRandDoublePrecisionRequired	= CuRandExceptionOffset + CURAND_STATUS_DOUBLE_PRECISION_REQUIRED,
+		CuRandLaunchFailure		= CuRandExceptionOffset + CURAND_STATUS_LAUNCH_FAILURE,
+		CuRandPreexistingFailure	= CuRandExceptionOffset + CURAND_STATUS_PREEXISTING_FAILURE,
+		CuRandInitializationFailed	= CuRandExceptionOffset + CURAND_STATUS_INITIALIZATION_FAILED,
+		CuRandArchMismatch		= CuRandExceptionOffset + CURAND_STATUS_ARCH_MISMATCH,
+		CuRandInternalError		= CuRandExceptionOffset + CURAND_STATUS_INTERNAL_ERROR,
+		// CuFFT Specifics :
+		CuFFTExceptionOffset		= 4096,
+		CuFFTInvalidPlan		= CuFFTExceptionOffset + CUFFT_INVALID_PLAN,
+		CuFFTAllocFailed		= CuFFTExceptionOffset + CUFFT_ALLOC_FAILED,
+		CuFFTInvalidType		= CuFFTExceptionOffset + CUFFT_INVALID_TYPE,
+		CuFFTInvalidValue		= CuFFTExceptionOffset + CUFFT_INVALID_VALUE,
+		CuFFTInternalError		= CuFFTExceptionOffset + CUFFT_INTERNAL_ERROR,
+		CuFFTExecFailed			= CuFFTExceptionOffset + CUFFT_EXEC_FAILED,
+		CuFFTSetupFailed		= CuFFTExceptionOffset + CUFFT_SETUP_FAILED,
+		CuFFTInvalidSize		= CuFFTExceptionOffset + CUFFT_INVALID_SIZE,
+		CuFFTUnalignedData		= CuFFTExceptionOffset + CUFFT_UNALIGNED_DATA,
 		// Kartet Specifics :
 		InvalidNegativeSize,
 		InvalidNegativeStep,
@@ -146,6 +171,7 @@ namespace Kartet
 		switch(e)
 		{
 			#define EXCEPTION_MESSAGE(a) case Kartet::a : os << #a; break;	
+			// Cuda :
 			EXCEPTION_MESSAGE( CudaErrorMissingConfiguration ) 
 			EXCEPTION_MESSAGE( CudaErrorMemoryAllocation ) 
 			EXCEPTION_MESSAGE( CudaErrorInitializationError ) 
@@ -217,6 +243,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorLaunchPendingCountExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorNotPermitted ) 
 			EXCEPTION_MESSAGE( CudaErrorNotSupported ) 
+			// CuBLAS :
 			EXCEPTION_MESSAGE( CuBLASNotInitialized )	
 			EXCEPTION_MESSAGE( CuBLASAllocFailed )
 			EXCEPTION_MESSAGE( CuBLASInvalidValue )
@@ -224,6 +251,29 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CuBLASMappingError )
 			EXCEPTION_MESSAGE( CuBLASExecutionFailed )
 			EXCEPTION_MESSAGE( CuBLASInternalError )
+			// CuRAND :
+			EXCEPTION_MESSAGE( CuRandVersionMismatch )
+			EXCEPTION_MESSAGE( CuRandNotInitialized )
+			EXCEPTION_MESSAGE( CuRandAllocationFailed )
+			EXCEPTION_MESSAGE( CuRandTypeError )
+			EXCEPTION_MESSAGE( CuRandOutOfRange )
+			EXCEPTION_MESSAGE( CuRandLengthNotMultiple )
+			EXCEPTION_MESSAGE( CuRandDoublePrecisionRequired )
+			EXCEPTION_MESSAGE( CuRandLaunchFailure )
+			EXCEPTION_MESSAGE( CuRandPreexistingFailure )
+			EXCEPTION_MESSAGE( CuRandInitializationFailed )
+			EXCEPTION_MESSAGE( CuRandArchMismatch )
+			EXCEPTION_MESSAGE( CuRandInternalError )
+			// CuFFT :
+			EXCEPTION_MESSAGE( CuFFTInvalidPlan )
+			EXCEPTION_MESSAGE( CuFFTAllocFailed )
+			EXCEPTION_MESSAGE( CuFFTInvalidType )
+			EXCEPTION_MESSAGE( CuFFTInvalidValue )
+			EXCEPTION_MESSAGE( CuFFTInternalError )
+			EXCEPTION_MESSAGE( CuFFTExecFailed )
+			EXCEPTION_MESSAGE( CuFFTSetupFailed )
+			EXCEPTION_MESSAGE( CuFFTInvalidSize )
+			EXCEPTION_MESSAGE( CuFFTUnalignedData )
 			EXCEPTION_MESSAGE( InvalidNegativeSize )
 			EXCEPTION_MESSAGE( InvalidNegativeStep )
 			EXCEPTION_MESSAGE( OutOfRange )
@@ -236,6 +286,12 @@ namespace Kartet
 			EXCEPTION_MESSAGE( NullPointer )
 			EXCEPTION_MESSAGE( NoException )
 			#undef EXCEPTION_MESSAGE
+			case Kartet::CudaExceptionsOffset :
+			case Kartet::CuBLASExceptionOffset :
+			case Kartet::CuRandExceptionOffset :
+			case Kartet::CuFFTExceptionOffset :
+				os << "NoException(ExceptionOffset)";
+				break;
 			default :
 				os << "UnknownException";
 		}

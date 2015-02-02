@@ -29,6 +29,8 @@
 #ifndef __KARTET_META_ALGORITHM__
 #define __KARTET_META_ALGORITHM__
 
+namespace Kartet
+{
 	// Static assertion : FAIL TO COMPILE IF THE TEST IS FALSE
 	template<bool test>
 	struct StaticAssert;
@@ -198,4 +200,7 @@
 	//int v = Res::count;
 	*/
 
+} // namespace Kartet
+
 #endif
+
