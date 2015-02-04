@@ -9,7 +9,7 @@ endif
 EXEC		= kartetBasicTest
 INCLUDES	= -I../../include/ -I/usr/local/cuda/include
 NVCCFLAGS	= -arch=compute_$(TGPU) -code=sm_$(TGPU) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler -m64
-NVCCLDFLAGS	= -L../../lib -L/usr/local/cuda/lib64 -lcufft -lcublas -lcurand
+NVCCLDFLAGS	= -L/usr/local/cuda/lib64 -lcufft -lcublas -lcurand
 
 all : main.o
 	@echo 'Linking (platform code $(TGPU))...'

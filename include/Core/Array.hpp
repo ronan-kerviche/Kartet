@@ -81,7 +81,7 @@ namespace Kartet
 			struct StaticContainer
 			{
 				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
-				static int numThreads;
+				static index_t numThreads;
 			};
 
 			// Constructors :
@@ -101,6 +101,7 @@ namespace Kartet
 				__host__ __device__ inline index_t getLeadingSlices(void) const;
 				__host__ __device__ inline dim3 getDimensions(void) const;
 				__host__ __device__ inline bool isMonolithic(void) const;
+				__host__ __device__ inline bool isSliceMonolithic(void) const;
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
@@ -172,7 +173,7 @@ namespace Kartet
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
 	template<typename T>
-	int Layout::StaticContainer<T>::numThreads = 256;
+	index_t Layout::StaticContainer<T>::numThreads = 512;
 
 	// To compute on a specific layout : 
 	#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
@@ -205,7 +206,7 @@ namespace Kartet
 				__host__                   void setData(const T* ptr) const;
 	
 			// Layout tools :
-				__host__	           const Layout& layout(void) const;
+				__host__	           const Layout& getLayout(void) const;
 				__host__	           Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
 				__host__	           Accessor<T> elements(index_t p, index_t numElements) const;
 				__host__ 	           Accessor<T> vector(index_t j) const;

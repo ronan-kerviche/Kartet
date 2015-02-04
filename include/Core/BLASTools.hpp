@@ -232,6 +232,22 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void gemv(const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			gemv(alpha, A, trans, x, beta, y);
+		}
+
+		template<typename T>
+		__host__ void gemv(const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			gemv(alpha, A, CUBLAS_OP_N, x, beta, y);
+		}
+
 	template<typename T, typename TAlpha>
 	void ger(const TAlpha& alpha, const Accessor<T>& x, const Accessor<T>& y, const Accessor<T>& A, bool conjugate)
 	{
@@ -270,6 +286,13 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void ger(const Accessor<T>& x, const Accessor<T>& y, const Accessor<T>& A, bool conjugate)
+		{
+			const T alpha = complexCopy<T>(1);
+			ger(alpha, x, y, A, conjugate);
+		}
+
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void symv(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const TBeta& beta, const Accessor<T>& y)
 	{
@@ -305,6 +328,14 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void symv(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			symv(alpha, uplo, A, x, beta, y);
+		}
 	
 	template<typename T, typename TAlpha>
 	__host__ void syr(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x)
@@ -336,6 +367,13 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void syr(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x)
+		{
+			const T alpha = complexCopy<T>(1);
+			syr(alpha, uplo, A, x);
+		}
 
 	template<typename T, typename TAlpha>
 	__host__ void syr2(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
@@ -369,6 +407,13 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void syr2(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1);
+			syr2(alpha, uplo, A, x, y);
+		}
+
 	template<typename T>
 	__host__ void trmv(cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x)
 	{
@@ -387,6 +432,8 @@ namespace Kartet
 			err = cublasStrmv(HDL, uplo, trans, diag, A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
 		TEST_EXCEPTION(err)
 	}
+
+		
 
 	template<typename T>
 	__host__ void trsv(cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x)
@@ -431,6 +478,14 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void hemv(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			hemv(alpha, uplo, A, x, beta, y);
+		}
+
 	template<typename T, typename TAlpha>
 	__host__ void her(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x)
 	{
@@ -453,6 +508,13 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void her(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x)
+		{
+			const T alpha = complexCopy<T>(1);
+			her(alpha, uplo, A, x);
+		}
+
 	template<typename T, typename TAlpha>
 	__host__ void her2(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
 	{
@@ -474,6 +536,13 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void her2(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		{
+			const T alpha = complexCopy<T>(1);
+			her2(alpha, uplo, A, x, y);
+		}
 
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void gemm(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const TBeta& beta, const Accessor<T>& C)
@@ -512,21 +581,21 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
-	template<typename T>
-	__host__ void gemm(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C)
-	{
-		const T alpha = complexCopy<T>(1),
-			beta = complexCopy<T>(0);
-		gemm(alpha, A, transa, B, transb, beta, C);
-	}
+		template<typename T>
+		__host__ void gemm(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			gemm(alpha, A, transa, B, transb, beta, C);
+		}
 
-	template<typename T>
-	__host__ void gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
-	{
-		const T alpha = complexCopy<T>(1),
-			beta = complexCopy<T>(0);
-		gemm(alpha, A, CUBLAS_OP_N, B, CUBLAS_OP_N, beta, C);
-	}
+		template<typename T>
+		__host__ void gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			gemm(alpha, A, CUBLAS_OP_N, B, CUBLAS_OP_N, beta, C);
+		}
 
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void symm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C)
@@ -564,6 +633,14 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void symm(cublasSideMode_t side, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			symm(side, alpha, uplo, A, B, beta, C);
+		}
+
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void syrk(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, cublasFillMode_t uplo, const Accessor<T>& C)
 	{
@@ -599,6 +676,22 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void syrk(const Accessor<T>& A, cublasOperation_t transa, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			syrk(alpha, A, transa, beta, uplo, C);
+		}
+
+		template<typename T>
+		__host__ void syrk(const Accessor<T>& A, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			syrk(alpha, A, CUBLAS_OP_N, beta, uplo, C);
+		}
 
 	template<typename T, typename TAlpha>
 	__host__ void syr2k(cublasOperation_t trans, const TAlpha& alpha, const Accessor<T>& A, const Accessor<T>& B, const T& beta, cublasFillMode_t uplo, const Accessor<T>& C)
@@ -636,6 +729,22 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void syr2k(cublasOperation_t trans, const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			syr2k(trans, alpha, A, B, beta, uplo, C);
+		}
+
+		template<typename T>
+		__host__ void syr2k(const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			syr2k(CUBLAS_OP_N, alpha, A, B, beta, uplo, C);
+		}
+
 	template<typename T, typename TAlpha>
 	__host__ void trmm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, const Accessor<T>& C)
 	{
@@ -667,6 +776,20 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void trmm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1);
+			trmm(side, alpha, uplo, diag, A, transa, B, C);
+		}
+		
+		template<typename T>
+		__host__ void trmm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1);
+			trmm(side, alpha, uplo, diag, A, CUBLAS_OP_N, B, C);
+		}
 		
 	template<typename T, typename TAlpha>
 	__host__ void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const TAlpha& alpha, const Accessor<T>& B)
@@ -699,6 +822,20 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
+		template<typename T>
+		__host__ void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B)
+		{
+			const T alpha = complexCopy<T>(1);
+			trsm(side, uplo, diag, A, transa, alpha, B);
+		}
+
+		template<typename T>
+		__host__ void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, const Accessor<T>& B)
+		{
+			const T alpha = complexCopy<T>(1);
+			trsm(side, uplo, diag, A, CUBLAS_OP_N, alpha, B);
+		}
+
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void hemm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C)
 	{
@@ -723,6 +860,14 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void hemm(cublasSideMode_t side, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			hemm(side, alpha, uplo, A, B, beta, C);
+		}
 
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void herk(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, cublasFillMode_t uplo, const Accessor<T>& C)
@@ -749,7 +894,23 @@ namespace Kartet
 
 		TEST_EXCEPTION(err)
 	}
-		
+
+		template<typename T>
+		__host__ void herk(const Accessor<T>& A, cublasOperation_t transa, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			herk(alpha, A, transa, beta, uplo, C);
+		}
+
+		template<typename T>
+		__host__ void herk(const Accessor<T>& A, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			herk(alpha, A, CUBLAS_OP_N, beta, uplo, C);
+		}		
+
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void her2k(cublasOperation_t trans, const T& alpha, const Accessor<T>& A, const Accessor<T>& B, const T& beta, cublasFillMode_t uplo, const Accessor<T>& C)
 	{
@@ -775,6 +936,22 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void her2k(cublasOperation_t trans, const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			her2k(trans, alpha, A, B, beta, uplo, C);
+		}
+
+		template<typename T>
+		__host__ void her2k(const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			her2k(CUBLAS_OP_N, alpha, A, B, beta, uplo, C);
+		}
 
 	template<typename T, typename TAlpha, typename TBeta>
 	__host__ void geam(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C)
@@ -811,6 +988,22 @@ namespace Kartet
 		}
 		TEST_EXCEPTION(err)
 	}
+
+		template<typename T>
+		__host__ void geam(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			geam(alpha, A, transa, beta, B, transb, C);
+		}
+
+		template<typename T>
+		__host__ void geam(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		{
+			const T alpha = complexCopy<T>(1),
+				beta = complexCopy<T>(0);
+			geam(alpha, A, CUBLAS_OP_N, beta, B, CUBLAS_OP_N, C);
+		}
 
 	template<typename T>
 	__host__ void dgmm(cublasSideMode_t mode, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& C)

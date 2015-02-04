@@ -32,6 +32,7 @@
 	#include "Core/Array.hpp"
 	#include "Core/BLAS.hpp"
 	#include "Core/RandomSource.hpp"
+	#include "Core/FFT.hpp"
 
 #endif
 

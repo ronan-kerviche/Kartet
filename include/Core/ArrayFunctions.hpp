@@ -201,6 +201,8 @@ namespace Kartet
 // Binary functions : 
 	/* Note that if the input arguments are not of the type specified by the Cuda library, the call might fail.
 	   The error reported is : calling a __host__ function <function name>. */
+	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_min,			min,			::min(a, b) )
+	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_max,			max,			::max(a, b) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_atan2,			atan2, 			::atan2(static_cast<double>(a),static_cast<double>(b)) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_fmax,			fmax,			::fmax(static_cast<double>(a),static_cast<double>(b)) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_fmin,			fmin,			::fmin(static_cast<double>(a),static_cast<double>(b)) )

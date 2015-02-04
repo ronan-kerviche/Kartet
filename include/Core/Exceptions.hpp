@@ -158,7 +158,9 @@ namespace Kartet
 		InvalidLayoutChange,
 		InvalidBLASContext,
 		InvalidCuRandContext,
+		InvalidCuFFTContext,
 		NullPointer,
+		NotSupported,
 		// Others :
 		NoException = 0,
 	};

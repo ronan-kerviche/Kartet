@@ -66,17 +66,35 @@ namespace Kartet
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void gemv(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x, const TBeta& beta, const Accessor<T>& y);
 
+				template<typename T>
+				__host__ friend void gemv(const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x, const Accessor<T>& y);
+
+				template<typename T>
+				__host__ friend void gemv(const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
+
 			template<typename T, typename TAlpha>
 			__host__ friend void ger(const TAlpha& alpha, const Accessor<T>& x, const Accessor<T>& y, const Accessor<T>& A, bool conjugate = true);
 
+				template<typename T>
+				__host__ friend void ger(const Accessor<T>& x, const Accessor<T>& y, const Accessor<T>& A, bool conjugate = true);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void symv(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const TBeta& beta, const Accessor<T>& y);
+
+				template<typename T>
+				__host__ friend void symv(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
 			
 			template<typename T, typename TAlpha>
 			__host__ friend void syr(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x);
 
+				template<typename T>
+				__host__ friend void syr(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x);
+
 			template<typename T, typename TAlpha>
 			__host__ friend void syr2(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
+		
+				template<typename T>
+				__host__ friend void syr2(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
 
 			template<typename T>
 			__host__ friend void trmv(cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t trans, const Accessor<T>& x);
@@ -87,47 +105,104 @@ namespace Kartet
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void hemv(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const TBeta& beta, const Accessor<T>& y);
 
+				template<typename T>
+				__host__ friend void hemv(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
+
 			template<typename T, typename TAlpha>
 			__host__ friend void her(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x);
+
+				template<typename T>
+				__host__ friend void her(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x);
 
 			template<typename T, typename TAlpha>
 			__host__ friend void her2(const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
 
+				template<typename T>
+				__host__ friend void her2(cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void gemm(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const TBeta& beta, const Accessor<T>& C);
 
-			template<typename T>
-			__host__ friend void gemm(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C);
+				template<typename T>
+				__host__ friend void gemm(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C);
 
-			template<typename T>
-			__host__ friend void gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
+				template<typename T>
+				__host__ friend void gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
 
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void symm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C);
 
+				template<typename T>
+				__host__ friend void symm(cublasSideMode_t side, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void syrk(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, cublasFillMode_t uplo, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void syrk(const Accessor<T>& A, cublasOperation_t transa, cublasFillMode_t uplo, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void syrk(const Accessor<T>& A, cublasFillMode_t uplo, const Accessor<T>& C);
 
 			template<typename T, typename TAlpha>
 			__host__ friend void syr2k(cublasOperation_t trans, const TAlpha& alpha, const Accessor<T>& A, const Accessor<T>& B, const T& beta, cublasFillMode_t uplo, const Accessor<T>& C);
 
+				template<typename T>
+				__host__ friend void syr2k(cublasOperation_t trans, const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void syr2k(const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha>
 			__host__ friend void trmm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void trmm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, const Accessor<T>& C);
 		
+				template<typename T>
+				__host__ friend void trmm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha>
 			__host__ friend void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const TAlpha& alpha, const Accessor<T>& B);
+
+				template<typename T>
+				__host__ friend void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B);
+
+				template<typename T>
+				__host__ friend void trsm(cublasSideMode_t side, cublasFillMode_t uplo, cublasDiagType_t diag, const Accessor<T>& A, const Accessor<T>& B);
 
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void hemm(cublasSideMode_t side, const TAlpha& alpha, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C);
 
+				template<typename T>
+				__host__ friend void hemm(cublasSideMode_t side, cublasFillMode_t uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void herk(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, cublasFillMode_t uplo, const Accessor<T>& C);
 		
+				template<typename T>
+				__host__ friend void herk(const Accessor<T>& A, cublasOperation_t transa, cublasFillMode_t uplo, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void herk(const Accessor<T>& A, cublasFillMode_t uplo, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void her2k(cublasOperation_t trans, const TAlpha& alpha, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, cublasFillMode_t uplo, const Accessor<T>& C);
 
+				template<typename T>
+				__host__ friend void her2k(cublasOperation_t trans, const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void her2k(const Accessor<T>& A, const Accessor<T>& B, cublasFillMode_t uplo, const Accessor<T>& C);
+
 			template<typename T, typename TAlpha, typename TBeta>
 			__host__ friend void geam(const TAlpha& alpha, const Accessor<T>& A, cublasOperation_t transa, const TBeta& beta, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void geam(const Accessor<T>& A, cublasOperation_t transa, const Accessor<T>& B, cublasOperation_t transb, const Accessor<T>& C);
+
+				template<typename T>
+				__host__ friend void geam(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C);
 
 			template<typename T>
 			__host__ friend void dgmm(cublasSideMode_t mode, const Accessor<T>& A, const Accessor<T>& v, const Accessor<T>& C);

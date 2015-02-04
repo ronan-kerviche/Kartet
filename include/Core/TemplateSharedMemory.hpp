@@ -39,13 +39,13 @@ namespace Kartet
 		__device__ inline operator T*()
 		{
 			extern __shared__ int __smem[];
-			return (T*)__smem;
+			return reinterpret_cast<T*>(__smem);
 		}
 
 		__device__ inline operator const T*() const
 		{
 			extern __shared__ int __smem[];
-			return (T*)__smem;
+			return reinterpret_cast<T*>(__smem);
 		}
 	};
 
@@ -76,6 +76,8 @@ namespace Kartet
 	SharedMemoryInterface(unsigned long,	ul)
 	SharedMemoryInterface(float, 		f)
 	SharedMemoryInterface(double,		d)
+
+	#undef SharedMemoryInterface
 
 } // namespace Kartet
 

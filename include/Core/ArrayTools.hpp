@@ -24,7 +24,7 @@
 /*     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN                                 */
 /*     THE SOFTWARE.                                                                                             */
 /*                                                                                                               */
-/* ************************************************************************************************************* */ 
+/* ************************************************************************************************************* */
 
 #ifndef __KARTET_ARRAY_TOOLS__
 #define __KARTET_ARRAY_TOOLS__
@@ -113,6 +113,11 @@ namespace Kartet
 		return (leadingColumns==numRows || numColumns==1) && (leadingSlices==(numRows*numColumns) || numSlices==1);
 	}
 
+	__host__ __device__ inline bool Layout::isSliceMonolithic(void) const
+	{
+		return (leadingColumns==numRows || numColumns==1);
+	}
+
 	__host__ inline void Layout::reinterpretLayout(index_t r, index_t c, index_t s)
 	{
 		if(r!=numRows && numRows!=leadingColumns) // Modification of the number of rows while interlaced into a larger memory area.
@@ -158,12 +163,12 @@ namespace Kartet
 
 	__host__ __device__ inline bool Layout::sameLayoutAs(const Layout& other) const
 	{
-		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices); 
+		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices && leadingColumns==other.leadingColumns && leadingSlices==other.leadingColumns); 
 	}
 
 	__host__ __device__ inline bool Layout::sameSliceLayoutAs(const Layout& other) const
 	{
-		return (numRows==other.numRows && numColumns==other.numColumns); 
+		return (numRows==other.numRows && numColumns==other.numColumns && leadingColumns==other.leadingColumns); 
 	}
 
 	__device__ inline index_t Layout::getI(void)
@@ -388,7 +393,7 @@ namespace Kartet
 	{
 		dim3 d;
 		d.x = 1;
-		d.y = min(static_cast<index_t>(StaticContainer<void>::numThreads), getNumRows());
+		d.y = min(StaticContainer<void>::numThreads, getNumRows());
 		d.z = 1;
 		return d;
 	}
@@ -589,7 +594,7 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__ const Layout& Accessor<T>::layout(void) const
+	__host__ const Layout& Accessor<T>::getLayout(void) const
 	{
 		return (*this);
 	}
