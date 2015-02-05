@@ -161,6 +161,19 @@ namespace Kartet
 		reinterpretLayout(getNumElements(), 1, 1);
 	}
 
+	__host__ inline std::vector< std::pair<index_t, Layout > > Layout::splitLayoutPages(index_t jBegin, index_t numVectors) const
+	{
+		std::vector< std::pair<index_t, Layout> > pages;
+
+		if(!validColumnIndex(jBegin))
+			throw OutOfRange;
+	
+		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
+			pages.push_back( std::pair<index_t, Layout>(getIndex(0,jBegin,0), Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices()) ) );
+		
+		return pages;
+	}
+
 	__host__ __device__ inline bool Layout::sameLayoutAs(const Layout& other) const
 	{
 		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices && leadingColumns==other.leadingColumns && leadingSlices==other.leadingColumns); 
@@ -450,37 +463,45 @@ namespace Kartet
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls)
 	 : 	Layout(r, c, s, lc, ls),
-		gpu_ptr(NULL)	
+		devicePtr(NULL)	
 	{ }
 
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(const Layout& layout)
 	 : 	Layout(layout), 
-		gpu_ptr(NULL)
+		devicePtr(NULL)
 	{ }
 
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls)
 	 :	Layout(r, c, s, lc, ls),
-		gpu_ptr(ptr)	
+		devicePtr(ptr)	
 	{ }
+
+	template<typename T>
+	__host__ __device__ Accessor<T>::Accessor(T* ptr, const Layout& layout)
+	 :	Layout(layout),
+		devicePtr(ptr)
+	{
+
+	}
 	
 	template<typename T>
 	__host__ Accessor<T>::Accessor(const Array<T>& a)
 	 :	Layout(a), 
-		gpu_ptr(a.gpu_ptr)
+		devicePtr(a.devicePtr)
 	{ }
 
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(const Accessor<T>& a)
 	 : 	Layout(a),
-		gpu_ptr(a.gpu_ptr)
+		devicePtr(a.devicePtr)
 	{ }
 
 	template<typename T>
 	__host__ __device__ inline T* Accessor<T>::getPtr(void) const
 	{
-		return gpu_ptr;
+		return devicePtr;
 	}
 
 	template<typename T>
@@ -492,37 +513,37 @@ namespace Kartet
 	template<typename T>
 	__device__ inline T& Accessor<T>::data(index_t i, index_t j, index_t k) const
 	{
-		return gpu_ptr[getIndex(i, j, k)];
+		return devicePtr[getIndex(i, j, k)];
 	}
 
 	template<typename T>
 	__device__ inline T& Accessor<T>::data(index_t p) const
 	{
-		return gpu_ptr[p];
+		return devicePtr[p];
 	}
 
 	template<typename T>
 	__device__ inline T& Accessor<T>::data(void) const
 	{
-		return gpu_ptr[getIndex()];
+		return devicePtr[getIndex()];
 	}
 
 	template<typename T>
 	__device__ inline T& Accessor<T>::dataInSlice(int k) const
 	{
-		return gpu_ptr[getIndex(getI(),getJ(),k)];
+		return devicePtr[getIndex(getI(),getJ(),k)];
 	}
 
 	template<typename T>
 	__device__ inline T& Accessor<T>::dataFFTShift(void) const
 	{
-		return gpu_ptr[getIndexFFTShift()];
+		return devicePtr[getIndexFFTShift()];
 	}
 
 	template<typename T>
 	__device__ inline T& Accessor<T>::dataFFTInverseShift(void) const
 	{
-		return gpu_ptr[getIndexFFTInverseShift()];
+		return devicePtr[getIndexFFTInverseShift()];
 	}
 
 	template<typename T>
@@ -578,7 +599,7 @@ namespace Kartet
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-		MemCpyToolBox<T> toolbox(cudaMemcpyDeviceToHost, ptr, gpu_ptr, *this);
+		MemCpyToolBox<T> toolbox(cudaMemcpyDeviceToHost, ptr, devicePtr, *this);
 		hostScan(toolbox);
 	}
 
@@ -589,7 +610,7 @@ namespace Kartet
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, gpu_ptr, ptr, *this);
+		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, devicePtr, ptr, *this);
 		hostScan(toolbox);
 	}
 
@@ -605,7 +626,7 @@ namespace Kartet
 		if(!isInside(i, j, k))
 			throw OutOfRange;		
 
-		return Accessor<T>(gpu_ptr + getIndex(i, j, k), 1, 1, 1);
+		return Accessor<T>(devicePtr + getIndex(i, j, k), 1, 1, 1);
 	}
 
 	template<typename T>
@@ -632,7 +653,7 @@ namespace Kartet
 					throw OutOfRange;
 			}
 		}
-		return Accessor<T>(gpu_ptr + p, numElements, 1, 1);
+		return Accessor<T>(devicePtr + p, numElements, 1, 1);
 	}
 
 	template<typename T>
@@ -641,7 +662,7 @@ namespace Kartet
 		if(!validColumnIndex(j))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices());
 	}
 
 	template<typename T>
@@ -658,7 +679,7 @@ namespace Kartet
 		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices());
 	}
 
 	template<typename T>
@@ -667,7 +688,7 @@ namespace Kartet
 		if(!validSliceIndex(k))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns());
+		return Accessor<T>(devicePtr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns());
 	}
 
 	template<typename T>
@@ -684,7 +705,7 @@ namespace Kartet
 		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(gpu_ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices());
 	}
 
 	template<typename T>
@@ -695,19 +716,17 @@ namespace Kartet
 		if(!validRowIndex(iBegin) || !validRowIndex(iBegin+numRows-1) || !validColumnIndex(jBegin) || !validColumnIndex(jBegin+numColumns-1))
 			throw OutOfRange;
 		
-		return Accessor<T>(gpu_ptr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices());
 	}
 
 	template<typename T>
-	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t numVectors, index_t jBegin) const
+	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t jBegin, index_t numVectors) const
 	{
 		std::vector< Accessor<T> > pages;
+		const std::vector< std::pair<index_t, Layout > > pagesLayout = Layout::splitLayoutPages(numVectors, jBegin);
 
-		if(!validColumnIndex(jBegin))
-			throw OutOfRange;
-
-		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
-			pages.push_back( Accessor<T>(gpu_ptr + getIndex(0,jBegin,0), getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices()) );
+		for(std::vector< std::pair<index_t, Layout > >::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)
+			pages.push_back( Accessor<T>(devicePtr + it->first, it->second) );
 
 		return pages;
 	}
@@ -716,7 +735,7 @@ namespace Kartet
 	template<class Op>
 	__host__ void Accessor<T>::hostScan(const Op& op) const
 	{
-		Layout::hostScan(gpu_ptr, op);
+		Layout::hostScan(devicePtr, op);
 	}
 
 	template<typename T>
@@ -757,7 +776,7 @@ namespace Kartet
 	__host__ Array<T>::Array(index_t r, index_t c, index_t s)
 	 :	Accessor<T>(r, c, s)
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 	}
@@ -766,7 +785,7 @@ namespace Kartet
 	__host__ Array<T>::Array(const Layout& layout)
 	 :	Accessor<T>(layout)
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 	}
@@ -775,7 +794,7 @@ namespace Kartet
 	__host__ Array<T>::Array(const T* ptr, index_t r, index_t c, index_t s)
 	 :	Accessor<T>(r, c, s)
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		setData(ptr);
@@ -785,7 +804,7 @@ namespace Kartet
 	Array<T>::Array(const Array<T>& A)
 	 :	Accessor<T>(A.getSolidLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		(*this) = A;
@@ -796,7 +815,7 @@ namespace Kartet
 	Array<T>::Array(const Accessor<TIn>& A)
 	 : 	Accessor<T>(A.getSolidLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->gpu_ptr), getNumElements()*sizeof(T));
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		(*this) = A;
@@ -806,10 +825,10 @@ namespace Kartet
 	__host__ Array<T>::~Array(void)
 	{
 		cudaDeviceSynchronize();	
-		cudaError_t err = cudaFree(this->gpu_ptr);
+		cudaError_t err = cudaFree(this->devicePtr);
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
-		this->gpu_ptr = NULL;
+		this->devicePtr = NULL;
 	}
 
 	template<typename T>

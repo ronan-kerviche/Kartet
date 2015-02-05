@@ -106,6 +106,7 @@ namespace Kartet
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
 				__host__            inline void vectorize(void);
+				__host__ 	    inline std::vector< std::pair<index_t, Layout > > splitLayoutPages(index_t jBegin, index_t numVectors) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
 
@@ -182,11 +183,12 @@ namespace Kartet
 	class Accessor : public Layout
 	{
 		protected :
-			T* gpu_ptr;
+			T* devicePtr;
 			
 				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
 				__host__ __device__ Accessor(const Layout& layout);
 				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
+				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 
 		public :
 				__host__            Accessor(const Array<T>& a);
@@ -216,7 +218,7 @@ namespace Kartet
 				__host__ 	           Accessor<T> endSlice(void) const;
 				__host__ 	           Accessor<T> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
 				__host__ 	           Accessor<T> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
-				__host__ 	           std::vector< Accessor<T> > splitPages(index_t numVectors, index_t jBegin=0) const;
+				__host__ 	           std::vector< Accessor<T> > splitPages(index_t jBegin, index_t numVectors) const;
 
 			// Assignment :
 				template<typename TExpr>
