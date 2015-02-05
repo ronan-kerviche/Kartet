@@ -723,7 +723,7 @@ namespace Kartet
 	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t jBegin, index_t numVectors) const
 	{
 		std::vector< Accessor<T> > pages;
-		const std::vector< std::pair<index_t, Layout > > pagesLayout = Layout::splitLayoutPages(numVectors, jBegin);
+		const std::vector< std::pair<index_t, Layout > > pagesLayout = Layout::splitLayoutPages(jBegin, numVectors);
 
 		for(std::vector< std::pair<index_t, Layout > >::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)
 			pages.push_back( Accessor<T>(devicePtr + it->first, it->second) );
