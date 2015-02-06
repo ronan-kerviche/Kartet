@@ -170,6 +170,8 @@ namespace Kartet
 
 				template<class Op, typename T>
 				__host__ void hostScan(T* ptr, const Op& op) const;
+
+				__host__ friend inline std::ostream& operator<<(std::ostream& os, const Layout& layout);
 	};
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
@@ -209,7 +211,7 @@ namespace Kartet
 	
 			// Layout tools :
 				__host__	           const Layout& getLayout(void) const;
-				__host__	           Accessor<T> value(index_t i, index_t j=0, index_t k=0) const;
+				__host__	           Accessor<T> element(index_t i, index_t j=0, index_t k=0) const;
 				__host__	           Accessor<T> elements(index_t p, index_t numElements) const;
 				__host__ 	           Accessor<T> vector(index_t j) const;
 				__host__ 	           Accessor<T> endVector(void) const;
@@ -281,13 +283,16 @@ namespace Kartet
 			using Accessor<T>::getSize;
 			using Accessor<T>::getData;
 			using Accessor<T>::setData;
-			using Accessor<T>::value;
+			using Accessor<T>::element;
+			using Accessor<T>::elements;
 			using Accessor<T>::vector;
 			using Accessor<T>::endVector;
 			using Accessor<T>::vectors;
 			using Accessor<T>::slice;
 			using Accessor<T>::endSlice;
 			using Accessor<T>::slices;
+			using Accessor<T>::subArray;
+			using Accessor<T>::splitPages;
 			using Accessor<T>::assign;
 			using Accessor<T>::operator=;
 			using Accessor<T>::maskedAssignment;

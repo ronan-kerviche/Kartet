@@ -35,17 +35,17 @@
 namespace Kartet
 {
 	template<typename TIn, typename TOut>
-	class FFTHandle
+	class FFTContext
 	{
 		private :
-			FFTHandle handle;
+			cufftHandle handle;
 			cufftType fftType;
 
 		public :
 			const Layout inputLayout, outputLayout;
 
-			FFTHandle(const Layout& inputL, const Layout& outputL);
-			~FFTHandle(void);
+			FFTContext(const Layout& inputL, const Layout& outputL);
+			~FFTContext(void);
 
 			void fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward=true);
 			void ifft(const Accessor<TIn>& input, const Accessor<TOut>& output);
@@ -56,7 +56,7 @@ namespace Kartet
 
 // Impl.
 	template<typename TIn, typename TOut>
-	FFTHandle<TIn, TOut>::FFTHandle(const Layout& inputL, const Layout& outputL)
+	FFTContext<TIn, TOut>::FFTContext(const Layout& inputL, const Layout& outputL)
 	 :	inputLayout(inputL),
 		outputLayout(outputL),
 		fftType(static_cast<cufftType>(0))
@@ -96,10 +96,10 @@ namespace Kartet
 		}
 		else if(inputLayout.getNumColumns()!=1 && inputLayout.getNumRows()!=1)
 		{
-			const int nI[2] 	= {inputLayout.getNumColumns(), inputLayout.getNumRows()},
-				  nO[2] 	= {outputLayout.getNumColumns(), outputLayout.getNumRows()};
-			const int idist	 	= inputLayout.getLeadingSlices(),
-				  odist 	= outputLayout.getLeadingSlices();
+			int nI[2] = {inputLayout.getNumColumns(), inputLayout.getNumRows()},
+			    nO[2] = {outputLayout.getNumColumns(), outputLayout.getNumRows()};
+			int idist = inputLayout.getLeadingSlices(),
+			    odist = outputLayout.getLeadingSlices();
 
 			err = cufftPlanMany(&handle, 2, nI, nI, 1, idist, nO, 1, odist, fftType, inputLayout.getNumSlices());
 			if(err!=CUFFT_SUCCESS)
@@ -114,14 +114,14 @@ namespace Kartet
 	}
 
 	template<typename TIn, typename TOut>
-	FFTHandle<TIn, TOut>::~FFTHandle(void)
+	FFTContext<TIn, TOut>::~FFTContext(void)
 	{
 		// Destroy the handle :
 		cufftDestroy(handle);
 	}
 
 	template<typename TIn, typename TOut>
-	void FFTHandle<TIn, TOut>::fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward)
+	void FFTContext<TIn, TOut>::fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward)
 	{	
 		if(!input.sameLayoutAs(inputLayout) || !output.sameLayoutAs(outputLayout))	
 			throw IncompatibleLayout;
@@ -161,13 +161,13 @@ namespace Kartet
 	}
 
 	template<typename TIn, typename TOut>
-	void FFTHandle<TIn, TOut>::ifft(const Accessor<TIn>& input, const Accessor<TOut>& output)
+	void FFTContext<TIn, TOut>::ifft(const Accessor<TIn>& input, const Accessor<TOut>& output)
 	{
 		fft(input, output, false);
 	}
 
 	template<typename TIn, typename TOut>
-	bool FFTHandle<TIn, TOut>::isValid(const Layout& input, const Layout& output)
+	bool FFTContext<TIn, TOut>::isValid(const Layout& input, const Layout& output)
 	{
 		
 		if( 	// Check for the dimensions :

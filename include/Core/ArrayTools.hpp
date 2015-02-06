@@ -39,9 +39,9 @@ namespace Kartet
 		leadingColumns(lc),
 		leadingSlices(ls)
 	{
-		if(leadingColumns==0)
+		if(leadingColumns==0 || c==1)
 			leadingColumns = numRows;
-		if(leadingSlices==0)
+		if(leadingSlices==0 || s==1)
 			leadingSlices = numRows*numColumns;
 	}
 
@@ -165,7 +165,7 @@ namespace Kartet
 	{
 		std::vector< std::pair<index_t, Layout> > pages;
 
-		if(!validColumnIndex(jBegin))
+		if(!validColumnIndex(jBegin) || numVectors<1)
 			throw OutOfRange;
 	
 		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
@@ -459,6 +459,31 @@ namespace Kartet
 		}
 	}
 
+	__host__ inline std::ostream& operator<<(std::ostream& os, const Layout& layout)
+	{
+		if(layout.getNumSlices()==1)
+			os << '[' << layout.getNumRows() << ", " << layout.getNumColumns();
+		else
+			os << '[' << layout.getNumRows() << ", " << layout.getNumColumns() << ", " << layout.getNumSlices();
+
+		if(layout.getLeadingColumns()>layout.getNumRows() || layout.getLeadingSlices()>layout.getNumElementsPerSlice())
+		{
+			os << "; ";
+			if(layout.getLeadingColumns()==layout.getNumRows())
+				os << '_';
+			else
+				os << layout.getLeadingColumns();
+			os << ", ";
+			if(layout.getLeadingSlices()==layout.getNumElementsPerSlice())
+				os << '_';
+			else
+				os << layout.getLeadingSlices();
+		}
+		os << ']';
+
+		return os;
+	}
+
 // Accessor :
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls)
@@ -621,7 +646,7 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__ Accessor<T> Accessor<T>::value(index_t i, index_t j, index_t k) const
+	__host__ Accessor<T> Accessor<T>::element(index_t i, index_t j, index_t k) const
 	{
 		if(!isInside(i, j, k))
 			throw OutOfRange;		
@@ -748,12 +773,7 @@ namespace Kartet
 		const Kartet::Layout l = A.getSolidLayout();
 		T* tmp = A.getData();
 
-		if(l.getNumSlices()>1)
-			os << "(Array of size [" << A.getNumRows() << ", " << A.getNumColumns() << ", " << A.getNumSlices() << "]) : " << std::endl;
-		else if(l.getNumColumns()>1)
-			os << "(Array of size [" << A.getNumRows() << ", " << A.getNumColumns() << "]) : " << std::endl;
-		else
-			os << "(Array of size [" << A.getNumRows() << "]) : " << std::endl;
+		os << "(Array of size " << A.getLayout() << ')' << std::endl;
 		for(int k=0; k<l.getNumSlices(); k++)
 		{
 			if(l.getNumSlices()>1)
@@ -766,6 +786,7 @@ namespace Kartet
 				os << FMT << tmp[l.getIndex(i,l.getNumColumns()-1,k)] << std::endl;
 			}
 		}
+		#undef FMT
 
 		delete[] tmp;
 		return os;
@@ -783,7 +804,7 @@ namespace Kartet
 	
 	template<typename T>
 	__host__ Array<T>::Array(const Layout& layout)
-	 :	Accessor<T>(layout)
+	 :	Accessor<T>(layout.getSolidLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)

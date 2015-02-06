@@ -21,6 +21,7 @@ int main(int argc, char** argv)
 	{
 		// Testing expressions :
 		Kartet::Array<double> A(5, 3), B(5, 3);
+		std::cout << "Layout : " << A.getLayout() << std::endl;
 		A = 1.23;
 		B = 2.56 * Kartet::IndexJ();
 		A = cos(A + exp(2.0 * B));
@@ -43,10 +44,10 @@ int main(int argc, char** argv)
 		std::cout << "C = " << C << std::endl;
 
 		// BLAS :
-		Kartet::BLASContext Context;
+		Kartet::BLASContext blas;
 		C = 4 - absSq(Kartet::IndexI()-13) / 100.0;
 		std::cout << "C = " << C << std::endl;
-		int idx = amax(C);
+		int idx = blas.amax(C);
 		std::cout << "Index of the absolute maximum : " << idx << std::endl;
 		std::cout << std::endl;
 
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
 		Y = Kartet::IndexJ();
 		Z = 0.0;
 		//gemm(1.0, X, CUBLAS_OP_N, Y, CUBLAS_OP_N, 0.0, Z);
-		gemm(X, Y, Z);
+		blas.gemm(X, Y, Z);
 
 		// Generate random numbers :
 		Kartet::RandomSourceContext randomSourceContext;
@@ -87,6 +88,7 @@ int main(int argc, char** argv)
 		// Computing on complex without storing :
 		D = real(piAngleToComplex(Kartet::IndexI() + Kartet::IndexJ()));
 		std::cout << "D = " << D << std::endl;
+		std::cout << "Layout of D.slices(0, 2, 2) : " << D.slices(0, 2, 2).getLayout() << std::endl;
 		D.slice(0) = D.slice(0)*D.slice(1);
 		std::cout << "D.slice(0) = " << D.slice(0) << std::endl;
 		D.slice(1) = (D.slice(1) + D.slice(0))/2.0;
