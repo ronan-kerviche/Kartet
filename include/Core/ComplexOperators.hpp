@@ -29,6 +29,8 @@
 #ifndef __KARTET_COMPLEX_OPERATORS__
 #define __KARTET_COMPLEX_OPERATORS__
 
+	#include "Core/LibTools.hpp"
+
 namespace Kartet
 {
 	#if defined(__CUDACC__)
@@ -141,6 +143,7 @@ namespace Kartet
 		template<> \
 		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType imag(const TypeName& a) \
 		{ \
+			UNUSED_PARAMETER(a) \
 			return static_cast<TypeName>(0); \
 		} \
 		 \
@@ -316,12 +319,13 @@ namespace Kartet
 		template<> \
 		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
 		{ \
-			return (TypeInfo<TypeName>::isSigned && a>=0) ? a : (-a); \
+			return (TypeInfo<TypeName>::isSigned && a<0) ? (-a) : a; \
 		} \
 		\
 		template<> \
 		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType angle<TypeName>(const TypeName& a) \
 		{ \
+			UNUSED_PARAMETER(a) \
 			return static_cast<typename TypeInfo<TypeName>::BaseType>(0); \
 		} \
 		\

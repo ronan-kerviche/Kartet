@@ -52,7 +52,7 @@ namespace Kartet
 		numSlices(l.numSlices),
 		leadingColumns(l.leadingColumns),
 		leadingSlices(l.leadingSlices),
-		offset(l.getOffset())
+		offset(l.offset)
 	{ }
 
 	__host__ __device__ inline index_t Layout::getNumElements(void) const
@@ -183,8 +183,8 @@ namespace Kartet
 			throw OutOfRange;
 	
 		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
-			pages.push_back(Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices(), getIndex(0,jBegin,0)) );
-		
+			pages.push_back(Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
+
 		return pages;
 	}
 
@@ -808,7 +808,7 @@ namespace Kartet
 	{
 		if(jStep<=0 || numVectors<=0)
 			throw InvalidNegativeStep;
-		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep-1))
+		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep))
 			throw OutOfRange;
 
 		return Accessor<T>(devicePtr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,jBegin,0));
@@ -855,10 +855,15 @@ namespace Kartet
 	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t jBegin, index_t numVectors) const
 	{
 		std::vector< Accessor<T> > pages;
-		const std::vector<Layout> pagesLayout = Layout::splitLayoutPages(jBegin, numVectors);
+		Layout tmp = this->getLayout();
+		tmp.setOffset(0);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutPages(jBegin, numVectors);
 
-		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)
+		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
+		{
 			pages.push_back( Accessor<T>(devicePtr + it->getOffset(), *it) );
+			pages.back().setOffset(getOffset() + pages.back().getOffset());
+		}
 
 		return pages;
 	}

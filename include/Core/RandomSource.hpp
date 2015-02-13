@@ -32,6 +32,7 @@
 // Includes :
 	#include <ctime>
 	#include <curand.h>
+	#include "Core/LibTools.hpp"
 	#include "Core/Exceptions.hpp"
 	#include "Core/Array.hpp"
 
@@ -102,6 +103,9 @@ namespace Kartet
 		public :
 			__host__ inline RandomSourceContext(const curandRngType_t& rng_type = CURAND_RNG_PSEUDO_DEFAULT);
 			__host__ inline ~RandomSourceContext(void);
+
+			__host__ static inline void setSeed(const unsigned long long& seed);
+			__host__ static inline void setSeed(void);
 	};
 
 	template<typename T>
@@ -132,15 +136,46 @@ namespace Kartet
 		}
 	}
 
+	__host__ inline void RandomSourceContext::setSeed(const unsigned long long& seed)
+	{
+		if(StaticContainer<void>::singleton!=NULL)
+		{
+			curandStatus_t err = curandSetPseudoRandomGeneratorSeed(GEN, seed);
+			TEST_EXCEPTION(err)
+		}
+		else
+			throw InvalidCuRandContext;
+	}
+
+	__host__ inline void RandomSourceContext::setSeed(void)
+	{
+		if(StaticContainer<void>::singleton!=NULL)
+		{
+			const unsigned long long seed = static_cast<unsigned long long>(rand()) << 32 +  static_cast<unsigned long long>(rand()); // use rand to fill the seed.
+			curandStatus_t err = curandSetPseudoRandomGeneratorSeed(GEN, seed);
+			TEST_EXCEPTION(err)
+		}
+		else
+			throw InvalidCuRandContext;
+	}
+
 // Uniform :
 	__host__ inline void UniformSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateUniform(GEN, ptr+offset, currentAccessLayout.getNumElements());
 		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline void UniformSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateUniformDouble(GEN, ptr+offset, currentAccessLayout.getNumElements());
 		TEST_EXCEPTION(err)
 	}
@@ -171,12 +206,20 @@ namespace Kartet
 
 	__host__ inline void NormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateNormal(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 	
 	__host__ inline void NormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateNormalDouble(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
@@ -207,12 +250,20 @@ namespace Kartet
 
 	__host__ inline void LogNormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateLogNormal(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 	
 	__host__ inline void LogNormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
+		UNUSED_PARAMETER(mainLayout)
+		UNUSED_PARAMETER(i)
+		UNUSED_PARAMETER(j)
+		UNUSED_PARAMETER(k)
 		curandStatus_t err = curandGenerateLogNormalDouble(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}

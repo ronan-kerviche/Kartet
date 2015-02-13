@@ -91,7 +91,7 @@ namespace Kartet
 			};
 
 			// Constructors :
-				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t _o=0);
+				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
 				__host__ __device__ inline Layout(const Layout& l);
 
 			// Dimensions :

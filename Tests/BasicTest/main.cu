@@ -16,6 +16,7 @@ int main(int argc, char** argv)
 	int returnCode = 0;
 	std::cout << "Kartet Test" << std::endl;
 	std::cout << "Build : " << __DATE__ << ' ' << __TIME__ << std::endl;
+	srand(time(NULL));
 
 	try
 	{
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
 
 		// Generate random numbers :
 		Kartet::RandomSourceContext randomSourceContext;
+		randomSourceContext.setSeed();
 		Kartet::UniformSource uniformSource;
 		uniformSource >> A;
 		std::cout << "A = " << A << std::endl;

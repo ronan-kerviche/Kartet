@@ -29,6 +29,8 @@
 #ifndef __KARTET_ARRAY_EXPRESSIONS__
 #define __KARTET_ARRAY_EXPRESSIONS__
 
+	#include "Core/LibTools.hpp"
+
 namespace Kartet
 {
 // Evaluation tools :
@@ -205,7 +207,9 @@ namespace Kartet
 		{ }
 
 		__host__ __device__ NullaryExpression(const NullaryExpression<Op>& e)
-		{ }
+		{
+			UNUSED_PARAMETER(e)
+		}
 	};
 
 // Unary Expression
