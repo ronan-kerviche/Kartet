@@ -33,6 +33,9 @@
 	#include <iostream>
 	#include <iomanip>
 	#include <vector>
+	#include <fstream>
+	#include <string>	
+	#include <cstring>
 	#include "Exceptions.hpp"
 	#include "TemplateSharedMemory.hpp"
 	#include "MetaAlgorithm.hpp"
@@ -74,7 +77,9 @@ namespace Kartet
 				numColumns,		// Also Width
 				numSlices,		// Also Depth
 				leadingColumns,		// Number of elements between the start of each column.
-				leadingSlices;		// Number of elements between the start of each slice.
+				leadingSlices,		// Number of elements between the start of each slice.
+				offset;			// Starting point from the original position (informative parameter, not decisive).
+							//  It will not be taken into account in most of the transformations.
 
 		public :
 			template<typename T>
@@ -82,10 +87,11 @@ namespace Kartet
 			{
 				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
 				static index_t numThreads;
+				static const char fileHeader[];
 			};
 
 			// Constructors :
-				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
+				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t _o=0);
 				__host__ __device__ inline Layout(const Layout& l);
 
 			// Dimensions :
@@ -99,6 +105,8 @@ namespace Kartet
 				__host__ __device__ inline index_t getDepth(void) const;		// For convenience ?
 				__host__ __device__ inline index_t getLeadingColumns(void) const;
 				__host__ __device__ inline index_t getLeadingSlices(void) const;
+				__host__ __device__ inline index_t getOffset(void) const;
+				__host__ __device__ inline index_t setOffset(index_t newOffset);
 				__host__ __device__ inline dim3 getDimensions(void) const;
 				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__ __device__ inline bool isSliceMonolithic(void) const;
@@ -106,7 +114,7 @@ namespace Kartet
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
 				__host__            inline void vectorize(void);
-				__host__ 	    inline std::vector< std::pair<index_t, Layout > > splitLayoutPages(index_t jBegin, index_t numVectors) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutPages(index_t jBegin, index_t numVectors) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
 
@@ -166,17 +174,28 @@ namespace Kartet
 				__host__ 	    inline dim3 getNumBlock(void) const;
 				__host__	    inline Layout getVectorLayout(void) const;
 				__host__	    inline Layout getSliceLayout(void) const;
-				__host__	    inline Layout getSolidLayout(void) const;
+				__host__	    inline Layout getMonolithicLayout(void) const;
 
 				template<class Op, typename T>
 				__host__ void hostScan(T* ptr, const Op& op) const;
 
+				__host__ static inline Layout readFromFile(std::fstream& file, int* typeIndex=NULL);
+				__host__ static inline Layout readFromFile(const std::string& filename, int* typeIndex=NULL);
+				__host__ inline void writeToFile(std::fstream& file, int typeIndex);
+				__host__ inline void writeToFile(const std::string& filename, int typeIndex);
+				template<typename T>
+				__host__ inline void writeToFile(std::fstream& file);
+				template<typename T>
+				__host__ inline void writeToFile(const std::string& file);
 				__host__ friend inline std::ostream& operator<<(std::ostream& os, const Layout& layout);
 	};
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
 	template<typename T>
 	index_t Layout::StaticContainer<T>::numThreads = 512;
+
+	template<typename T>
+	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";
 
 	// To compute on a specific layout : 
 	#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
@@ -185,11 +204,11 @@ namespace Kartet
 	class Accessor : public Layout
 	{
 		protected :
-			T* devicePtr;
+			T* devicePtr; // Does not include the offset.
 			
-				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
+				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
 				__host__ __device__ Accessor(const Layout& layout);
-				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0);
+				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0); // offset will not change the given ptr, and only is informative.
 				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 
 		public :
@@ -251,9 +270,11 @@ namespace Kartet
 			__host__ Array(index_t r, index_t c=1, index_t s=1);
 			__host__ Array(const Layout& layout);
 			__host__ Array(const T* ptr, index_t r, index_t c=1, index_t s=1);
+			__host__ Array(const T* ptr, const Layout& layout);
 			__host__ Array(const Array<T>& a);
 			template<typename TIn>
-			__host__  Array(const Accessor<TIn>& a);
+			__host__ Array(const Accessor<TIn>& a);
+			__host__ Array(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			__host__ ~Array(void);
 
 			// From Accessor<T>::Layout
@@ -266,7 +287,17 @@ namespace Kartet
 			using Accessor<T>::Layout::getDepth;
 			using Accessor<T>::Layout::getLeadingColumns;
 			using Accessor<T>::Layout::getLeadingSlices;
+			using Accessor<T>::Layout::getOffset;
+			using Accessor<T>::Layout::setOffset;
 			using Accessor<T>::Layout::getDimensions;
+			using Accessor<T>::Layout::isMonolithic;
+			using Accessor<T>::Layout::isSliceMonolithic;
+			using Accessor<T>::Layout::reinterpretLayout;
+			using Accessor<T>::Layout::flatten;
+			using Accessor<T>::Layout::vectorize;
+			using Accessor<T>::Layout::splitLayoutPages;
+			using Accessor<T>::Layout::sameLayoutAs;
+			using Accessor<T>::Layout::sameSliceLayoutAs;
 			using Accessor<T>::Layout::getI;
 			using Accessor<T>::Layout::getJ;
 			using Accessor<T>::Layout::getK;
@@ -299,6 +330,10 @@ namespace Kartet
 			using Accessor<T>::hostScan;
 			
 			Accessor<T>& accessor(void);
+			void readFromFile(std::fstream& file, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
+			void readFromFile(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
+			void writeToFile(std::fstream& file, size_t maxBufferSize=104857600); // 100 MB
+			void writeToFile(const std::string& filename, size_t maxBufferSize=104857600); // 100 MB
 	};
 
 } // namespace Kartet

@@ -57,12 +57,9 @@ namespace Kartet
 		typedef FalseStatement TValue;
 	};
 
-	// Test :
-	// sizeof(MetaIf<1==1, int, float>::TValue);
-
 	// While Loop statement
 	// IMPORTANT : a cycle is done after the test is false...
-	template<bool statement, template<class Argument> class Algorithm, class Argument>
+	/*template<bool statement, template<class Argument> class Algorithm, class Argument>
 	struct MetaLoopWhile;
 
 	template< template<class Argument> class Algorithm, class Argument>
@@ -83,7 +80,7 @@ namespace Kartet
 	struct MetaWhile
 	{
 		typedef typename MetaLoopWhile< Algorithm<Argument>::TestValue, Algorithm, Argument>::Result Result;
-	};
+	};*/
 
 	/* Test :
 	//Useless
@@ -136,33 +133,30 @@ namespace Kartet
 	*/
 
 	// For Loop statement
-	template<bool statement, int Start, int End, template<int current, class Argument> class Algorithm, class Argument>
+	template<bool statement, int start, int end, template<int current, class Argument> class Algorithm, class Argument>
 	struct MetaLoopFor;
 
-	template<int Start, int End, template<int current, class Argument> class Algorithm, class Argument>
-	struct MetaLoopFor<false, Start, End, Algorithm, Argument>
+	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
+	struct MetaLoopFor<false, start, end, Algorithm, Argument>
 	{
 		typedef Argument Result;
 	};
 
-	template<int Start, int End, template<int current, class Argument> class Algorithm, class Argument>
-	struct MetaLoopFor<true, Start, End, Algorithm, Argument>
+	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
+	struct MetaLoopFor<true, start, end, Algorithm, Argument>
 	{
 		private: //Temp
-			typedef Algorithm<Start, Argument> NewStep;
-			enum //calculate new index
-			{
-				tmp = NewStep::Next
-			};
+			typedef Algorithm<start, Argument> NewStep;
+			static const int tmp = NewStep::next; //calculate new index
 			typedef typename NewStep::NewArgument NewArgument; // get new argument : Newargument = Algorithm(OldArgument);
 		public:
-			typedef typename MetaLoopFor< tmp<End, tmp, End, Algorithm, NewArgument>::Result Result;
+			typedef typename MetaLoopFor< (tmp<end), tmp, end, Algorithm, NewArgument>::Result Result;
 	};
 
-	template<int Start, int End, template<int current, class Argument> class Algorithm, class Argument>
+	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
 	struct MetaFor
 	{
-		typedef typename MetaLoopFor< Start<End, Start, End, Algorithm, Argument>::Result Result;
+		typedef typename MetaLoopFor< (start<end), start, end, Algorithm, Argument>::Result Result;
 	};
 
 	/*Test :
@@ -181,7 +175,7 @@ namespace Kartet
 	template< int current, class __TestArgument>
 	struct __TestAlgorithm
 	{
-		static const int Next = __TestArgument::dump;
+		static const int next = __TestArgument::dump;
 
 		struct NewArgument
 		{

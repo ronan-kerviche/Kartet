@@ -204,10 +204,9 @@ namespace Kartet
 		TypeList< long double,
 		#if defined(__CUDACC__)
 			TypeList< cuFloatComplex,
-			TypeList< std::complex<double>,
 			TypeList< cuDoubleComplex,
 			Void
-			> > >
+			> >
 		#else
 			TypeList< std::complex<float>,
 			TypeList< std::complex<double>,
@@ -228,8 +227,8 @@ namespace Kartet
 		private :
 			typedef typename RemovePointer< T1 >::Type pT1;
 			typedef typename RemovePointer< T2 >::Type pT2;
-			static const int i1 = GetIndex< TypesSortedByAccuracy, pT1>::Value;
-			static const int i2 = GetIndex< TypesSortedByAccuracy, pT2>::Value;
+			static const int i1 = GetIndex< TypesSortedByAccuracy, pT1>::value;
+			static const int i2 = GetIndex< TypesSortedByAccuracy, pT2>::value;
 
 			// Test if the types are known first : 
 			StaticAssert<i1!=-1> C1;
@@ -245,6 +244,131 @@ namespace Kartet
 				typedef StdType Type;
 			#endif
 	};
+}
+
+#include "Core/ComplexOperators.hpp"
+
+namespace Kartet
+{
+	// Dynamic tools for the types :
+	inline size_t sizeOfType(int typeIndex)
+	{
+		#define SPECIAL_SIZE( TypeName )	case GetIndex<TypesSortedByAccuracy, TypeName>::value :	return sizeof( TypeName );
+
+		switch(typeIndex)
+		{
+			SPECIAL_SIZE( bool )
+			SPECIAL_SIZE( unsigned char )
+			SPECIAL_SIZE( char )
+			SPECIAL_SIZE( signed char )
+			SPECIAL_SIZE( unsigned short )
+			//SPECIAL_SIZE( short )
+			SPECIAL_SIZE( signed short )
+			SPECIAL_SIZE( unsigned int )
+			//SPECIAL_SIZE( int )
+			SPECIAL_SIZE( signed int )
+			SPECIAL_SIZE( unsigned long )
+			//SPECIAL_SIZE( long )
+			SPECIAL_SIZE( signed long )
+			SPECIAL_SIZE( unsigned long long )
+			//SPECIAL_SIZE( long long )
+			SPECIAL_SIZE( signed long long )
+			SPECIAL_SIZE( float )
+			SPECIAL_SIZE( double )
+			SPECIAL_SIZE( long double )
+			#if defined(__CUDACC__)
+				SPECIAL_SIZE( cuFloatComplex )
+				SPECIAL_SIZE( cuDoubleComplex )
+			#else
+				SPECIAL_SIZE( std::complex<float> )
+				SPECIAL_SIZE( std::complex<double> )
+			#endif
+			default :
+				throw UnknownTypeIndex;
+		}
+	}
+
+	inline size_t isComplex(int typeIndex)
+	{
+		#define SPECIAL_CXTEST( TypeName , v)	case GetIndex<TypesSortedByAccuracy, TypeName>::value :	return v;
+
+		switch(typeIndex)
+		{
+			SPECIAL_CXTEST( bool, false )
+			SPECIAL_CXTEST( unsigned char, false )
+			SPECIAL_CXTEST( char, false )
+			SPECIAL_CXTEST( signed char, false )
+			SPECIAL_CXTEST( unsigned short, false )
+			//SPECIAL_CXTEST( short, false )
+			SPECIAL_CXTEST( signed short, false )
+			SPECIAL_CXTEST( unsigned int, false )
+			//SPECIAL_CXTEST( int, false )
+			SPECIAL_CXTEST( signed int, false )
+			SPECIAL_CXTEST( unsigned long, false )
+			//SPECIAL_CXTEST( long, false )
+			SPECIAL_CXTEST( signed long, false )
+			SPECIAL_CXTEST( unsigned long long, false )
+			//SPECIAL_CXTEST( long long, false )
+			SPECIAL_CXTEST( signed long long, false )
+			SPECIAL_CXTEST( float, false )
+			SPECIAL_CXTEST( double, false )
+			SPECIAL_CXTEST( long double, false )
+			#if defined(__CUDACC__)
+				SPECIAL_CXTEST( cuFloatComplex, true )
+				SPECIAL_CXTEST( cuDoubleComplex, true )
+			#else
+				SPECIAL_CXTEST( std::complex<float>, true )
+				SPECIAL_CXTEST( std::complex<double>, true )
+			#endif
+			default :
+				throw UnknownTypeIndex;
+		}
+	}
+
+	template<typename T>
+	void copy(T* dst, const void* src, int typeIndex, size_t count=1)
+	{
+		#define SPECIAL_COPY( TypeName ) \
+			case GetIndex<TypesSortedByAccuracy, TypeName>::value :	\
+				for(int k=0; k<count; k++) \
+					protectedComplexCopy<T>(dst[k], reinterpret_cast<const TypeName *>(src)[k]); \
+				break;
+
+		if(isComplex(typeIndex) && !TypeInfo<T>::isComplex)
+			throw InvalidOperation;
+
+		switch(typeIndex)
+		{
+			SPECIAL_COPY( bool )
+			SPECIAL_COPY( unsigned char )
+			SPECIAL_COPY( char )
+			SPECIAL_COPY( signed char )
+			SPECIAL_COPY( unsigned short )
+			//SPECIAL_COPY( short )
+			SPECIAL_COPY( signed short )
+			SPECIAL_COPY( unsigned int )
+			//SPECIAL_COPY( int )
+			SPECIAL_COPY( signed int )
+			SPECIAL_COPY( unsigned long )
+			//SPECIAL_COPY( long )
+			SPECIAL_COPY( signed long )
+			SPECIAL_COPY( unsigned long long )
+			//SPECIAL_COPY( long long )
+			SPECIAL_COPY( signed long long )
+			SPECIAL_COPY( float )
+			SPECIAL_COPY( double )
+			SPECIAL_COPY( long double )
+			#if defined(__CUDACC__)
+				SPECIAL_COPY( cuFloatComplex )
+				SPECIAL_COPY( cuDoubleComplex )
+			#else
+				SPECIAL_COPY( std::complex<float> )
+				SPECIAL_COPY( std::complex<double> )
+			#endif
+			default :
+				throw UnknownTypeIndex;
+		}
+	}
 
 } // Namespace Kartet
 

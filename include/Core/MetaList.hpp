@@ -52,19 +52,13 @@ namespace Kartet
 	template <>
 	struct Length<Void>
 	{
-		enum
-		{
-			Value = 0
-		};
+		static const int value = 0;
 	};
 
 	template <class Head, class Queue>
 	struct Length< TypeList<Head, Queue> >
 	{
-		enum
-		{
-			Value = 1 + Length<Queue>::Value
-		};
+		static const int value = 1 + Length<Queue>::value;
 	};
 
 	// Get a type by its index :
@@ -90,34 +84,22 @@ namespace Kartet
 	template <class H>
 	struct GetIndex <Void, H>
 	{
-		enum
-		{
-			Value = -1
-		};
+		static const int value = -1;
 	};
 
 	template <class Queue, class H>
 	struct GetIndex <TypeList<H, Queue>, H>
 	{
-		enum
-		{
-			Value = 0
-		};
+		static const int value = 0;
 	};
 
 	template <class Head, class Queue, class H>
 	struct GetIndex <TypeList<Head, Queue>, H>
 	{
 		private: // temporary value
-			enum
-			{
-				Tmp = GetIndex<Queue, H>::Value
-			};
-		public: // Index Value :
-			enum
-			{
-				Value = Tmp == -1? -1 : 1 + Tmp // if(not found) -1 else 1+GetIndex(Queue)
-			};
+			static const int Tmp = GetIndex<Queue, H>::value;
+		public: // Index value :
+			static const int value = Tmp == -1? -1 : 1 + Tmp; // if(not found) -1 else 1+GetIndex(Queue)
 	};
 
 	// Test the presence :
@@ -127,7 +109,7 @@ namespace Kartet
 	template <class Head, class Queue, class H>
 	struct Belongs <TypeList<Head, Queue>, H>
 	{
-		static const bool Value = GetIndex< TypeList<Head, Queue>, H>::Value != -1;
+		static const bool value = GetIndex< TypeList<Head, Queue>, H>::value != -1;
 	};
 
 	// Add an element at the back list : 

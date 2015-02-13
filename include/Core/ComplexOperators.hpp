@@ -101,6 +101,36 @@ namespace Kartet
 		return res;
 	}
 
+	template<typename TOut, typename TIn>
+	ALL_PLATFORMS inline void protectedComplexCopy(TOut& a, const TIn& b)
+	{
+		// Do not test the operation first.
+		realRef(a) = real(b);
+		if(TypeInfo<TOut>::isComplex)
+		{
+			if(TypeInfo<TIn>::isComplex)
+				imagRef(a) = imag(b);
+			else
+				imagRef(a) = static_cast<typename TypeInfo<TOut>::BaseType>(0);
+		}
+	}
+
+	template<typename TOut, typename TIn>
+	ALL_PLATFORMS inline TOut protectedComplexCopy(const TIn& b)
+	{
+		// Do not test the operation first.
+		TOut res;
+		realRef(res) = real(b);
+		if(TypeInfo<TOut>::isComplex)
+		{
+			if(TypeInfo<TIn>::isComplex)
+				imagRef(res) = imag(b);
+			else
+				imagRef(res) = static_cast<typename TypeInfo<TOut>::BaseType>(0);
+		}
+		return res;
+	}
+
 	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
 		template<> \
 		ALL_PLATFORMS inline typename TypeInfo<TypeName>::BaseType real(const TypeName& a) \
@@ -170,6 +200,7 @@ namespace Kartet
 
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( short )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned short )
@@ -181,7 +212,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
-	//BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
 
 	#undef BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE
 
@@ -314,6 +345,7 @@ namespace Kartet
 
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( short )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned short )
@@ -325,7 +357,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
-	//BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
 
 	#undef BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE
 

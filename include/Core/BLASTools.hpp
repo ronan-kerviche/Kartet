@@ -40,7 +40,7 @@ namespace Kartet
 		> > > > CuBLASKnownTypes;
 
 // Type tools :
-	#define ALLOWED_TYPES_VERIFICATION		STATIC_ASSERT( Belongs<CuBLASKnownTypes, T>::Value )
+	#define ALLOWED_TYPES_VERIFICATION		STATIC_ASSERT( Belongs<CuBLASKnownTypes, T>::value )
 	#define TYPE_MUST_BE_COMPLEX			STATIC_ASSERT( TypeInfo<T>::isComplex )
 	#define TEST_MONOLITHIC(x)			{if(!(x).isMonolithic()) throw IncompatibleLayout;}
 	#define TEST_SINGLE_SLICE(x)			{if((x).getNumSlices()>1) throw IncompatibleLayout;} 
@@ -107,6 +107,54 @@ namespace Kartet
 		}
 
 		return (aR==cR) && (aC==bR) && (bC==cC);
+	}
+
+	__host__ inline bool BLASContext::isProductValid(const Layout& A, const Layout& B, const Layout& C)
+	{
+		return BLASContext::isProductValid(A, CUBLAS_OP_N, B, CUBLAS_OP_N, C);
+	}
+
+	__host__ inline Layout BLASContext::getProductLayout(const Layout& A, cublasOperation_t transa, const Layout& B, cublasOperation_t transb)
+	{
+		index_t aR = 0,
+			aC = 0,
+			bR = 0,
+			bC = 0;
+
+		if(A.getNumSlices()!=1 || B.getNumSlices()!=1)
+			throw InvalidOperation;
+
+		if(transa==CUBLAS_OP_T || transa==CUBLAS_OP_C)
+		{
+			aR = A.getNumColumns();
+			aC = A.getNumRows();
+		}
+		else
+		{
+			aR = A.getNumRows();
+			aC = A.getNumColumns();
+		}
+
+		if(transb==CUBLAS_OP_T || transb==CUBLAS_OP_C)
+		{
+			bR = B.getNumColumns();
+			bC = B.getNumRows();
+		}
+		else
+		{
+			bR = B.getNumRows();
+			bC = B.getNumColumns();
+		}
+
+		if(aC!=bR)
+			throw InvalidOperation;
+		
+		return Layout(aR, bC);
+	}
+
+	__host__ inline Layout BLASContext::getProductLayout(const Layout& A, const Layout& B)
+	{
+		return getProductLayout(A, CUBLAS_OP_N, B, CUBLAS_OP_N);
 	}
 
 	template<typename T>

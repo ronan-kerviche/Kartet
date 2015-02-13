@@ -156,6 +156,9 @@ namespace Kartet
 		InvalidOperation,
 		IncompatibleLayout,
 		InvalidLayoutChange,
+		InvalidFileStream,
+		InvalidFileHeader,
+		UnknownTypeIndex,
 		InvalidBLASContext,
 		InvalidCuRandContext,
 		InvalidCuFFTContext,
@@ -284,6 +287,9 @@ namespace Kartet
 			EXCEPTION_MESSAGE( InvalidOperation )
 			EXCEPTION_MESSAGE( IncompatibleLayout )
 			EXCEPTION_MESSAGE( InvalidLayoutChange )
+			EXCEPTION_MESSAGE( InvalidFileStream )
+			EXCEPTION_MESSAGE( InvalidFileHeader )
+			EXCEPTION_MESSAGE( UnknownTypeIndex )
 			EXCEPTION_MESSAGE( InvalidBLASContext )
 			EXCEPTION_MESSAGE( InvalidCuRandContext )
 			EXCEPTION_MESSAGE( InvalidContext )

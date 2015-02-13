@@ -4,10 +4,10 @@
 	__global__ void testPrint(const Kartet::Layout layout)
 	{
 		//printf("  Hi from Block : (%d; %d; %d) Thread : (%d; %d; %d)\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
-		const int i = layout.getI(), 
-			  j = layout.getJ(), 
-			  k = layout.getK(),
-			  p = layout.getIndex();
+		const Kartet::index_t	i = layout.getI(), 
+					j = layout.getJ(), 
+					k = layout.getK(),
+					p = layout.getIndex();
 		printf("  Hi Block : (%d; %d; %d) Thread : (%d; %d; %d) => (%i; %i; %i) = %i\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, i, j, k, p);
 	}
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 		D.vectors(0, 2, 2).slice(1) = 1.0;
 		std::cout << "D = " << D << std::endl;
 
-		// Computing on complex without storing :
+		// Computing on complex numbers without storing :
 		D = real(piAngleToComplex(Kartet::IndexI() + Kartet::IndexJ()));
 		std::cout << "D = " << D << std::endl;
 		std::cout << "Layout of D.slices(0, 2, 2) : " << D.slices(0, 2, 2).getLayout() << std::endl;
@@ -104,6 +104,17 @@ int main(int argc, char** argv)
 		std::cout << "CxAbs = " << CxAbs << std::endl;
 		CxAbs = angle(CxA);
 		std::cout << "CxAbs = " << CxAbs << std::endl;
+
+		// File I/O :
+		Kartet::Array<int> U(8, 8);
+		U = Kartet::IndexI() + Kartet::IndexJ();
+		U.writeToFile("tmp.dat");
+		std::cout << "U = " << U << std::endl;
+		Kartet::Array<float> V(8, 8);
+		V.readFromFile("tmp.dat");
+		std::cout << "V = " << V << std::endl;
+		Kartet::Array<cuDoubleComplex> W("tmp.dat");
+		std::cout << "W = " << W << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

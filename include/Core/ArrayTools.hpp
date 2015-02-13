@@ -32,16 +32,17 @@
 namespace Kartet
 {
 // Layout :
-	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s, index_t lc, index_t ls)
+	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 : 	numRows(r),
 		numColumns(c),
 		numSlices(s),
 		leadingColumns(lc),
-		leadingSlices(ls)
+		leadingSlices(ls),
+		offset(o)
 	{
-		if(leadingColumns==0 || c==1)
+		if(leadingColumns<r || c==1)
 			leadingColumns = numRows;
-		if(leadingSlices==0 || s==1)
+		if(leadingSlices<(r*c) || s==1)
 			leadingSlices = numRows*numColumns;
 	}
 
@@ -50,7 +51,8 @@ namespace Kartet
 		numColumns(l.numColumns),
 		numSlices(l.numSlices),
 		leadingColumns(l.leadingColumns),
-		leadingSlices(l.leadingSlices)
+		leadingSlices(l.leadingSlices),
+		offset(l.getOffset())
 	{ }
 
 	__host__ __device__ inline index_t Layout::getNumElements(void) const
@@ -101,6 +103,18 @@ namespace Kartet
 	__host__ __device__ inline index_t Layout::getLeadingSlices(void) const
 	{
 		return leadingSlices;
+	}
+
+	__host__ __device__ inline index_t Layout::getOffset(void) const
+	{
+		return offset;
+	}
+
+	__host__ __device__ inline index_t Layout::setOffset(index_t newOffset)
+	{
+		index_t oldOffset = offset;
+		offset = newOffset;
+		return oldOffset;
 	}
 
 	__host__ __device__ inline dim3 Layout::getDimensions(void) const
@@ -161,22 +175,22 @@ namespace Kartet
 		reinterpretLayout(getNumElements(), 1, 1);
 	}
 
-	__host__ inline std::vector< std::pair<index_t, Layout > > Layout::splitLayoutPages(index_t jBegin, index_t numVectors) const
+	__host__ inline std::vector<Layout> Layout::splitLayoutPages(index_t jBegin, index_t numVectors) const
 	{
-		std::vector< std::pair<index_t, Layout> > pages;
+		std::vector<Layout> pages;
 
 		if(!validColumnIndex(jBegin) || numVectors<1)
 			throw OutOfRange;
 	
 		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
-			pages.push_back( std::pair<index_t, Layout>(getIndex(0,jBegin,0), Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices()) ) );
+			pages.push_back(Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices(), getIndex(0,jBegin,0)) );
 		
 		return pages;
 	}
 
 	__host__ __device__ inline bool Layout::sameLayoutAs(const Layout& other) const
 	{
-		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices && leadingColumns==other.leadingColumns && leadingSlices==other.leadingColumns); 
+		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices && leadingColumns==other.leadingColumns && leadingSlices==other.leadingSlices); 
 	}
 
 	__host__ __device__ inline bool Layout::sameSliceLayoutAs(const Layout& other) const
@@ -430,7 +444,7 @@ namespace Kartet
 		return Layout(getNumRows(), getNumColumns(), 1, getLeadingColumns());
 	}
 
-	__host__ inline Layout Layout::getSolidLayout(void) const
+	__host__ inline Layout Layout::getMonolithicLayout(void) const
 	{
 		return Layout(getNumRows(), getNumColumns(), getNumSlices());
 	}
@@ -459,6 +473,96 @@ namespace Kartet
 		}
 	}
 
+	__host__ inline Layout Layout::readFromFile(std::fstream& file, int* typeIndex)
+	{
+		if(!file.is_open())
+			throw InvalidFileStream;
+		
+		char headerBuffer[sizeof(StaticContainer<void>::fileHeader)];
+		std::memset(headerBuffer, 0, sizeof(headerBuffer));
+		file.read(headerBuffer, sizeof(headerBuffer)-1);
+		if(strncmp(StaticContainer<void>::fileHeader, headerBuffer, sizeof(headerBuffer)-1)!=0)
+			throw InvalidFileHeader;
+	
+		// Read the type :
+		int dummyType;
+		if(typeIndex==NULL)
+			typeIndex = &dummyType;
+		file.read(reinterpret_cast<char*>(typeIndex), sizeof(int)); if(!file.good()) throw InvalidFileStream;
+
+		// Read the sizes :
+		index_t	r = 0,
+			c = 0,
+			s = 0;
+		file.read(reinterpret_cast<char*>(&r), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
+		file.read(reinterpret_cast<char*>(&c), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
+		file.read(reinterpret_cast<char*>(&s), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
+
+		// Return :
+		return Layout(r, c, s);
+	}
+
+	__host__ inline Layout Layout::readFromFile(const std::string& filename, int* typeIndex)
+	{
+		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		Layout layout = readFromFile(file, typeIndex);
+
+		file.close();
+
+		return layout;
+	}
+
+	__host__ inline void Layout::writeToFile(std::fstream& file, int typeIndex)
+	{
+		if(!file.is_open())
+			throw InvalidFileStream;
+
+		// Write the header :
+		file.write(StaticContainer<void>::fileHeader, sizeof(StaticContainer<void>::fileHeader)-1);
+		
+		// Write the type :	
+		file.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
+	
+		// Write the size :
+		file.write(reinterpret_cast<char*>(&numRows), sizeof(index_t));
+		file.write(reinterpret_cast<char*>(&numColumns), sizeof(index_t));
+		file.write(reinterpret_cast<char*>(&numSlices), sizeof(index_t));	
+	}
+
+	__host__ inline void Layout::writeToFile(const std::string& filename, int typeIndex)
+	{
+		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		writeToFile(file, typeIndex);
+
+		file.close();
+	}
+
+	template<typename T>
+	__host__ inline void Layout::writeToFile(std::fstream& file)
+	{
+		writeToFile(file, GetIndex<TypesSortedByAccuracy, T>::value);
+	}
+
+	template<typename T>
+	__host__ inline void Layout::writeToFile(const std::string& filename)
+	{
+		writeToFile(filename, GetIndex<TypesSortedByAccuracy, T>::value);
+	}
+
 	__host__ inline std::ostream& operator<<(std::ostream& os, const Layout& layout)
 	{
 		if(layout.getNumSlices()==1)
@@ -478,6 +582,11 @@ namespace Kartet
 				os << '_';
 			else
 				os << layout.getLeadingSlices();
+
+			if(layout.getOffset()==0)
+				os << '_';
+			else
+				os << layout.getOffset();
 		}
 		os << ']';
 
@@ -486,8 +595,8 @@ namespace Kartet
 
 // Accessor :
 	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls)
-	 : 	Layout(r, c, s, lc, ls),
+	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
+	 : 	Layout(r, c, s, lc, ls, o),
 		devicePtr(NULL)	
 	{ }
 
@@ -498,18 +607,16 @@ namespace Kartet
 	{ }
 
 	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls)
-	 :	Layout(r, c, s, lc, ls),
-		devicePtr(ptr)	
+	__host__ __device__ Accessor<T>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
+	 :	Layout(r, c, s, lc, ls, o),
+		devicePtr(ptr)
 	{ }
 
 	template<typename T>
 	__host__ __device__ Accessor<T>::Accessor(T* ptr, const Layout& layout)
 	 :	Layout(layout),
 		devicePtr(ptr)
-	{
-
-	}
+	{ }
 	
 	template<typename T>
 	__host__ Accessor<T>::Accessor(const Array<T>& a)
@@ -594,7 +701,7 @@ namespace Kartet
 				from(_from),
 				to(_to),
 				deviceLayout(_deviceLayout),
-				solidLayout(_deviceLayout.getSolidLayout())
+				solidLayout(_deviceLayout.getMonolithicLayout())
 			{ }
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const
@@ -651,7 +758,7 @@ namespace Kartet
 		if(!isInside(i, j, k))
 			throw OutOfRange;		
 
-		return Accessor<T>(devicePtr + getIndex(i, j, k), 1, 1, 1);
+		return Accessor<T>(devicePtr + getIndex(i, j, k), 1, 1, 1, 1, 1, getOffset()+getIndex(i, j, k));
 	}
 
 	template<typename T>
@@ -678,7 +785,7 @@ namespace Kartet
 					throw OutOfRange;
 			}
 		}
-		return Accessor<T>(devicePtr + p, numElements, 1, 1);
+		return Accessor<T>(devicePtr + p, numElements, 1, 1, numElements, numElements, getOffset()+p);
 	}
 
 	template<typename T>
@@ -687,7 +794,7 @@ namespace Kartet
 		if(!validColumnIndex(j))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices(), getOffset()+getIndex(0,j,0));
 	}
 
 	template<typename T>
@@ -704,7 +811,7 @@ namespace Kartet
 		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,jBegin,0));
 	}
 
 	template<typename T>
@@ -713,7 +820,7 @@ namespace Kartet
 		if(!validSliceIndex(k))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns());
+		return Accessor<T>(devicePtr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns(), getOffset()+getIndex(0,0,k));
 	}
 
 	template<typename T>
@@ -730,7 +837,7 @@ namespace Kartet
 		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices(), getOffset()+getIndex(0,0,kBegin));
 	}
 
 	template<typename T>
@@ -741,17 +848,17 @@ namespace Kartet
 		if(!validRowIndex(iBegin) || !validRowIndex(iBegin+numRows-1) || !validColumnIndex(jBegin) || !validColumnIndex(jBegin+numColumns-1))
 			throw OutOfRange;
 		
-		return Accessor<T>(devicePtr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices());
+		return Accessor<T>(devicePtr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(iBegin,jBegin,0));
 	}
 
 	template<typename T>
 	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t jBegin, index_t numVectors) const
 	{
 		std::vector< Accessor<T> > pages;
-		const std::vector< std::pair<index_t, Layout > > pagesLayout = Layout::splitLayoutPages(jBegin, numVectors);
+		const std::vector<Layout> pagesLayout = Layout::splitLayoutPages(jBegin, numVectors);
 
-		for(std::vector< std::pair<index_t, Layout > >::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)
-			pages.push_back( Accessor<T>(devicePtr + it->first, it->second) );
+		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)
+			pages.push_back( Accessor<T>(devicePtr + it->getOffset(), *it) );
 
 		return pages;
 	}
@@ -770,7 +877,7 @@ namespace Kartet
 		const int maxWidth = 8;
 		const char fillCharacter = ' ';
 		const char* spacing = "  ";
-		const Kartet::Layout l = A.getSolidLayout();
+		const Kartet::Layout l = A.getMonolithicLayout();
 		T* tmp = A.getData();
 
 		os << "(Array of size " << A.getLayout() << ')' << std::endl;
@@ -804,7 +911,7 @@ namespace Kartet
 	
 	template<typename T>
 	__host__ Array<T>::Array(const Layout& layout)
-	 :	Accessor<T>(layout.getSolidLayout())
+	 :	Accessor<T>(layout.getMonolithicLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
@@ -822,8 +929,18 @@ namespace Kartet
 	}
 
 	template<typename T>
-	Array<T>::Array(const Array<T>& A)
-	 :	Accessor<T>(A.getSolidLayout())
+	__host__ Array<T>::Array(const T* ptr, const Layout& layout)
+	 :	Accessor<T>(layout.getMonolithicLayout())
+	{
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
+		if(err!=cudaSuccess)
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		setData(ptr);
+	}
+
+	template<typename T>
+	__host__ Array<T>::Array(const Array<T>& A)
+	 :	Accessor<T>(A.getMonolithicLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
@@ -833,13 +950,23 @@ namespace Kartet
 
 	template<typename T>
 	template<typename TIn>
-	Array<T>::Array(const Accessor<TIn>& A)
-	 : 	Accessor<T>(A.getSolidLayout())
+	__host__ Array<T>::Array(const Accessor<TIn>& A)
+	 : 	Accessor<T>(A.getMonolithicLayout())
 	{
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
 		(*this) = A;
+	}
+	
+	template<typename T>
+	__host__ Array<T>::Array(const std::string& filename, bool convert, size_t maxBufferSize)
+	 :	Accessor<T>(Layout::readFromFile(filename))
+	{
+		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
+		if(err!=cudaSuccess)
+			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		readFromFile(filename, convert, maxBufferSize);
 	}
 
 	template<typename T>
@@ -853,9 +980,153 @@ namespace Kartet
 	}
 
 	template<typename T>
-	Accessor<T>& Array<T>::accessor(void)
+	__host__ Accessor<T>& Array<T>::accessor(void)
 	{
 		return (*this);
+	}
+
+	template<typename T>
+	__host__ void Array<T>::readFromFile(std::fstream& file, bool convert, size_t maxBufferSize)
+	{
+		if(!isMonolithic())
+			throw InvalidOperation;
+
+		if(!file.is_open())
+			throw InvalidFileStream;
+
+		if(maxBufferSize==0)
+			maxBufferSize = static_cast<size_t>(getNumElements())*sizeof(T);
+
+		int typeIndex = -1;
+		const Layout layout = Layout::readFromFile(file, &typeIndex);
+
+		if(!layout.sameLayoutAs(*this))
+			throw InvalidOperation;
+
+		if(!convert && (typeIndex!=GetIndex<TypesSortedByAccuracy, T>::value))
+			throw InvalidOperation;
+
+		const size_t 	size = sizeOfType(typeIndex),
+				numBufferElements = std::min(static_cast<size_t>(layout.getNumElements())*size, maxBufferSize)/size,
+				numReads = static_cast<size_t>(static_cast<float>(layout.getNumElements())/static_cast<float>(numBufferElements) + 0.5f);
+		index_t offset = 0;
+		char	*bufferRead = new char[numBufferElements*size],
+			*bufferCast = NULL;
+
+		if(typeIndex!=GetIndex<TypesSortedByAccuracy, T>::value)
+			bufferCast = new char[numBufferElements*sizeof(T)];
+
+		try
+		{
+			for(size_t k=0; k<numReads; k++)
+			{
+				const size_t currentNumElements = std::min(numBufferElements, static_cast<size_t>(layout.getNumElements())-k*numBufferElements);
+				file.read(bufferRead, currentNumElements*size);
+
+				if(!file.good())
+					throw InvalidFileStream;
+			
+				if(bufferCast==NULL)
+				{
+					cudaError_t err = cudaMemcpy(getPtr() + offset, reinterpret_cast<void*>(bufferRead), currentNumElements*sizeof(T), cudaMemcpyHostToDevice);
+					if(err!=cudaSuccess)
+						throw static_cast<Exception>(CudaExceptionsOffset + err);
+				}
+				else
+				{
+					copy(reinterpret_cast<T*>(bufferCast), bufferRead, typeIndex, currentNumElements);
+					cudaError_t err = cudaMemcpy(getPtr() + offset, reinterpret_cast<void*>(bufferCast), currentNumElements*sizeof(T), cudaMemcpyHostToDevice);
+					if(err!=cudaSuccess)
+						throw static_cast<Exception>(CudaExceptionsOffset + err);
+				}
+				offset += currentNumElements;
+			}
+		}
+		catch(Exception& e)
+		{
+			delete bufferRead;
+			delete bufferCast;
+			throw e;
+		}
+		delete bufferRead;
+		delete bufferCast;
+	}
+
+	template<typename T>
+	__host__ void Array<T>::readFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
+	{
+		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		readFromFile(file, convert, maxBufferSize);
+
+		file.close();
+	}
+
+	template<typename T>
+	__host__ void Array<T>::writeToFile(std::fstream& file, size_t maxBufferSize)
+	{
+		if(!isMonolithic())
+			throw InvalidOperation;
+
+		if(!file.is_open())
+			throw InvalidFileStream;
+
+		if(maxBufferSize==0)
+			maxBufferSize = static_cast<size_t>(getNumElements())*sizeof(T);
+
+		// Write the header :
+		Layout::writeToFile<T>(file);
+		const size_t 	numBufferElements = std::min(static_cast<size_t>(getNumElements())*sizeof(T), maxBufferSize)/sizeof(T),
+				numReads = static_cast<size_t>(static_cast<float>(getNumElements())/static_cast<float>(numBufferElements) + 0.5f);
+		index_t offset = 0;
+		char *buffer = new char[numBufferElements*sizeof(T)];
+
+		// Write the data :
+		try
+		{
+			for(size_t k=0; k<numReads; k++)
+			{
+				const size_t currentNumElements = std::min(numBufferElements, static_cast<size_t>(getNumElements())-k*numBufferElements);
+
+				// Copy :
+				cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(buffer), getPtr() + offset, currentNumElements*sizeof(T), cudaMemcpyDeviceToHost);
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
+
+				// Write :
+				file.write(buffer, currentNumElements*sizeof(T));
+
+				offset += currentNumElements;
+			}
+		}
+		catch(Exception& e)
+		{
+			delete buffer;
+			throw e;
+		}
+		delete buffer;
+	}
+
+	template<typename T>
+	__host__ void Array<T>::writeToFile(const std::string& filename, size_t maxBufferSize)
+	{
+		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		writeToFile(file, maxBufferSize);
+
+		file.close();
 	}
 
 } // Namespace Kartet

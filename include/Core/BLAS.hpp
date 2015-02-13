@@ -45,6 +45,9 @@ namespace Kartet
 			__host__ inline ~BLASContext(void);
 
 			__host__ static inline bool isProductValid(const Layout& A, cublasOperation_t transa, const Layout& B, cublasOperation_t transb, const Layout& C);
+			__host__ static inline bool isProductValid(const Layout& A, const Layout& B, const Layout& C);
+			__host__ static inline Layout getProductLayout(const Layout& A, cublasOperation_t transa, const Layout& B, cublasOperation_t transb);
+			__host__ static inline Layout getProductLayout(const Layout& A, const Layout& B);
 
 			template<typename T>
 			__host__ int amax(const Accessor<T>& x);
