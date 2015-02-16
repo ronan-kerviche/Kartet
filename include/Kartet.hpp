@@ -33,6 +33,7 @@
 	#include "Core/BLAS.hpp"
 	#include "Core/RandomSource.hpp"
 	#include "Core/FFT.hpp"
+	#include "Core/Reduce.hpp"
 
 #endif
 

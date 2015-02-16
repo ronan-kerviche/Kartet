@@ -112,7 +112,7 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorSyncDepthExceeded ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorLaunchPendingCountExceeded ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotPermitted ), 
-		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ), 
+		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ),
 		#undef DEFINE_CUDA_EXCEPTION
 		// CuBLAS Specifics :
 		CuBLASExceptionOffset		= 2048,
@@ -181,7 +181,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorMissingConfiguration ) 
 			EXCEPTION_MESSAGE( CudaErrorMemoryAllocation ) 
 			EXCEPTION_MESSAGE( CudaErrorInitializationError ) 
-			EXCEPTION_MESSAGE( CudaErrorLaunchFailure ) 
+			EXCEPTION_MESSAGE( CudaErrorLaunchFailure )
 			EXCEPTION_MESSAGE( CudaErrorPriorLaunchFailure ) 
 			EXCEPTION_MESSAGE( CudaErrorLaunchTimeout ) 
 			EXCEPTION_MESSAGE( CudaErrorLaunchOutOfResources ) 
@@ -248,7 +248,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorSyncDepthExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorLaunchPendingCountExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorNotPermitted ) 
-			EXCEPTION_MESSAGE( CudaErrorNotSupported ) 
+			EXCEPTION_MESSAGE( CudaErrorNotSupported )
 			// CuBLAS :
 			EXCEPTION_MESSAGE( CuBLASNotInitialized )	
 			EXCEPTION_MESSAGE( CuBLASAllocFailed )

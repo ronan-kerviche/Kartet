@@ -47,6 +47,19 @@ namespace Kartet
 	};
 
 	template<typename T>
+	struct ExpressionEvaluation<T*>
+	{
+		// Mechanism over a pointer.
+		typedef T ReturnType;
+		
+		// Const reference to const pointer :
+		__device__ inline static ReturnType evaluate(const T* const& expr, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) 
+		{
+			return expr[p];
+		}
+	};
+
+	template<typename T>
 	struct ExpressionEvaluation< ExpressionContainer<T> >
 	{
 		// Mechanism for a ExpressionContainer Object :

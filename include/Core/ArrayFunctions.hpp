@@ -183,6 +183,7 @@ namespace Kartet
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeFirstElement,		distributeFirstElement,		p = l.getIndex(0, 0, k); i=j=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonalVector,			diagonalVector,			p = l.getIndex(i, i, k); j=i; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	p = l.getIndex(j, 0, k); i=j; j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	p = l.getIndex(k, 0, 0); i=k; k=0; k=0; )
 
 // Layout reinterpretation functions :
 	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_clampArray, 		clampArray, 			i = lnew.getIClamped(i);

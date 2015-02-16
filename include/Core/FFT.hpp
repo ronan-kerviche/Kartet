@@ -41,22 +41,23 @@ namespace Kartet
 			cufftHandle handle;
 			cufftType fftType;
 
+			__host__ FFTContext(const FFTContext&);
 		public :
 			const Layout inputLayout, outputLayout;
 
-			FFTContext(const Layout& inputL, const Layout& outputL);
-			~FFTContext(void);
+			__host__ FFTContext(const Layout& inputL, const Layout& outputL);
+			__host__ ~FFTContext(void);
 
-			void fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward=true);
-			void ifft(const Accessor<TIn>& input, const Accessor<TOut>& output);
+			__host__ void fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward=true);
+			__host__ void ifft(const Accessor<TIn>& input, const Accessor<TOut>& output);
 
 		// static :
-			static bool isValid(const Layout& input, const Layout& output);
+			__host__ static bool isValid(const Layout& input, const Layout& output);
 	};
 
 // Impl.
 	template<typename TIn, typename TOut>
-	FFTContext<TIn, TOut>::FFTContext(const Layout& inputL, const Layout& outputL)
+	__host__ FFTContext<TIn, TOut>::FFTContext(const Layout& inputL, const Layout& outputL)
 	 :	inputLayout(inputL),
 		outputLayout(outputL),
 		fftType(static_cast<cufftType>(0))
@@ -114,14 +115,14 @@ namespace Kartet
 	}
 
 	template<typename TIn, typename TOut>
-	FFTContext<TIn, TOut>::~FFTContext(void)
+	__host__ FFTContext<TIn, TOut>::~FFTContext(void)
 	{
 		// Destroy the handle :
 		cufftDestroy(handle);
 	}
 
 	template<typename TIn, typename TOut>
-	void FFTContext<TIn, TOut>::fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward)
+	__host__ void FFTContext<TIn, TOut>::fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward)
 	{	
 		if(!input.sameLayoutAs(inputLayout) || !output.sameLayoutAs(outputLayout))	
 			throw IncompatibleLayout;
@@ -161,13 +162,13 @@ namespace Kartet
 	}
 
 	template<typename TIn, typename TOut>
-	void FFTContext<TIn, TOut>::ifft(const Accessor<TIn>& input, const Accessor<TOut>& output)
+	__host__ void FFTContext<TIn, TOut>::ifft(const Accessor<TIn>& input, const Accessor<TOut>& output)
 	{
 		fft(input, output, false);
 	}
 
 	template<typename TIn, typename TOut>
-	bool FFTContext<TIn, TOut>::isValid(const Layout& input, const Layout& output)
+	__host__ bool FFTContext<TIn, TOut>::isValid(const Layout& input, const Layout& output)
 	{
 		
 		if( 	// Check for the dimensions :

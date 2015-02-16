@@ -8,7 +8,7 @@
 					j = layout.getJ(), 
 					k = layout.getK(),
 					p = layout.getIndex();
-		printf("  Hi Block : (%d; %d; %d) Thread : (%d; %d; %d) => (%i; %i; %i) = %i\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, i, j, k, p);
+		printf("  Hi Block : (%d; %d; %d) Thread : (%d; %d; %d) => (i=%d; j=%d; k=%d):p=%d\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, (int)i, (int)j, (int)k, (int)p);
 	}
 
 int main(int argc, char** argv)
@@ -22,6 +22,14 @@ int main(int argc, char** argv)
 	{
 		// Testing expressions :
 		Kartet::Array<double> A(5, 3), B(5, 3);
+
+		A = Kartet::IndexI();
+		B = Kartet::IndexJ();
+		std::cout << "A = " << A << std::endl;
+		std::cout << "B = " << B << std::endl;
+		A = A+B;
+		std::cout << "S = " << A << std::endl;
+		
 		std::cout << "Layout : " << A.getLayout() << std::endl;
 		A = 1.23;
 		B = 2.56 * Kartet::IndexJ();
@@ -117,6 +125,14 @@ int main(int argc, char** argv)
 		std::cout << "V = " << V << std::endl;
 		Kartet::Array<cuDoubleComplex> W("tmp.dat");
 		std::cout << "W = " << W << std::endl;
+
+		// Reduction :
+		Kartet::ReduceContext reduceContext;
+		int testReduction = reduceContext.sum(U);
+		std::cout << "Sum(U) : " << testReduction << std::endl;
+		testReduction = reduceContext.sum(U.getLayout(), Kartet::IndexI()*Kartet::IndexJ());
+		std::cout << "Sum(I()*J()) = " << testReduction << " (==784 on 8x8)" << std::endl;
+		std::cout << "Sum(sqrt(I()*J())) = " << reduceContext.sum(Kartet::Layout(16, 16), sqrt(Kartet::cast<double>(Kartet::IndexI()*Kartet::IndexJ()))) << " (\\approx 1637.755873, for 16x16)" << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

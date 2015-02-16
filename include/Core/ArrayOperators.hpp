@@ -136,7 +136,7 @@ namespace Kartet
 		{ \
 			typedef outputType ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) \
 			{ \
 				return operation ; \
 			} \
@@ -160,7 +160,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T, void, void, false, false, false, false, void, void, void, void>::ReturnType ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const T& a) \
+			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
 				return (operation) ; \
 			} \
@@ -172,7 +172,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T, void, void, false, true, false, false, void, void, void, void>::ReturnType ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const T& a) \
+			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
 				return (operation) ; \
 			} \
@@ -184,7 +184,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T, void, void, true, false, false, true, void, void, void, void>::ReturnType ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const T& a) \
+			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
 				return (operation) ; \
 			} \
@@ -199,7 +199,7 @@ namespace Kartet
 			{ \
 				typedef typename StandardOperatorTypeToolbox<TOut, void, void, false, false, false, false, void, void, void, void>::ReturnType ReturnType; \
 				\
-				__device__ inline static ReturnType apply(const T& a) \
+				__host__ __device__ inline static ReturnType apply(const T& a) \
 				{ \
 					return static_cast<TOut>(operation) ; \
 				} \
@@ -266,7 +266,7 @@ namespace Kartet
 		{ \
 			typedef void ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const Layout& l, index_t& p, index_t& i, index_t& j, index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, index_t& p, index_t& i, index_t& j, index_t& k) \
 			{ \
 				operations \
 			} \
@@ -301,7 +301,7 @@ namespace Kartet
 		{ \
 			typedef void ReturnType; \
 			\
-			__device__ inline static ReturnType apply(const Layout& l, const Layout& lnew, index_t& p, index_t& i, index_t& j, index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, const Layout& lnew, index_t& p, index_t& i, index_t& j, index_t& k) \
 			{ \
 				operations \
 			} \
@@ -337,7 +337,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, false, false, false, void, void, void, void>::ReturnType ReturnType; \
 			 \
-			__device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
 				return (operation) ; \
 			} \
@@ -349,7 +349,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, false, false, false, bool, void, void, void>::ReturnType ReturnType; \
 			 \
-			__device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
 				return (operation) ; \
 			} \
@@ -361,7 +361,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, true, false, false, true, void, void, void, void>::ReturnType ReturnType; \
 			 \
-			__device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
 				return (operation) ; \
 			} \

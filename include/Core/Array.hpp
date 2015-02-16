@@ -97,9 +97,11 @@ namespace Kartet
 			// Dimensions :
 				__host__ __device__ inline index_t getNumElements(void) const;
 				__host__ __device__ inline index_t getNumElementsPerSlice(void) const;
+				__host__ __device__ inline index_t getNumElementsPerFragment(void) const; // per monolithic fragment
 				__host__ __device__ inline index_t getNumRows(void) const;
 				__host__ __device__ inline index_t getNumColumns(void) const;
 				__host__ __device__ inline index_t getNumSlices(void) const;
+				__host__ __device__ inline index_t getNumFragments(void) const;
 				__host__ __device__ inline index_t getWidth(void) const;		// For convenience ?
 				__host__ __device__ inline index_t getHeight(void) const;		// For convenience ?
 				__host__ __device__ inline index_t getDepth(void) const;		// For convenience ?
@@ -108,6 +110,7 @@ namespace Kartet
 				__host__ __device__ inline index_t getOffset(void) const;
 				__host__ __device__ inline index_t setOffset(index_t newOffset);
 				__host__ __device__ inline dim3 getDimensions(void) const;
+				__host__ __device__ inline dim3 getStride(void) const;
 				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__ __device__ inline bool isSliceMonolithic(void) const;
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
@@ -123,11 +126,11 @@ namespace Kartet
 			static 		 __device__ inline index_t getJ(void);
 			static		 __device__ inline index_t getK(void);
 					template<typename TOut>
-					 __device__ inline TOut getINorm(index_t i) const; // exclusive, from 0 to 1, (1 NOT INCLUDED)
+				__host__ __device__ inline TOut getINorm(index_t i) const; // exclusive, from 0 to 1, (1 NOT INCLUDED)
 					template<typename TOut>
-					 __device__ inline TOut getJNorm(index_t j) const; // exclusive
+				__host__ __device__ inline TOut getJNorm(index_t j) const; // exclusive
 					template<typename TOut>
-					 __device__ inline TOut getKNorm(index_t k) const; // exclusive
+				__host__ __device__ inline TOut getKNorm(index_t k) const; // exclusive
 					template<typename TOut>
 					 __device__ inline TOut getINorm(void) const; // exclusive
 					template<typename TOut>
@@ -135,11 +138,11 @@ namespace Kartet
 					template<typename TOut>
 					 __device__ inline TOut getKNorm(void) const; // exclusive 
 					 template<typename TOut>
-					__device__ inline TOut getINormIncl(index_t i) const; // inclusive
+				__host__ __device__ inline TOut getINormIncl(index_t i) const; // inclusive
 					template<typename TOut>
-					 __device__ inline TOut getJNormIncl(index_t j) const; // inclusive
+				__host__ __device__ inline TOut getJNormIncl(index_t j) const; // inclusive
 					template<typename TOut>
-					 __device__ inline TOut getKNormIncl(index_t k) const; // inclusive
+				__host__ __device__ inline TOut getKNormIncl(index_t k) const; // inclusive
 					template<typename TOut>
 					 __device__ inline TOut getINormIncl(void) const; // inclusive
 					template<typename TOut>
@@ -192,7 +195,7 @@ namespace Kartet
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
 	template<typename T>
-	index_t Layout::StaticContainer<T>::numThreads = 512;
+	index_t Layout::StaticContainer<T>::numThreads = 1024;
 
 	template<typename T>
 	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";
@@ -204,7 +207,7 @@ namespace Kartet
 	class Accessor : public Layout
 	{
 		protected :
-			T* devicePtr; // Does not include the offset.
+			T* devicePtr; // Already includes the offset.
 			
 				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
 				__host__ __device__ Accessor(const Layout& layout);

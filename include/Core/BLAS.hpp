@@ -40,6 +40,7 @@ namespace Kartet
 		private :
 			cublasHandle_t 	handle;	
 
+			__host__ inline BLASContext(const BLASContext&);
 		public :
 			__host__ inline BLASContext(void);
 			__host__ inline ~BLASContext(void);

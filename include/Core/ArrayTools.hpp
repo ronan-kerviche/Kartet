@@ -42,8 +42,8 @@ namespace Kartet
 	{
 		if(leadingColumns<r || c==1)
 			leadingColumns = numRows;
-		if(leadingSlices<(r*c) || s==1)
-			leadingSlices = numRows*numColumns;
+		if(leadingSlices<(numColumns*leadingColumns) || numSlices==1)
+			leadingSlices = numColumns*leadingColumns;
 	}
 
 	__host__ __device__ inline Layout::Layout(const Layout& l)
@@ -65,6 +65,19 @@ namespace Kartet
 		return (numRows * numColumns);
 	}
 
+	__host__ __device__ inline index_t Layout::getNumElementsPerFragment(void) const
+	{
+		if(leadingColumns==numRows)
+		{
+			if(leadingSlices==(numRows * numColumns))
+				return (numRows * numColumns * numSlices);
+			else
+				return (numRows * numColumns);
+		}
+		else
+			return numRows;
+	}
+
 	__host__ __device__ inline index_t Layout::getNumRows(void) const
 	{
 		return numRows;
@@ -78,6 +91,19 @@ namespace Kartet
 	__host__ __device__ inline index_t Layout::getNumSlices(void) const
 	{
 		return numSlices;
+	}
+
+	__host__ __device__ inline index_t Layout::getNumFragments(void) const
+	{
+		if(leadingColumns==numRows)
+		{
+			if(leadingSlices==(numRows * numColumns))
+				return 1;
+			else
+				return numSlices;
+		}
+		else
+			return (numSlices * numColumns);
 	}
 
 	__host__ __device__ inline index_t Layout::getWidth(void) const
@@ -120,6 +146,11 @@ namespace Kartet
 	__host__ __device__ inline dim3 Layout::getDimensions(void) const
 	{
 		return dim3(numRows, numColumns, numSlices);
+	}
+	
+	__host__ __device__ inline dim3 Layout::getStride(void) const
+	{
+		return dim3(1, leadingColumns, leadingSlices);
 	}
 
 	__host__ __device__ inline bool Layout::isMonolithic(void) const
@@ -200,12 +231,14 @@ namespace Kartet
 
 	__device__ inline index_t Layout::getI(void)
 	{
-		return blockIdx.y*blockDim.y+threadIdx.y;
+		//return blockIdx.y*blockDim.y+threadIdx.y;
+		return blockIdx.x*blockDim.x+threadIdx.x;
 	}
 
 	__device__ inline index_t Layout::getJ(void)
 	{
-		return blockIdx.x*blockDim.x+threadIdx.x;
+		//return blockIdx.x*blockDim.x+threadIdx.x;
+		return blockIdx.y*blockDim.y+threadIdx.y;
 	}
 
 	__device__ inline index_t Layout::getK(void)
@@ -214,19 +247,19 @@ namespace Kartet
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getINorm(index_t i) const
+	__host__ __device__ inline TOut Layout::getINorm(index_t i) const
 	{
 		return static_cast<TOut>(i)/static_cast<index_t>(numRows);
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getJNorm(index_t j) const
+	__host__ __device__ inline TOut Layout::getJNorm(index_t j) const
 	{
 		return static_cast<TOut>(j)/static_cast<index_t>(numColumns);
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getKNorm(index_t k) const
+	__host__ __device__ inline TOut Layout::getKNorm(index_t k) const
 	{
 		return static_cast<TOut>(k)/static_cast<TOut>(numSlices);
 	}
@@ -250,19 +283,19 @@ namespace Kartet
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getINormIncl(index_t i) const
+	__host__ __device__ inline TOut Layout::getINormIncl(index_t i) const
 	{
 		return static_cast<TOut>(i)/static_cast<TOut>(numRows-1);
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getJNormIncl(index_t j) const
+	__host__ __device__ inline TOut Layout::getJNormIncl(index_t j) const
 	{
 		return static_cast<TOut>(j)/static_cast<TOut>(numColumns-1);
 	}
 
 	template<typename TOut>
-	__device__ inline TOut Layout::getKNormIncl(index_t k) const
+	__host__ __device__ inline TOut Layout::getKNormIncl(index_t k) const
 	{
 		return static_cast<TOut>(k)/static_cast<TOut>(numSlices-1);
 	}
@@ -410,27 +443,37 @@ namespace Kartet
 
 	__host__ __device__ inline void Layout::unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const
 	{
-		index_t tmp = index/numRows;
-		j = index - tmp*numRows;
-		k = tmp/numColumns;
-		i = tmp - k*numColumns;
+		k = index / leadingSlices;
+		j = (index - k*leadingSlices) / leadingColumns;
+		i = index - k*leadingSlices - j*leadingColumns;
 	}
 
 	__host__ inline dim3 Layout::getBlockSize(void) const
 	{
 		dim3 d;
-		d.x = 1;
-		d.y = min(StaticContainer<void>::numThreads, getNumRows());
-		d.z = 1;
+		/*d.x = 1;
+		d.y = min(StaticContainer<void>::numThreads, numRows);
+		d.z = 1;*/
+		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
+		d.x = min(StaticContainer<void>::numThreads, numRows);
+		d.y = min(StaticContainer<void>::numThreads/d.x, numColumns);
+		d.z = min(StaticContainer<void>::numThreads/(d.x*d.y), numSlices);
+		//std::cout << "Layout::getBlockSize : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}
 
 	__host__ inline dim3 Layout::getNumBlock(void) const
 	{
 		dim3 d;
-		d.x = getNumColumns(); 
-		d.y = ceil(static_cast<double>(getNumRows())/static_cast<double>(StaticContainer<void>::numThreads));
-		d.z = getNumSlices();
+		/*d.x = numColumns; 
+		d.y = (numRows + StaticContainer<void>::numThreads - 1)/StaticContainer<void>::numThreads;
+		d.z = numSlices;*/
+		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
+		const dim3 blockSize = getBlockSize();
+		d.x = (numRows + blockSize.x - 1)/blockSize.x;
+		d.y = (numColumns + blockSize.y - 1)/blockSize.y;
+		d.z = (numSlices + blockSize.z - 1)/blockSize.z;
+		//std::cout << "Layout::getNumBlock : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}
 
@@ -576,17 +619,17 @@ namespace Kartet
 			if(layout.getLeadingColumns()==layout.getNumRows())
 				os << '_';
 			else
-				os << layout.getLeadingColumns();
+				os << '+' << layout.getLeadingColumns();
 			os << ", ";
 			if(layout.getLeadingSlices()==layout.getNumElementsPerSlice())
 				os << '_';
 			else
-				os << layout.getLeadingSlices();
-
+				os << '+' << layout.getLeadingSlices();
+			os << ", ";
 			if(layout.getOffset()==0)
 				os << '_';
 			else
-				os << layout.getOffset();
+				os << '+' << layout.getOffset();
 		}
 		os << ']';
 
