@@ -195,7 +195,7 @@ namespace Kartet
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
 	template<typename T>
-	index_t Layout::StaticContainer<T>::numThreads = 1024;
+	index_t Layout::StaticContainer<T>::numThreads = 512;
 
 	template<typename T>
 	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";

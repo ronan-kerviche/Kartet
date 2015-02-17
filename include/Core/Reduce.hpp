@@ -55,7 +55,8 @@ namespace Kartet
 		{
 			// First elements :
 			ReturnType v = static_cast<ReturnType>(0);
-
+			
+			// WORKING, AND FASTER (???) :
 			for(int kl=0; kl<blockStride.z; kl++)
 				for(int jl=0; jl<blockStride.y; jl++)
 					for(int il=0; il<blockStride.x; il++)
@@ -67,6 +68,32 @@ namespace Kartet
 						if(layout.isInside(iL, jL, kL))
 							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
 					}
+
+			// THIS ONE IS SLOWER (???) :
+			/*index_t   iL = i,
+				  jL = j,
+				  kL = k,
+				  pL = 0;
+			const index_t 	stepX = gridDim.x * blockDim.x, 
+					stepY = gridDim.y * blockDim.y, 
+					stepZ = gridDim.z * blockDim.z;
+			for(int kc=0; kc<blockStride.z; kc++)
+			{
+				for(int jc=0; jc<blockStride.y; jc++)
+				{				
+					for(int ic=0; ic<blockStride.x; ic++)
+					{
+						pL = layout.getIndex(iL, jL, kL);
+						if(layout.isInside(iL, jL, kL))
+							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
+						iL += stepX;
+					}
+					iL = i;
+					jL += stepY;
+				}
+				jL = j;
+				kL += stepZ;
+			}*/
 			sharedData[threadId] = static_cast<TOut>(v);
 
 			// Reduce :

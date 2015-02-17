@@ -1,20 +1,49 @@
+/* ************************************************************************************************************* */
+/*                                                                                                               */
+/*     Kartet                                                                                                    */
+/*     A Simple C++ Array Library for CUDA                                                                       */
+/*                                                                                                               */
+/*     LICENSE : The MIT License                                                                                 */
+/*     Copyright (c) 2015 Ronan Kerviche                                                                         */
+/*                                                                                                               */
+/*     Permission is hereby granted, free of charge, to any person obtaining a copy                              */
+/*     of this software and associated documentation files (the "Software"), to deal                             */
+/*     in the Software without restriction, including without limitation the rights                              */
+/*     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell                                 */
+/*     copies of the Software, and to permit persons to whom the Software is                                     */
+/*     furnished to do so, subject to the following conditions:                                                  */
+/*                                                                                                               */
+/*     The above copyright notice and this permission notice shall be included in                                */
+/*     all copies or substantial portions of the Software.                                                       */
+/*                                                                                                               */
+/*     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR                                */
+/*     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,                                  */
+/*     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE                               */
+/*     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER                                    */
+/*     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,                             */
+/*     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN                                 */
+/*     THE SOFTWARE.                                                                                             */
+/*                                                                                                               */
+/* ************************************************************************************************************* */
+
 #include <iostream>
 #include "Kartet.hpp"
 
 	__global__ void testPrint(const Kartet::Layout layout)
 	{
-		//printf("  Hi from Block : (%d; %d; %d) Thread : (%d; %d; %d)\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
 		const Kartet::index_t	i = layout.getI(), 
 					j = layout.getJ(), 
 					k = layout.getK(),
 					p = layout.getIndex();
-		printf("  Hi Block : (%d; %d; %d) Thread : (%d; %d; %d) => (i=%d; j=%d; k=%d):p=%d\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, (int)i, (int)j, (int)k, (int)p);
+		printf("  Hi, from block : (%d; %d; %d) Thread : (%d; %d; %d) => (i=%d; j=%d; k=%d):p=%d\n", blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, (int)i, (int)j, (int)k, (int)p);
 	}
 
 int main(int argc, char** argv)
 {
 	int returnCode = 0;
-	std::cout << "Kartet Test" << std::endl;
+	std::cout << "================================" << std::endl;
+	std::cout << "       Kartet Syntax Tests      " << std::endl;
+	std::cout << "================================" << std::endl;
 	std::cout << "Build : " << __DATE__ << ' ' << __TIME__ << std::endl;
 	srand(time(NULL));
 
@@ -128,12 +157,14 @@ int main(int argc, char** argv)
 
 		// Reduction :
 		Kartet::ReduceContext reduceContext;
-		const Kartet::Layout l(4660,7965);
+		const Kartet::Layout l(4661,7965);
 		std::cout << "Layout : " << l << std::endl;
-		std::cout << "Sum(1) : " << reduceContext.sum(l, 1) << " == " << l.getNumElements() << std::endl;
-		// % f = @(M, N) sum(sum( repmat(reshape(0:(M-1),[M,1]), [1, N]) + repmat(reshape(0:(N-1),[1,N]), [M, 1])));
-		double res = static_cast<double>(l.getNumRows()+l.getNumColumns()-2)*static_cast<double>(l.getNumRows()*l.getNumColumns())/2.0;
-		std::cout << "Sum(I()+J()) : " << reduceContext.sum(l, Kartet::cast<double>(Kartet::IndexI()+Kartet::IndexJ())) << " == " << res << std::endl;
+		int sum1 = reduceContext.sum(l, 1);
+		std::cout << "Sum(1) : " << sum1 << " == " << l.getNumElements() << ", test : " << (sum1==l.getNumElements()) << std::endl;
+
+		double  sum2 = reduceContext.sum(l, Kartet::cast<double>(Kartet::IndexI()+Kartet::IndexJ())),
+			res2 = static_cast<double>(l.getNumRows()+l.getNumColumns()-2)*static_cast<double>(l.getNumRows()*l.getNumColumns())/2.0;
+		std::cout << "Sum(I()+J()) : " << sum2 << " == " << res2 << ", diff : " << std::abs(sum2-res2)/res2 << std::endl;
 		
 		int testReduction = reduceContext.sum(U);
 		std::cout << "Sum(U) : " << testReduction << std::endl;
@@ -145,7 +176,8 @@ int main(int argc, char** argv)
 	{
 		std::cout << "Exception : " << e << std::endl;
 		returnCode = -1;
-	}	
+	}
+
 	return returnCode;
 }
 
