@@ -325,14 +325,13 @@ namespace Kartet
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		index_t i = array.getI();
+		index_t i = array.getI(),
+			j = array.getJ(),
+			k = array.getK(),
+			p = array.getIndex();
 
-		if(array.validRowIndex(i))
+		if(array.isInside(i, j, k))
 		{
-			index_t j = array.getJ(),
-				k = array.getK(),
-				p = array.getIndex();
-
 			ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
 
 			T buffer;
@@ -347,14 +346,13 @@ namespace Kartet
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		index_t i = array.getI();
+		index_t i = array.getI(),
+			j = array.getJ(),
+			k = array.getK(),
+			p = array.getIndex();
 
-		if(array.validRowIndex(i))
+		if(array.isInside(i, j, k))
 		{
-			index_t j = array.getJ(),
-				k = array.getK(),
-				p = array.getIndex();
-
 			MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, p, i, j, k);
 
 			if(test)

@@ -128,6 +128,13 @@ int main(int argc, char** argv)
 
 		// Reduction :
 		Kartet::ReduceContext reduceContext;
+		const Kartet::Layout l(4660,7965);
+		std::cout << "Layout : " << l << std::endl;
+		std::cout << "Sum(1) : " << reduceContext.sum(l, 1) << " == " << l.getNumElements() << std::endl;
+		// % f = @(M, N) sum(sum( repmat(reshape(0:(M-1),[M,1]), [1, N]) + repmat(reshape(0:(N-1),[1,N]), [M, 1])));
+		double res = static_cast<double>(l.getNumRows()+l.getNumColumns()-2)*static_cast<double>(l.getNumRows()*l.getNumColumns())/2.0;
+		std::cout << "Sum(I()+J()) : " << reduceContext.sum(l, Kartet::cast<double>(Kartet::IndexI()+Kartet::IndexJ())) << " == " << res << std::endl;
+		
 		int testReduction = reduceContext.sum(U);
 		std::cout << "Sum(U) : " << testReduction << std::endl;
 		testReduction = reduceContext.sum(U.getLayout(), Kartet::IndexI()*Kartet::IndexJ());

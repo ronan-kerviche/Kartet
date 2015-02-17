@@ -29,6 +29,7 @@
 #ifndef __KARTET_REDUCE__
 #define __KARTET_REDUCE__
 
+	#include <limits>
 	#include "Core/Exceptions.hpp"
 	#include "Core/TemplateSharedMemory.hpp"
 	#include "Core/Array.hpp"
@@ -36,53 +37,56 @@
 namespace Kartet
 {
 	template<template<typename,typename> class Op, typename TOut, typename TExpr>
-	__global__ void reduceKernelV1(const Layout layout, const TExpr expr, TOut* outputBuffer, const int maxPow2Half)
+	__global__ void reduceKernel(const Layout layout, const dim3 blockStride, const TExpr expr, const TOut defaultValue, TOut* outputBuffer, const int totalNumThreads, const int maxPow2Half)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
 		TOut *sharedData = SharedMemory<TOut>();
-		const index_t 	N = layout.getNumElements(),
-				blockStart = blockIdx.y*(blockDim.y*2),
-				remaining = (::min(static_cast<unsigned int>(N - blockStart), blockDim.y)),
-				pa = blockStart + threadIdx.y,
-				pb = pa + blockDim.y;
 
-		// Load part A, part B, apply the operator, store in shared memory :
-		index_t ia = 0, 
-			ja = 0, 
-			ka = 0,
-			ib = 0, 
-			jb = 0, 
-			kb = 0;
-		layout.unpackIndex(pa, ia, ja, ka);
-		layout.unpackIndex(pb, ib, jb, kb);
-		
-		if(pb<N)
-		{
-			const ReturnType a = ExpressionEvaluation<TExpr>::evaluate(expr, layout, pa, ia, ja, ka),
-				 	 b = ExpressionEvaluation<TExpr>::evaluate(expr, layout, pb, ib, jb, kb);
-			sharedData[threadIdx.y]	= static_cast<TOut>(Op<ReturnType, ReturnType>::apply(a, b));
-		}
-		else if(pa<N) // thread not in the remaining half
-			sharedData[threadIdx.y] = ExpressionEvaluation<TExpr>::evaluate(expr, layout, pa, ia, ja, ka);
+		const unsigned int blockId = (blockIdx.z*gridDim.y + blockIdx.y)*gridDim.x + blockIdx.x,
+				   threadId = (threadIdx.z*blockDim.y + threadIdx.y)*blockDim.x + threadIdx.x;
+		const index_t 	i = blockIdx.x * blockDim.x + threadIdx.x,
+				j = blockIdx.y * blockDim.y + threadIdx.y,
+				k = blockIdx.z * blockDim.z + threadIdx.z;
 
-		// Reduce :
-		for(int k=maxPow2Half; k>0; k/=2)
+		// Initialization :
+		sharedData[threadId] = defaultValue;
+
+		if(layout.isInside(i, j, k))
 		{
-			__syncthreads();
-			if(threadIdx.y<k && (threadIdx.y+k)<remaining && threadIdx.y<remaining)
-				sharedData[threadIdx.y] = Op<TOut, TOut>::apply(sharedData[threadIdx.y], sharedData[threadIdx.y + k]);
-		}
+			// First elements :
+			ReturnType v = static_cast<ReturnType>(0);
+
+			for(int kl=0; kl<blockStride.z; kl++)
+				for(int jl=0; jl<blockStride.y; jl++)
+					for(int il=0; il<blockStride.x; il++)
+					{
+						index_t	iL = i + il * gridDim.x * blockDim.x,
+							jL = j + jl * gridDim.y * blockDim.y,
+							kL = k + kl * gridDim.z * blockDim.z,
+							pL = layout.getIndex(iL, jL, kL);
+						if(layout.isInside(iL, jL, kL))
+							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
+					}
+			sharedData[threadId] = static_cast<TOut>(v);
+
+			// Reduce :
+			for(int k=maxPow2Half; k>0; k/=2)
+			{
+				__syncthreads();
+				if(threadId<k && (threadId+k)<totalNumThreads && threadId<totalNumThreads)
+					sharedData[threadId] = Op<TOut, TOut>::apply(sharedData[threadId], sharedData[threadId + k]);
+			}
 		
-		// Store to this block ID :
-		if(threadIdx.y==0)
-			outputBuffer[blockIdx.y] = sharedData[0];
+			// Store to this block ID :
+			if(threadId==0)
+				outputBuffer[blockId] = sharedData[0];
+		}
 	}
 	
 	class ReduceContext
 	{
 		private :
-			const int fillNumBlocks;
+			const unsigned int fillNumBlocks;
 			const size_t maxMemory;			
 			char	*hostPtr,
 				*devicePtr;
@@ -91,8 +95,8 @@ namespace Kartet
 
 		public :
 			__host__ inline ReduceContext(void)
-			 : 	fillNumBlocks(32),
-				maxMemory(16777216), // 16MB, this should be almost the maximum VRAM size divided by 1024
+			 : 	fillNumBlocks(128),
+				maxMemory(16384),
 				hostPtr(NULL),
 				devicePtr(NULL)		
 			{
@@ -115,159 +119,132 @@ namespace Kartet
 			/*template<template<typename,typename> class Op, typename TOut, typename TExpr>
 			__host__ void reduce(const TExpr expr, const Accessor<TOut>& output)
 			{
-				// Build the reduction stategy :
-
-				// Apply :
+				// todo.
 			}*/
 
 			template<template<typename,typename> class Op, typename TOut, typename TExpr>
-			__host__ TOut reduceV1(const Layout& layout, const TExpr& expr)
+			__host__ TOut reduce(const Layout& layout, const TExpr& expr, const TOut defaultValue)
 			{
-				if(!layout.isMonolithic())
-					throw InvalidOperation;
-
-				bool firstStep = true;
 				TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
 					*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
 
-				index_t numElements = layout.getNumElements();
-				dim3 	blockSize,
-					numBlocks;
-				blockSize.x 	= 1;
-				blockSize.y 	= std::min(Layout::StaticContainer<void>::numThreads, (numElements+1)/2);
-				blockSize.z 	= 1;
-				numBlocks.x	= 1;
-				numBlocks.y	= (numElements + 2*blockSize.y - 1) / (2*blockSize.y);
-				numBlocks.z	= 1;
+				const dim3	blockSize = layout.getBlockSize(),
+						numBlocks = layout.getNumBlock();
 
-				while(firstStep || numElements>=(Layout::StaticContainer<void>::numThreads/4))
-				{
-					const size_t sharedMemorySize = blockSize.y * sizeof(TOut);
-					const int maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(blockSize.y-1)/std::log(2))));
+				// Compute the stride for each block, in order to limit the total number of blocks to fillNumBlocks :
+				dim3	reducedNumBlocks,
+					blockStride;
 
-					if(firstStep)
-					{
-						reduceKernelV1<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, expr, castDevicePtr, maxPow2Half);
-						firstStep = false;
-					}					
-					else
-						reduceKernelV1<Op><<<numBlocks, blockSize, sharedMemorySize>>>(Layout(numElements), castDevicePtr, castDevicePtr, maxPow2Half);
+				reducedNumBlocks.x	= std::min(numBlocks.x, fillNumBlocks);
+				blockStride.x		= (numBlocks.x + reducedNumBlocks.x - 1) / reducedNumBlocks.x;
+				reducedNumBlocks.y	= std::min(numBlocks.y, fillNumBlocks / reducedNumBlocks.x);
+				blockStride.y		= (numBlocks.y + reducedNumBlocks.y - 1) / reducedNumBlocks.y;
+				reducedNumBlocks.z	= std::min(numBlocks.z, fillNumBlocks / (reducedNumBlocks.x * reducedNumBlocks.y));
+				blockStride.z		= (numBlocks.z + reducedNumBlocks.z - 1) / reducedNumBlocks.z;
+				
+				const int totalNumBlocks = reducedNumBlocks.x * reducedNumBlocks.y * reducedNumBlocks.z,
+					  totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
+					  maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
+				const size_t sharedMemorySize = totalNumThreads * sizeof(TOut);
 
-					// Next step :
-					numElements = numBlocks.y;
-					blockSize.y 	= std::max(static_cast<index_t>(1), std::min(Layout::StaticContainer<void>::numThreads, static_cast<index_t>((numElements+1)/2)));
-					numBlocks.y	= (numElements + 2*blockSize.y - 1) / (2*blockSize.y);
-				}
+				/*std::cout << "numBlocks        : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
+				std::cout << "blockSize        : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
+				std::cout << "reducedNumBlocks : " << reducedNumBlocks.x << ", " << reducedNumBlocks.y << ", " << reducedNumBlocks.z << std::endl;
+				std::cout << "blockStride      : " << blockStride.x << ", " << blockStride.y << ", " << blockStride.z << std::endl;
+				std::cout << "totalNumBlocks   : " << totalNumBlocks << std::endl;
+				std::cout << "totalNumThreads  : " << totalNumThreads << std::endl;
+				std::cout << "maxPow2Half      : " <<  maxPow2Half << std::endl;*/
 
-				// Finish on the CPU side :
-				cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), numElements*sizeof(TOut), cudaMemcpyDeviceToHost);
+				// Do the single-pass reduction :
+				reduceKernel<Op><<<reducedNumBlocks, blockSize, sharedMemorySize>>>(layout, blockStride, expr, defaultValue, castDevicePtr,  totalNumThreads, maxPow2Half);
+
+				// Copy back to the Host side and complete :
+				cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), totalNumBlocks*sizeof(TOut), cudaMemcpyDeviceToHost);
 				if(err!=cudaSuccess)
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
 
-				for(int k=1; k<numElements; k++)
+				for(int k=1; k<totalNumBlocks; k++)
 					castHostPtr[0] = Op<TOut, TOut>::apply(castHostPtr[0], castHostPtr[k]);
 
 				// Return :
 				return castHostPtr[0];
 			}
 
-			template<template<typename,typename> class Op, typename TOut, typename TExpr>
-			__host__ TOut reduceV2(const Layout& layout, const TExpr& expr)
-			{
-				bool firstStep = true;
-				TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
-					*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
-
-				//const int 	maxBlocksPerFragment = std::max(std::max(Layout::StaticContainer<void>::numThreads, layout.getNumElementsPerFragment()) / Layout::StaticContainer<void>::numThreads, fillNumBlocks),
-				//		numReadPerBlock = layout.getNumElementsPerFragment()/(maxBlocksPerFragment*std::min(Layout::StaticContainer<void>::numThreads, layout.getNumElementsPerFragment());
-				
-				/*if(leadingColumns==numRows)
-				{
-					if(leadingSlices==(numRows * numColumns))
-					{
-						// can address the full array
-					}
-					else
-					{
-						// can only address slices
-					}
-				}
-				else
-					// can only address columns*/	
-				
-			}
-
 			// Specifics :
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType min(const Layout& layout, const TExpr& expr)
 			{
-				return reduceV1<BinOp_min, typename ExpressionEvaluation<TExpr>::ReturnType>(layout, expr);
+				typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+				return reduce<BinOp_min, ReturnType>(layout, expr, std::numeric_limits<ReturnType>::max());
 			}
 
 			template<typename T>
 			__host__ T min(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_min, T>(accessor, accessor);
+				return min(accessor, accessor);
 			}
 
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType max(const Layout& layout, const TExpr& expr)
 			{
-				return reduceV1<BinOp_max, typename ExpressionEvaluation<TExpr>::ReturnType>(layout, expr);
+				typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+				return reduce<BinOp_max, ReturnType>(layout, expr, std::numeric_limits<ReturnType>::max());
 			}
 
 			template<typename T>
 			__host__ T max(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_max, T>(accessor, accessor);
+				return max(accessor, accessor);
 			}
 
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType sum(const Layout& layout, const TExpr& expr)
 			{
-				return reduceV1<BinOp_Plus, typename ExpressionEvaluation<TExpr>::ReturnType>(layout, expr);
+				typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+				return reduce<BinOp_Plus, ReturnType>(layout, expr, complexCopy<ReturnType>(0));
 			}
 
 			template<typename T>
 			__host__ T sum(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_Plus, T>(accessor, accessor);
+				return sum(accessor, accessor);
 			}
 
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType prod(const Layout& layout, const TExpr& expr)
 			{
-				return reduceV1<BinOp_Times, typename ExpressionEvaluation<TExpr>::ReturnType>(layout, expr);
+				typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+				return reduce<BinOp_Times, ReturnType>(layout, expr, complexCopy<ReturnType>(1));
 			}
 
 			template<typename T>
 			__host__ T prod(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_Times, T>(accessor, accessor);
+				return prod(accessor, accessor);
 			}
 
 			template<typename TExpr>
 			__host__ bool all(const Layout& layout,const TExpr& expr)
 			{
-				return reduceV1<BinOp_And, bool>(layout, expr);
+				return reduce<BinOp_And, bool>(layout, expr, true);
 			}
 
 			template<typename T>
 			__host__ bool all(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_And, bool>(accessor, accessor);
+				return all(accessor, accessor);
 			}
 
 			template<typename TExpr>
 			__host__ bool any(const Layout& layout,const TExpr& expr)
 			{
-				return reduceV1<BinOp_Or, bool>(layout, expr);
+				return reduce<BinOp_Or, bool>(layout, expr, false);
 			}
 
 			template<typename T>
 			__host__ bool any(const Accessor<T>& accessor)
 			{
-				return reduceV1<BinOp_Or, bool>(accessor, accessor);
+				return any(accessor, accessor);
 			}
 	};
 
