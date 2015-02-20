@@ -309,6 +309,18 @@ namespace Kartet
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_FUNCTION_INTERFACE(funcName, opName) \
 		template<typename T> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a) \
+		{ \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, a.getLayout()) ); \
+		} \
+		\
+		template<typename T> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Array<T>& a) \
+		{ \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, a.getLayout()) ); \
+		} \
+		\
+		template<typename T> \
 		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a, const Layout& l) \
 		{ \
 			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, l) ); \

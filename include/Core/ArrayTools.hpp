@@ -922,11 +922,15 @@ namespace Kartet
 	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T>& A)
 	{
 		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
-		const int maxWidth = 8;
+		const int precision = 4,
+			  maxWidth = precision+3;
 		const char fillCharacter = ' ';
 		const char* spacing = "  ";
 		const Kartet::Layout l = A.getMonolithicLayout();
 		T* tmp = A.getData();
+		
+		// Get old parameter :
+		const int oldPrecision = os.precision(precision);
 
 		os << "(Array of size " << A.getLayout() << ')' << std::endl;
 		for(int k=0; k<l.getNumSlices(); k++)
@@ -942,6 +946,8 @@ namespace Kartet
 			}
 		}
 		#undef FMT
+
+		os.precision(oldPrecision);
 
 		delete[] tmp;
 		return os;

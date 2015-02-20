@@ -75,9 +75,6 @@ int main(int argc, char** argv)
 		std::cout << "A = " << A << std::endl;
 
 		Kartet::Array<double> C(16);
-		C = Kartet::IndexI();
-		std::cout << "C = " << C << std::endl;
-
 		C = Kartet::cast<unsigned char>(Kartet::IndexI()*64);
 		std::cout << "C = " << C << std::endl;
 
@@ -157,20 +154,141 @@ int main(int argc, char** argv)
 
 		// Reduction :
 		Kartet::ReduceContext reduceContext;
+		std::cout << "Testing file loading : " << reduceContext.all(U.getLayout(), U==V) << std::endl;
 		const Kartet::Layout l(4661,7965);
 		std::cout << "Layout : " << l << std::endl;
-		int sum1 = reduceContext.sum(l, 1);
+		const int sum1 = reduceContext.sum(l, 1);
 		std::cout << "Sum(1) : " << sum1 << " == " << l.getNumElements() << ", test : " << (sum1==l.getNumElements()) << std::endl;
 
-		double  sum2 = reduceContext.sum(l, Kartet::cast<double>(Kartet::IndexI()+Kartet::IndexJ())),
-			res2 = static_cast<double>(l.getNumRows()+l.getNumColumns()-2)*static_cast<double>(l.getNumRows()*l.getNumColumns())/2.0;
+		const double	sum2 = reduceContext.sum(l, Kartet::cast<double>(Kartet::IndexI()+Kartet::IndexJ())),
+				res2 = static_cast<double>(l.getNumRows()+l.getNumColumns()-2)*static_cast<double>(l.getNumRows()*l.getNumColumns())/2.0;
 		std::cout << "Sum(I()+J()) : " << sum2 << " == " << res2 << ", diff : " << std::abs(sum2-res2)/res2 << std::endl;
 		
-		int testReduction = reduceContext.sum(U);
-		std::cout << "Sum(U) : " << testReduction << std::endl;
-		testReduction = reduceContext.sum(U.getLayout(), Kartet::IndexI()*Kartet::IndexJ());
-		std::cout << "Sum(I()*J()) = " << testReduction << " (==784 on 8x8)" << std::endl;
-		std::cout << "Sum(sqrt(I()*J())) = " << reduceContext.sum(Kartet::Layout(16, 16), sqrt(Kartet::cast<double>(Kartet::IndexI()*Kartet::IndexJ()))) << " (\\approx 1637.755873, for 16x16)" << std::endl;
+		const int sum3 = reduceContext.sum(U);
+		std::cout << "Sum(U) : " << sum3 << std::endl;
+		const int sum4 = reduceContext.sum(U.getLayout(), Kartet::IndexI()*Kartet::IndexJ());
+		std::cout << "Sum(I()*J()) = " << sum4 << " (==784 on 8x8)" << std::endl;
+		const double sum5 = reduceContext.sum(Kartet::Layout(16, 16), sqrt(Kartet::cast<double>(Kartet::IndexI()*Kartet::IndexJ())));
+		std::cout << "Sum(sqrt(I()*J())) = " << sum5 << " (\\approx 1637.755873, for 16x16)" << std::endl;
+
+		Kartet::Array<double> largeArray(l);
+		uniformSource >> largeArray;
+		const double sum6Device = reduceContext.sum(largeArray);
+		double* tmpHost = largeArray.getData(),
+			sum6Host = 0.0;
+		for(int k=0; k<largeArray.getNumElements(); k++)
+			sum6Host += tmpHost[k];
+		delete[] tmpHost;
+		tmpHost = NULL;
+		std::cout << "Host       : " << sum6Host << std::endl;
+		std::cout << "Device     : " << sum6Device << std::endl;
+		std::cout << "Difference : " << (std::abs(sum6Device-sum6Host)/sum6Host) << std::endl;
+
+		// FFT :
+		Kartet::Layout fourierLayout(16, 16);
+		Kartet::Array<cuDoubleComplex> directSpace(fourierLayout), fourierSpace(fourierLayout);
+		Kartet::Array<float> amplitude(fourierLayout);
+		Kartet::FFTContext<cuDoubleComplex, cuDoubleComplex> fftContext(fourierLayout, fourierLayout);
+		directSpace = 0;
+		directSpace.subArray(0, 0, 4, 4) = 1;
+		fftContext.fft(directSpace, fourierSpace);
+		amplitude = real(directSpace);
+		std::cout << "Direct : " << amplitude << std::endl;
+		amplitude = abs(fourierSpace);
+		std::cout << "Fourier : " << amplitude << std::endl;
+
+		{
+			Kartet::Array<float> A(16, 16);
+			A = repeat(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(3, 3));
+			std::cout << "A = " << A << std::endl;
+
+			Kartet::Array<float> B(4, 4);
+			B = 0.0f;
+			B.subArray(0, 0, 2, 2) = 1.0f;
+			A = repeat(B);
+			std::cout << "A = " << A << std::endl;
+		}
+
+		{
+			Kartet::Array<float> A(5674, 16), B(1, 16);
+			A = Kartet::IndexI();
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(A, B);
+			std::cout << "B = " << B << std::endl;
+			std::cout << "Expected value : " << (A.getNumRows()*(A.getNumRows()-1)/2) << std::endl;
+			B = B - (A.getNumRows()*(A.getNumRows()-1)/2);
+			std::cout << "Diff = " << B << std::endl;
+
+			A = Kartet::IndexJ();
+			reduceContext.sumMulti(A, B);
+			B = B / A.getNumRows();
+			std::cout << "B = " << B << std::endl;
+		}
+
+		{
+			Kartet::Array<float> A(312, 16), B(1, 4);
+			A = Kartet::IndexI();
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(A, B);
+			std::cout << "B = " << B << std::endl;
+			std::cout << "Expected value : " << (A.getNumRows()*(A.getNumRows()-1))*2 << std::endl;
+			B = B - (A.getNumRows()*(A.getNumRows()-1))*2;
+			std::cout << "Diff = " << B << std::endl;
+		}
+
+		{
+			Kartet::Array<float> A(1024, 1024), B(8, 8);
+			A = Kartet::IndexI() + Kartet::IndexJ();
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(A, B);
+			B = B / distributeFirstElement(B.element(0,0));
+			std::cout << "B = " << B << std::endl;
+		}
+
+		{
+			Kartet::Array<double> A(1, 8);
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(Kartet::Layout(1, 1024*1024), Kartet::cast<double>(Kartet::IndexJ()), A);
+			A = A / distributeFirstElement(A);
+			std::cout << "A = " << A << std::endl;
+		}
+		
+		{
+			Kartet::Array<double> A(1024, 16), B(1, A.getNumColumns());
+			Kartet::ReduceContext reduceContext;
+			A = Kartet::IndexI() + Kartet::IndexJ();
+			reduceContext.sumMulti(A.getLayout(), (A - distributeFirstVector(Kartet::IndexJ())) * (A - distributeFirstVector(Kartet::IndexI())), B);
+			std::cout << "B = " << B << std::endl;
+		}
+
+		{
+			Kartet::RandomSourceContext randomSourceContext;
+			randomSourceContext.setSeed();
+			Kartet::NormalSource normalSource(0.0, 1.0);
+			Kartet::ReduceContext reduceContext;
+			Kartet::BLASContext blasContext;
+			Kartet::Array<double> 	A(1000, 16),
+						B(1, 16);
+			normalSource >> A;
+			reduceContext.sumMulti(A.getLayout(), A*A, B);
+			std::cout << "B = " << B << std::endl;			
+
+			double* tmp = B.getData();
+			for(int k=0; k<A.getNumColumns(); k++)
+			{
+				const double x = std::pow(blasContext.nrm2(A.vector(k)), 2.0);
+				std::cout << k << " : " << tmp[k] << " - " << x << " -> " << std::abs(tmp[k]-x)/x << std::endl;
+			}
+			delete[] tmp;
+		}
+
+		{
+			Kartet::Array<double> A(16, 16);
+			A = expand(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2));
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(Kartet::Layout(32, 32), repeat(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2))/4.0 + expand(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2))/4.0 - 0.25, A);
+			std::cout << "A = " << A << std::endl;
+		}
 	}
 	catch(Kartet::Exception& e)
 	{

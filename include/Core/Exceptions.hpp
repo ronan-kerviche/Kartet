@@ -294,6 +294,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( InvalidCuRandContext )
 			EXCEPTION_MESSAGE( InvalidContext )
 			EXCEPTION_MESSAGE( NullPointer )
+			EXCEPTION_MESSAGE( NotSupported )
 			EXCEPTION_MESSAGE( NoException )
 			#undef EXCEPTION_MESSAGE
 			case Kartet::CudaExceptionsOffset :

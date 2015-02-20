@@ -55,7 +55,7 @@ namespace Kartet
 			__host__ static bool isValid(const Layout& input, const Layout& output);
 	};
 
-// Impl.
+// Implementation :
 	template<typename TIn, typename TOut>
 	__host__ FFTContext<TIn, TOut>::FFTContext(const Layout& inputL, const Layout& outputL)
 	 :	inputLayout(inputL),
@@ -84,14 +84,9 @@ namespace Kartet
 		else
 			throw InvalidOperation;
 
-		// Create the handle :
 		if(inputLayout.getNumSlices()==1)
 		{
 			err = cufftPlan2d(&handle, inputLayout.getNumColumns(), inputLayout.getNumRows(), fftType);
-			if(err!=CUFFT_SUCCESS)
-				throw static_cast<Exception>(CuFFTExceptionOffset + err);
-
-			err = cufftSetCompatibilityMode(handle, CUFFT_COMPATIBILITY_NATIVE);
 			if(err!=CUFFT_SUCCESS)
 				throw static_cast<Exception>(CuFFTExceptionOffset + err);
 		}
@@ -105,13 +100,13 @@ namespace Kartet
 			err = cufftPlanMany(&handle, 2, nI, nI, 1, idist, nO, 1, odist, fftType, inputLayout.getNumSlices());
 			if(err!=CUFFT_SUCCESS)
 				throw static_cast<Exception>(CuFFTExceptionOffset + err);
-
-			err = cufftSetCompatibilityMode(handle, CUFFT_COMPATIBILITY_NATIVE);
-			if(err!=CUFFT_SUCCESS)
-				throw static_cast<Exception>(CuFFTExceptionOffset + err);
 		}
 		else
 			throw NotSupported;
+
+		err = cufftSetCompatibilityMode(handle, CUFFT_COMPATIBILITY_NATIVE);
+		if(err!=CUFFT_SUCCESS)
+			throw static_cast<Exception>(CuFFTExceptionOffset + err);
 	}
 
 	template<typename TIn, typename TOut>
@@ -141,7 +136,7 @@ namespace Kartet
 			case CUFFT_C2R : 
 				err = cufftExecC2R(handle, reinterpret_cast<cuFloatComplex*>(input.getPtr()), reinterpret_cast<float*>(output.getPtr()));
 				break;
-			case CUFFT_C2C : 
+			case CUFFT_C2C :
 				err = cufftExecC2C(handle, reinterpret_cast<cuFloatComplex*>(input.getPtr()), reinterpret_cast<cuFloatComplex*>(output.getPtr()), direction);
 				break;
 			case CUFFT_D2Z : 

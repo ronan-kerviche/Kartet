@@ -180,21 +180,25 @@ namespace Kartet
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YMirror,				ymirror,			i = l.getNumRows()-(i+1); p = l.getIndex(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeFirstSlice, 		distributeFirstSlice,		p = l.getIndex(i, j, 0); k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeFirstVector,		distributeFirstVector,		p = l.getIndex(i, 0, k); j=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeFirstElement,		distributeFirstElement,		p = l.getIndex(0, 0, k); i=j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeFirstElement,		distributeFirstElement,		p = l.getIndex(0, 0, 0); i=j=k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonalVector,			diagonalVector,			p = l.getIndex(i, i, k); j=i; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	p = l.getIndex(j, 0, k); i=j; j=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	p = l.getIndex(k, 0, 0); i=k; k=0; k=0; )
 
 // Layout reinterpretation functions :
-	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_clampArray, 		clampArray, 			i = lnew.getIClamped(i);
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_clamp, 		clamp, 				i = lnew.getIClamped(i);
 															j = lnew.getJClamped(j);
 															k = lnew.getKClamped(k);
 															p = lnew.getIndex(i, j, k); )
-	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_wrapArray, 		repeatArray, 			i = lnew.getIWrapped(i);
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_repeat, 		repeat, 			i = lnew.getIWrapped(i);
 															j = lnew.getJWrapped(j);
 															k = lnew.getKWrapped(k);
 															p = lnew.getIndex(i, j, k); )
-	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expandArray,		expandArray,			i = l.getINorm<double>(i)*lnew.getNumRows();
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expandf,		expandf,			i = l.getINorm<float>(i)*lnew.getNumRows();
+															j = l.getJNorm<float>(j)*lnew.getNumColumns();
+															k = l.getKNorm<float>(k)*lnew.getNumSlices();
+															p = lnew.getIndex(i, j, k); )
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expand,		expand,				i = l.getINorm<double>(i)*lnew.getNumRows();
 															j = l.getJNorm<double>(j)*lnew.getNumColumns();
 															k = l.getKNorm<double>(k)*lnew.getNumSlices();
 															p = lnew.getIndex(i, j, k); )

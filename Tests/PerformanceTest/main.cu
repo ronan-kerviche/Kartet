@@ -51,12 +51,15 @@ int main(int argc, char** argv)
 	
 		// Speed test:
 		typedef double T;
-		const int M = 4096, N = 4096, L = 100;
-		double t = 0.0;
-		Kartet::Array<T> A(M, N), B(M, N);
+		const int M = 4096, N = 4096, L = 20;
+		double t = 0.0, v = 0.0;
+		Kartet::Array<T> A(M, N), B(M, N), C(1, N), V(M),
+				 ones(M, N);
 		thrust::device_ptr<T> 	devPtrA( A.getPtr() ),
-					devPtrB( B.getPtr() );
+					devPtrB( B.getPtr() ),
+					devPtrV( V.getPtr() );
 		// Setup :
+		ones = 1;
 		A = Kartet::IndexI();
 		B = Kartet::IndexJ();
 
@@ -104,8 +107,8 @@ int main(int argc, char** argv)
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
-		// Test :
-		double v = 0.0;
+		// Test :	
+		v = 0.0;
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += reduceContext.sum(A);
@@ -153,6 +156,62 @@ int main(int argc, char** argv)
 		std::cout << "[THRUST] Expression Reduction sum : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s (but uses two more I/O operations)" << std::endl;
+		std::cout << std::endl;
+
+		// Test :
+		timer.start();
+		for(int l=0; l<L; l++)
+			reduceContext.sumMulti(A.getLayout(), A*A, C);
+		timer.stop();
+		t = timer.getElapsedTime_s();
+		std::cout << "Expression Reduction multi-sum : " << std::endl;
+		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << std::endl;
+
+		// Against BLAS (1) :
+		timer.start();
+		for(int l=0; l<L; l++)
+		{
+			for(unsigned int k=0; k<A.getNumColumns(); k++)
+				v += blasContext.nrm2(A.vector(k));
+		}
+		timer.stop();
+		t = timer.getElapsedTime_s();
+		std::cout << "[BLAS] (1) Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*1.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << std::endl;
+
+		// Against BLAS (2) :
+		timer.start();
+		for(int l=0; l<L; l++)
+		{
+			B = A*A;
+			blasContext.gemm(ones.vector(0), CUBLAS_OP_T, B, CUBLAS_OP_N, C);
+		}
+		timer.stop();
+		t = timer.getElapsedTime_s();
+		std::cout << "[BLAS] (2) Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << std::endl;
+
+		// Against Thrust :
+		timer.start();
+		for(int l=0; l<L; l++)
+		{
+			for(unsigned int k=0; k<A.getNumColumns(); k++)
+			{
+				V = A.vector(k)*A.vector(k);
+				v += thrust::reduce(devPtrV, devPtrV + V.getNumElements(), 0.0, thrust::plus<T>());
+			}
+		}
+		timer.stop();
+		t = timer.getElapsedTime_s();
+		std::cout << "[THRUST] Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 	}
 	catch(Kartet::Exception& e)
