@@ -311,31 +311,31 @@ namespace Kartet
 		template<typename T> \
 		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, a.getLayout()) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a.getLayout(), a) ); \
 		} \
 		\
 		template<typename T> \
 		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Array<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, a.getLayout()) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a.getLayout(), a) ); \
 		} \
 		\
 		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a, const Layout& l) \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Layout& l, const Accessor<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, l) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(l, a) ); \
 		} \
 		\
 		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Array<T>& a, const Layout& l) \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Layout& l, const Array<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a, l) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(l, a) ); \
 		} \
 		\
 		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > > funcName (const ExpressionContainer<T>& a, const Layout& l) \
+		ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > > funcName (const Layout& l, const ExpressionContainer<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > >( LayoutReinterpretationExpression< ExpressionContainer<T>, opName >(a, l) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > >( LayoutReinterpretationExpression< ExpressionContainer<T>, opName >(l, a) ); \
 		} \
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, operation) \

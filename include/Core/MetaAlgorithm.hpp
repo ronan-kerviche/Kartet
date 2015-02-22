@@ -39,9 +39,9 @@ namespace Kartet
 	struct StaticAssert<true>
 	{ };
 
-		#define STATIC_ASSERT( ... ) StaticAssert< __VA_ARGS__ >();
+	#define STATIC_ASSERT( ... ) Kartet::StaticAssert< __VA_ARGS__ >();
 
-	// IF statement
+	// If statement
 	template<bool statement, class TrueStatement, class FalseStatement>
 	struct MetaIf;
 

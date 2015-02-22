@@ -259,17 +259,17 @@ namespace Kartet
 		{ }
 	};
 
-// Transform Expression
+// Layout Reinterpretation Expression
 	template<typename T, class Op >
 	struct LayoutReinterpretationExpression
 	{
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType; 
 
-		T a;
 		Layout layout;
-
-		__host__ LayoutReinterpretationExpression(const T& _a, const Layout& l)
-		 : a(_a), layout(l)
+		T a;
+		
+		__host__ LayoutReinterpretationExpression(const Layout& l, const T& _a)
+		 : layout(l), a(_a) 
 		{ }
 
 		__host__ __device__ LayoutReinterpretationExpression(const LayoutReinterpretationExpression<T, Op>& e)

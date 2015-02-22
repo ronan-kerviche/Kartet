@@ -39,134 +39,126 @@
 namespace Kartet
 {
 // Classes :
-	class UniformSource
-	{
-		private :
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-		public :
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
-	};
-
-	class NormalSource
-	{
-		private :
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-		public :
-			double mean, std;
-			__host__ inline NormalSource(void);
-			__host__ inline NormalSource(float _m, float _s);
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
-	};
-
-	class LogNormalSource
-	{
-		private :
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-		public :
-			double mean, std;
-			__host__ inline LogNormalSource(void);
-			__host__ inline LogNormalSource(float _m, float _s);
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
-	};
-
 	class RandomSourceContext
 	{
-		private :
-			template<typename T>
-			struct StaticContainer
-			{
-				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
-				static RandomSourceContext* singleton;
-			};
-
+		protected :
 			curandGenerator_t gen;
 
-			friend class UniformSource;
-			friend class NormalSource;
-			friend class LogNormalSource;
-
+			//__host__ RandomSourceContext(const RandomSourceContext&);
+			__host__ inline RandomSourceContext(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
 		public :
-			__host__ inline RandomSourceContext(const curandRngType_t& rng_type = CURAND_RNG_PSEUDO_DEFAULT);
 			__host__ inline ~RandomSourceContext(void);
 
-			__host__ static inline void setSeed(const unsigned long long& seed);
-			__host__ static inline void setSeed(void);
+			__host__ inline void setSeed(const unsigned long long& seed);
+			__host__ inline void setSeed(void);
+	};
+	
+	class UniformSource : public RandomSourceContext
+	{
+		private :
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
+
+			friend Layout;
+			friend Accessor<float>;
+			friend Accessor<double>;
+
+			//__host__ UniformSource(const UniformSource&);
+		public :
+			__host__ inline UniformSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			__host__ inline ~UniformSource(void);
+
+			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
+			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
 	};
 
-	template<typename T>
-	RandomSourceContext* RandomSourceContext::StaticContainer<T>::singleton = NULL;
+	class NormalSource : public RandomSourceContext
+	{
+		private :
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
+
+			friend Layout;
+			friend Accessor<float>;
+			friend Accessor<double>;
+
+			//__host__ NormalSource(const NormalSource&);
+		public :
+			double mean, std;
+
+			__host__ inline NormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			__host__ inline NormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			__host__ inline ~NormalSource(void);
+
+			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
+			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
+	};
+
+	class LogNormalSource : public RandomSourceContext
+	{
+		private :
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
+			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
+
+			friend Layout;
+			friend Accessor<float>;
+			friend Accessor<double>;
+
+			//__host__ LogNormalSource(const LogNormalSource&);
+		public :
+			double mean, std;
+
+			__host__ inline LogNormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			__host__ inline LogNormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			__host__ inline ~LogNormalSource(void);
+
+			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
+			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
+	};
 
 // Implementation :
-	#define TEST_CONTEXT		if(RandomSourceContext::StaticContainer<void>::singleton==NULL) throw InvalidCuRandContext;
-	#define GEN			(RandomSourceContext::StaticContainer<void>::singleton->gen)
 	#define TEST_EXCEPTION(x)	if(x!=CURAND_STATUS_SUCCESS) throw static_cast<Exception>(CuRandExceptionOffset + x);
 
-	__host__ inline RandomSourceContext::RandomSourceContext(const curandRngType_t& rng_type)
+	__host__ inline RandomSourceContext::RandomSourceContext(const curandRngType_t& rngType)
 	{
-		if(StaticContainer<void>::singleton==NULL)
-		{
-			curandStatus_t err = curandCreateGenerator(&gen, rng_type);
-			TEST_EXCEPTION(err)
-			StaticContainer<void>::singleton = this;
-		}
+		curandStatus_t err = curandCreateGenerator(&gen, rngType);
+		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline RandomSourceContext::~RandomSourceContext(void)
 	{
-		if(StaticContainer<void>::singleton==this)
-		{
-			StaticContainer<void>::singleton = NULL;
-			curandStatus_t err = curandDestroyGenerator(gen);
-			TEST_EXCEPTION(err)
-		}
+		curandStatus_t err = curandDestroyGenerator(gen);
+		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline void RandomSourceContext::setSeed(const unsigned long long& seed)
 	{
-		if(StaticContainer<void>::singleton!=NULL)
-		{
-			curandStatus_t err = curandSetPseudoRandomGeneratorSeed(GEN, seed);
-			TEST_EXCEPTION(err)
-		}
-		else
-			throw InvalidCuRandContext;
+		curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
+		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline void RandomSourceContext::setSeed(void)
 	{
-		if(StaticContainer<void>::singleton!=NULL)
-		{
-			const unsigned long long seed = static_cast<unsigned long long>(rand()) << 32 +  static_cast<unsigned long long>(rand()); // use rand to fill the seed.
-			curandStatus_t err = curandSetPseudoRandomGeneratorSeed(GEN, seed);
-			TEST_EXCEPTION(err)
-		}
-		else
-			throw InvalidCuRandContext;
+		const unsigned long long seed = static_cast<unsigned long long>(rand()) << 32 +  static_cast<unsigned long long>(rand()); // use rand to fill the seed.
+		curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
+		TEST_EXCEPTION(err)
 	}
 
 // Uniform :
+	__host__ inline UniformSource::UniformSource(const curandRngType_t& rngType)
+	 :	RandomSourceContext(rngType)	
+	{ }
+
+	__host__ inline UniformSource::~UniformSource(void)
+	{ }
+
 	__host__ inline void UniformSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateUniform(GEN, ptr+offset, currentAccessLayout.getNumElements());
+		curandStatus_t err = curandGenerateUniform(gen, ptr+offset, currentAccessLayout.getNumElements());
 		TEST_EXCEPTION(err)
 	}
 
@@ -176,32 +168,35 @@ namespace Kartet
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateUniformDouble(GEN, ptr+offset, currentAccessLayout.getNumElements());
+		curandStatus_t err = curandGenerateUniformDouble(gen, ptr+offset, currentAccessLayout.getNumElements());
 		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline const Accessor<float>& UniformSource::operator>>(const Accessor<float>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
 	__host__ inline const Accessor<double>& UniformSource::operator>>(const Accessor<double>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
 // Normal :
-	__host__ inline NormalSource::NormalSource(void)
-	 : 	mean(0.0), 
+	__host__ inline NormalSource::NormalSource(const curandRngType_t& rngType)
+	 : 	RandomSourceContext(rngType),
+		mean(0.0), 
 		std(1.0)
 	{ }
-	__host__ inline NormalSource::NormalSource(float _m, float _s)
-	 : 	mean(_m), 
-		std(_s)
+	__host__ inline NormalSource::NormalSource(double _mean, double _std, const curandRngType_t& rngType)
+	 : 	RandomSourceContext(rngType),
+		mean(_mean), 
+		std(_std)
+	{ }
+
+	__host__ inline NormalSource::~NormalSource(void)
 	{ }
 
 	__host__ inline void NormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
@@ -210,7 +205,7 @@ namespace Kartet
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateNormal(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+		curandStatus_t err = curandGenerateNormal(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 	
@@ -220,32 +215,35 @@ namespace Kartet
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateNormalDouble(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+		curandStatus_t err = curandGenerateNormalDouble(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline const Accessor<float>& NormalSource::operator>>(const Accessor<float>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
 	__host__ inline const Accessor<double>& NormalSource::operator>>(const Accessor<double>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
 // LogNormal :
-	__host__ inline LogNormalSource::LogNormalSource(void)
-	 : 	mean(0.0), 
+	__host__ inline LogNormalSource::LogNormalSource(const curandRngType_t& rngType)
+	 : 	RandomSourceContext(rngType),
+		mean(0.0), 
 		std(1.0)
 	{ }
-	__host__ inline LogNormalSource::LogNormalSource(float _m, float _s)
-	 : 	mean(_m), 
-		std(_s)
+	__host__ inline LogNormalSource::LogNormalSource(double _mean, double _std, const curandRngType_t& rngType)
+	 : 	RandomSourceContext(rngType),
+		mean(_mean), 
+		std(_std)
+	{ }
+
+	__host__ inline LogNormalSource::~LogNormalSource(void)
 	{ }
 
 	__host__ inline void LogNormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
@@ -254,7 +252,7 @@ namespace Kartet
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateLogNormal(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+		curandStatus_t err = curandGenerateLogNormal(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 	
@@ -264,27 +262,22 @@ namespace Kartet
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateLogNormalDouble(GEN, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+		curandStatus_t err = curandGenerateLogNormalDouble(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
 		TEST_EXCEPTION(err)
 	}
 
 	__host__ inline const Accessor<float>& LogNormalSource::operator>>(const Accessor<float>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
 	__host__ inline const Accessor<double>& LogNormalSource::operator>>(const Accessor<double>& a) const
 	{
-		TEST_CONTEXT
 		a.hostScan(*this);
 		return a;
 	}
 
-	#undef TEST_CONTEXT
-	#undef TEST_MONOLITHIC
-	#undef GEN
 	#undef TEST_EXCEPTION
 
 } // namespace Kartet

@@ -921,6 +921,8 @@ namespace Kartet
 	template<typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T>& A)
 	{
+		typedef typename MetaIf<SameTypes<T, char>::test || SameTypes<T, unsigned char>::test, int, T>::TValue CastType;
+
 		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
 		const int precision = 4,
 			  maxWidth = precision+3;
@@ -941,8 +943,8 @@ namespace Kartet
 			for(int i=0; i<l.getNumRows(); i++)
 			{
 				for(int j=0; j<(l.getNumColumns()-1); j++)
-					os << FMT << tmp[l.getIndex(i,j,k)] << spacing;
-				os << FMT << tmp[l.getIndex(i,l.getNumColumns()-1,k)] << std::endl;
+					os << FMT << static_cast<CastType>(tmp[l.getIndex(i,j,k)]) << spacing;
+				os << FMT << static_cast<CastType>(tmp[l.getIndex(i,l.getNumColumns()-1,k)]) << std::endl;
 			}
 		}
 		#undef FMT

@@ -95,9 +95,8 @@ int main(int argc, char** argv)
 		blas.gemm(X, Y, Z);
 
 		// Generate random numbers :
-		Kartet::RandomSourceContext randomSourceContext;
-		randomSourceContext.setSeed();
 		Kartet::UniformSource uniformSource;
+		uniformSource.setSeed();
 		uniformSource >> A;
 		std::cout << "A = " << A << std::endl;
 
@@ -199,7 +198,7 @@ int main(int argc, char** argv)
 
 		{
 			Kartet::Array<float> A(16, 16);
-			A = repeat(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(3, 3));
+			A = repeat(Kartet::Layout(3, 3), Kartet::IndexI() + Kartet::IndexJ());
 			std::cout << "A = " << A << std::endl;
 
 			Kartet::Array<float> B(4, 4);
@@ -241,7 +240,7 @@ int main(int argc, char** argv)
 			A = Kartet::IndexI() + Kartet::IndexJ();
 			Kartet::ReduceContext reduceContext;
 			reduceContext.sumMulti(A, B);
-			B = B / distributeFirstElement(B.element(0,0));
+			B = B / distributeElement(B.element(0,0));
 			std::cout << "B = " << B << std::endl;
 		}
 
@@ -249,7 +248,7 @@ int main(int argc, char** argv)
 			Kartet::Array<double> A(1, 8);
 			Kartet::ReduceContext reduceContext;
 			reduceContext.sumMulti(Kartet::Layout(1, 1024*1024), Kartet::cast<double>(Kartet::IndexJ()), A);
-			A = A / distributeFirstElement(A);
+			A = A / distributeElement(A);
 			std::cout << "A = " << A << std::endl;
 		}
 		
@@ -257,14 +256,13 @@ int main(int argc, char** argv)
 			Kartet::Array<double> A(1024, 16), B(1, A.getNumColumns());
 			Kartet::ReduceContext reduceContext;
 			A = Kartet::IndexI() + Kartet::IndexJ();
-			reduceContext.sumMulti(A.getLayout(), (A - distributeFirstVector(Kartet::IndexJ())) * (A - distributeFirstVector(Kartet::IndexI())), B);
+			reduceContext.sumMulti(A.getLayout(), (A - distributeVector(Kartet::IndexJ())) * (A - distributeVector(Kartet::IndexI())), B);
 			std::cout << "B = " << B << std::endl;
 		}
 
 		{
-			Kartet::RandomSourceContext randomSourceContext;
-			randomSourceContext.setSeed();
-			Kartet::NormalSource normalSource(0.0, 1.0);
+			Kartet::NormalSource normalSource;
+			normalSource.setSeed();
 			Kartet::ReduceContext reduceContext;
 			Kartet::BLASContext blasContext;
 			Kartet::Array<double> 	A(1000, 16),
@@ -284,9 +282,9 @@ int main(int argc, char** argv)
 
 		{
 			Kartet::Array<double> A(16, 16);
-			A = expand(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2));
+			A = expand(Kartet::Layout(2, 2), Kartet::IndexI() + Kartet::IndexJ());
 			Kartet::ReduceContext reduceContext;
-			reduceContext.sumMulti(Kartet::Layout(32, 32), repeat(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2))/4.0 + expand(Kartet::IndexI() + Kartet::IndexJ(), Kartet::Layout(2, 2))/4.0 - 0.25, A);
+			reduceContext.sumMulti(Kartet::Layout(32, 32), repeat(Kartet::Layout(2, 2), Kartet::IndexI() + Kartet::IndexJ())/4.0 + expand(Kartet::Layout(2, 2), Kartet::IndexI() + Kartet::IndexJ())/4.0 - 0.25, A);
 			std::cout << "A = " << A << std::endl;
 		}
 	}
