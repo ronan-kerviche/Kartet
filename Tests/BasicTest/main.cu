@@ -287,6 +287,16 @@ int main(int argc, char** argv)
 			reduceContext.sumMulti(Kartet::Layout(32, 32), repeat(Kartet::Layout(2, 2), Kartet::IndexI() + Kartet::IndexJ())/4.0 + expand(Kartet::Layout(2, 2), Kartet::IndexI() + Kartet::IndexJ())/4.0 - 0.25, A);
 			std::cout << "A = " << A << std::endl;
 		}
+
+		{
+			// This one used to be wrong :
+			Kartet::Array<int> A(4, 384), B(1, 16);
+			A = 1;
+			B = 0;
+			Kartet::ReduceContext reduceContext;
+			reduceContext.sumMulti(A, B);
+			std::cout << "B = " << B << std::endl;
+		}
 	}
 	catch(Kartet::Exception& e)
 	{

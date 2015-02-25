@@ -520,9 +520,9 @@ namespace Kartet
 			blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z - 1) / blockSize.z;
 			
 			// numBlocks
-			numBlocks.x = output.getNumRows() / (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows());
-			numBlocks.y = output.getNumColumns() / (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns());
-			numBlocks.z = output.getNumSlices() / (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices());
+			numBlocks.x = (output.getNumRows() + (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows()) - 1) / (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows());
+			numBlocks.y = (output.getNumColumns() + (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns()) - 1) / (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns());
+			numBlocks.z = (output.getNumSlices() + (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices()) - 1) / (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices());
 			
 			// Each Cuda Block will take care of multiple blocks :
 			numSubReductionBlocks.x = blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows();
