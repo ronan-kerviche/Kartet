@@ -264,14 +264,14 @@ namespace Kartet
 						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
 				}
 		sharedData[threadId] = v;
-		v = defaultValue; // Reset, important for what is next
+		v = defaultValue; // Reset, important for what is next.
 		__syncthreads();
 		
 		// Second pass, within the shared memory :
 		if(mainThread)
 		{
-			for(unsigned int kl=0; kl<reductionBlockLayout.getNumSlices(); kl++)
-				for(unsigned int jl=0; jl<reductionBlockLayout.getNumColumns(); jl++)
+			for(unsigned int kl=0; kl<reductionBlockLayout.getNumSlices()/blockSteps.z; kl++)
+				for(unsigned int jl=0; jl<reductionBlockLayout.getNumColumns()/blockSteps.y; jl++)
 				{
 					const unsigned int	jCL = threadIdx.y + jl,
 								kCL = threadIdx.z + kl,
@@ -280,7 +280,7 @@ namespace Kartet
 				}
 			sharedData[threadId] = v;
 		}
-		v = defaultValue; // Reset, important for what is next
+		v = defaultValue; // Reset, important for what is next.
 		__syncthreads();
 
 		// Finish the reduction and store to the right block :
@@ -467,7 +467,7 @@ namespace Kartet
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)
+		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)	
 			throw InvalidOperation;
 		
 		dim3	blockSize = layout.getBlockSize(),
