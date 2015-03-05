@@ -117,7 +117,8 @@ namespace Kartet
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
 				__host__            inline void vectorize(void);
-				__host__ 	    inline std::vector<Layout> splitLayoutPages(index_t jBegin, index_t numVectors) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t numVectors) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t numSlices) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
 
@@ -242,7 +243,8 @@ namespace Kartet
 				__host__ 	           Accessor<T> endSlice(void) const;
 				__host__ 	           Accessor<T> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
 				__host__ 	           Accessor<T> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
-				__host__ 	           std::vector< Accessor<T> > splitPages(index_t jBegin, index_t numVectors) const;
+				__host__ 	           std::vector< Accessor<T> > splitColumns(index_t jBegin, index_t numVectors) const;
+				__host__ 	           std::vector< Accessor<T> > splitSlices(index_t kBegin, index_t numSlices) const;
 
 			// Assignment :
 				template<typename TExpr>
@@ -298,7 +300,8 @@ namespace Kartet
 			using Accessor<T>::Layout::reinterpretLayout;
 			using Accessor<T>::Layout::flatten;
 			using Accessor<T>::Layout::vectorize;
-			using Accessor<T>::Layout::splitLayoutPages;
+			using Accessor<T>::Layout::splitLayoutColumns;
+			using Accessor<T>::Layout::splitLayoutSlices;
 			using Accessor<T>::Layout::sameLayoutAs;
 			using Accessor<T>::Layout::sameSliceLayoutAs;
 			using Accessor<T>::Layout::getI;
@@ -326,7 +329,8 @@ namespace Kartet
 			using Accessor<T>::endSlice;
 			using Accessor<T>::slices;
 			using Accessor<T>::subArray;
-			using Accessor<T>::splitPages;
+			using Accessor<T>::splitColumns;
+			using Accessor<T>::splitSlices;
 			using Accessor<T>::assign;
 			using Accessor<T>::operator=;
 			using Accessor<T>::maskedAssignment;

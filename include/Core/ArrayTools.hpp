@@ -193,7 +193,7 @@ namespace Kartet
 
 	__host__ inline void Layout::reinterpretLayout(const Layout& other)
 	{
-		reinterpretLayout(other.getNumRows(), other.getNumColumns(), other.getNumSlices());
+		reinterpretLayout(other.numRows, other.numColumns, other.numSlices);
 	}
 
 	__host__ inline void Layout::flatten(void)
@@ -203,18 +203,31 @@ namespace Kartet
 
 	__host__ inline void Layout::vectorize(void)
 	{
-		reinterpretLayout(getNumElements(), 1, 1);
+		reinterpretLayout(numRows*numColumns*numSlices, 1, 1);
 	}
 
-	__host__ inline std::vector<Layout> Layout::splitLayoutPages(index_t jBegin, index_t numVectors) const
+	__host__ inline std::vector<Layout> Layout::splitLayoutColumns(index_t jBegin, index_t numVectors) const
 	{
 		std::vector<Layout> pages;
 
 		if(!validColumnIndex(jBegin) || numVectors<1)
 			throw OutOfRange;
 	
-		for(index_t j=jBegin; j<getNumColumns(); j+=numVectors)
-			pages.push_back(Layout(getNumRows(), min(numVectors, getNumColumns()-j), getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
+		for(index_t j=jBegin; j<numColumns; j+=numVectors)
+			pages.push_back(Layout(numRows, min(numVectors, numColumns-j), numSlices, getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
+
+		return pages;
+	}
+
+	__host__ inline std::vector<Layout> Layout::splitLayoutSlices(index_t kBegin, index_t numSlices) const
+	{
+		std::vector<Layout> pages;
+
+		if(!validSliceIndex(kBegin) || numSlices<1)
+			throw OutOfRange;
+	
+		for(index_t k=kBegin; k<numSlices; k+=numSlices)
+			pages.push_back(Layout(numRows, numColumns, min(numSlices, numSlices-k), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,0,k)));
 
 		return pages;
 	}
@@ -451,9 +464,6 @@ namespace Kartet
 	__host__ inline dim3 Layout::getBlockSize(void) const
 	{
 		dim3 d;
-		/*d.x = 1;
-		d.y = min(StaticContainer<void>::numThreads, numRows);
-		d.z = 1;*/
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
 		d.x = min(StaticContainer<void>::numThreads, numRows);
 		d.y = min(StaticContainer<void>::numThreads/d.x, numColumns);
@@ -465,9 +475,6 @@ namespace Kartet
 	__host__ inline dim3 Layout::getNumBlock(void) const
 	{
 		dim3 d;
-		/*d.x = numColumns; 
-		d.y = (numRows + StaticContainer<void>::numThreads - 1)/StaticContainer<void>::numThreads;
-		d.z = numSlices;*/
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
 		const dim3 blockSize = getBlockSize();
 		d.x = (numRows + blockSize.x - 1)/blockSize.x;
@@ -479,17 +486,17 @@ namespace Kartet
 
 	__host__ inline Layout Layout::getVectorLayout(void) const
 	{
-		return Layout(getNumRows());
+		return Layout(numRows);
 	}
 
 	__host__ inline Layout Layout::getSliceLayout(void) const
 	{
-		return Layout(getNumRows(), getNumColumns(), 1, getLeadingColumns());
+		return Layout(numRows, numColumns, 1, getLeadingColumns());
 	}
 
 	__host__ inline Layout Layout::getMonolithicLayout(void) const
 	{
-		return Layout(getNumRows(), getNumColumns(), getNumSlices());
+		return Layout(numRows, numColumns, numSlices);
 	}
 
 	template<class Op, typename T>
@@ -497,20 +504,20 @@ namespace Kartet
 	{
 		// Op should have a function :
 		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const;
-		if(getNumRows()==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
+		if(numRows==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
 			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
-		else if(getNumRows()==getLeadingColumns())
+		else if(numRows==getLeadingColumns())
 		{
 			const Layout sliceLayout = getSliceLayout();
-			for(index_t k=0; k<getNumSlices(); k++)
+			for(index_t k=0; k<numSlices; k++)
 				op.apply(*this, sliceLayout, ptr, k*getLeadingSlices(), 0, 0, k);	
 		}
 		else
 		{
 			const Layout vectorLayout = getVectorLayout();
-			for(index_t k=0; k<getNumSlices(); k++)
+			for(index_t k=0; k<numSlices; k++)
 			{
-				for(index_t j=0; j<getNumColumns(); j++)
+				for(index_t j=0; j<numColumns; j++)
 					op.apply(*this, vectorLayout, ptr, (k*getLeadingSlices() + j*getLeadingColumns()), 0, j, k);
 			}
 		}
@@ -807,7 +814,7 @@ namespace Kartet
 	template<typename T>
 	__host__ Accessor<T> Accessor<T>::elements(index_t p, index_t numElements) const
 	{
-		if(p<0 || numElements<0 || p>=getNumElements() || (p+numElements)>=getNumElements())
+		if(p<0 || numElements<0 || p>=getNumElements() || (p+numElements)>getNumElements())
 			throw OutOfRange;
 
 		// Test if the block is fully in this accessor :
@@ -895,12 +902,29 @@ namespace Kartet
 	}
 
 	template<typename T>
-	__host__  std::vector< Accessor<T> > Accessor<T>::splitPages(index_t jBegin, index_t numVectors) const
+	__host__  std::vector< Accessor<T> > Accessor<T>::splitColumns(index_t jBegin, index_t numVectors) const
 	{
 		std::vector< Accessor<T> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
-		const std::vector<Layout> pagesLayout = tmp.splitLayoutPages(jBegin, numVectors);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutColumns(jBegin, numVectors);
+
+		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
+		{
+			pages.push_back( Accessor<T>(devicePtr + it->getOffset(), *it) );
+			pages.back().setOffset(getOffset() + pages.back().getOffset());
+		}
+
+		return pages;
+	}
+
+	template<typename T>
+	__host__  std::vector< Accessor<T> > Accessor<T>::splitSlices(index_t kBegin, index_t numSlices) const
+	{
+		std::vector< Accessor<T> > pages;
+		Layout tmp = this->getLayout();
+		tmp.setOffset(0);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutSlices(kBegin, numSlices);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
