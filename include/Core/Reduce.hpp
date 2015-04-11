@@ -304,7 +304,7 @@ namespace Kartet
 		hostPtr(NULL),
 		devicePtr(NULL)		
 	{
-		STATIC_ASSERT(sizeof(char)==1)
+		StaticAssert<sizeof(char)==1>();
 
 		hostPtr = new char[maxMemory];
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&devicePtr), maxMemory);

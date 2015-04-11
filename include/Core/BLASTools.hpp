@@ -40,8 +40,8 @@ namespace Kartet
 		> > > > CuBLASKnownTypes;
 
 // Type tools :
-	#define ALLOWED_TYPES_VERIFICATION		STATIC_ASSERT( Belongs<CuBLASKnownTypes, T>::value )
-	#define TYPE_MUST_BE_COMPLEX			STATIC_ASSERT( TypeInfo<T>::isComplex )
+	#define ALLOWED_TYPES_VERIFICATION		StaticAssert<Belongs<CuBLASKnownTypes, T>::value>();
+	#define TYPE_MUST_BE_COMPLEX			StaticAssert<TypeInfo<T>::isComplex>();
 	#define TEST_MONOLITHIC(x)			{if(!(x).isMonolithic()) throw IncompatibleLayout;}
 	#define TEST_SINGLE_SLICE(x)			{if((x).getNumSlices()>1) throw IncompatibleLayout;} 
 	#define TEST_PRODUCT(A, transa, B, transb, C)	{if(!isProductValid(A, transa, B, transb, C)) throw InvalidOperation;}

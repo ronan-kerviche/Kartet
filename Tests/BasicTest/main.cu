@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
 	try
 	{
-		// Testing expressions :
+		/*// Testing expressions :
 		Kartet::Array<double> A(5, 3), B(5, 3);
 
 		A = Kartet::IndexI();
@@ -296,7 +296,19 @@ int main(int argc, char** argv)
 			Kartet::ReduceContext reduceContext;
 			reduceContext.sumMulti(A, B);
 			std::cout << "B = " << B << std::endl;
-		}
+		}*/
+
+		Kartet::Array<double> A(4,4);
+		A = Kartet::IndexI() + Kartet::IndexJ();
+		A = A + 1.0;
+		std::cout << A << std::endl;
+
+		std::cout << "Host side..." << std::endl;
+		Kartet::Array<double, Kartet::HostSide> B(4,4);
+		B = 23.0;
+		B = sin(B-2.0)/7.0 + Kartet::IndexI();
+		std::cout << "Trying..." << std::endl;
+		std::cout << B << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

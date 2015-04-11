@@ -32,43 +32,52 @@
 namespace Kartet
 {
 // Assignement operators :
-	template<typename T>
+	template<typename T, Location l>
 	template<typename TExpr>
-	Accessor<T>& Accessor<T>::assign(const TExpr& expr, cudaStream_t stream)
+	Accessor<T,l>& Accessor<T,l>::assign(const TExpr& expr, cudaStream_t stream)
 	{
 		// Make sure we are not computing complex numbers to store in a real array :
-		STATIC_ASSERT( !(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex) )
-		evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
+
+		if(getLocation()==DeviceSide)
+			evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+		else
+			evaluateExpressionOverLayout(*this, expr);
+
 		return *this;
 	}
 
-	template<typename T>
-	Accessor<T>& Accessor<T>::assign(const Accessor<T>& a, cudaStream_t stream)
+	template<typename T, Location l>
+	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l>& a, cudaStream_t stream)
 	{
-		evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+		if(getLocation()==DeviceSide)
+			evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+		else
+			evaluateExpressionOverLayout(*this, a);
+
 		return *this;
 	}
 
-	template<typename T>
+	template<typename T, Location l>
 	template<typename TExpr>
-	Accessor<T>& Accessor<T>::operator=(const TExpr& expr)
+	Accessor<T,l>& Accessor<T,l>::operator=(const TExpr& expr)
 	{		
 		return assign(expr);
 	}
 
-	template<typename T>
-	Accessor<T>& Accessor<T>::operator=(const Accessor<T>& a)
+	template<typename T, Location l>
+	Accessor<T,l>& Accessor<T,l>::operator=(const Accessor<T,l>& a)
 	{
 		return assign(a);
 	}
 
 // Masked assignements : 
-	template<typename T>
+	template<typename T, Location l>
 	template<typename TExprMask, typename TExpr>
-	Accessor<T>& Accessor<T>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr)
+	Accessor<T,l>& Accessor<T,l>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr)
 	{
 		// Make sure we are not computing complex numbers to store in a real array :
-		STATIC_ASSERT( !(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex) )
+		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
 		evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
 		return *this;
 	}
@@ -207,16 +216,16 @@ namespace Kartet
 		};
 
 	#define STANDARD_UNARY_FUNCTION_INTERFACE(funcName, opName) \
-		template<typename T> \
-		ExpressionContainer< UnaryExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a) \
+		template<typename T, Location l> \
+		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
-			return ExpressionContainer< UnaryExpression< Accessor<T>, opName > >( UnaryExpression< Accessor<T>, opName >(a) ); \
+			return ExpressionContainer< UnaryExpression< Accessor<T,l>, opName > >( UnaryExpression< Accessor<T,l>, opName >(a) ); \
 		} \
 		\
-		template<typename T> \
-		ExpressionContainer< UnaryExpression< Accessor<T>, opName > > funcName (const Array<T>& a) \
+		template<typename T, Location l> \
+		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName > > funcName (const Array<T,l>& a) \
 		{ \
-			return ExpressionContainer< UnaryExpression< Accessor<T>, opName > >( UnaryExpression< Accessor<T>, opName >(a) ); \
+			return ExpressionContainer< UnaryExpression< Accessor<T,l>, opName > >( UnaryExpression< Accessor<T,l>, opName >(a) ); \
 		} \
 		\
 		template<typename T> \
@@ -226,16 +235,16 @@ namespace Kartet
 		}
 
 	#define CAST_UNARY_FUNCTION_INTERFACE(funcName, opName) \
-		template<typename TOut, typename T> \
-		ExpressionContainer< UnaryExpression< Accessor<T>, opName <TOut>::template Sub > > funcName (const Accessor<T>& a) \
+		template<typename TOut, typename T, Location l> \
+		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub > > funcName (const Accessor<T,l>& a) \
 		{ \
-			return ExpressionContainer< UnaryExpression< Accessor<T>, opName <TOut>::template Sub > >( UnaryExpression< Accessor<T>, opName <TOut>::template Sub >(a) ); \
+			return ExpressionContainer< UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub > >( UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub >(a) ); \
 		} \
 		\
-		template<typename TOut, typename T> \
-		ExpressionContainer< UnaryExpression< Accessor<T>, opName <TOut>::template Sub > > funcName (const Array<T>& a) \
+		template<typename TOut, typename T, Location l> \
+		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub > > funcName (const Array<T,l>& a) \
 		{ \
-			return ExpressionContainer< UnaryExpression< Accessor<T>, opName <TOut>::template Sub > >( UnaryExpression< Accessor<T>, opName <TOut>::template Sub >(a) ); \
+			return ExpressionContainer< UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub > >( UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub >(a) ); \
 		} \
 		\
 		template<typename TOut, typename T> \
@@ -273,16 +282,16 @@ namespace Kartet
 		};
 
 	#define STANDARD_TRANSFORM_FUNCTION_INTERFACE(funcName, opName) \
-		template<typename T> \
-		ExpressionContainer< TransformExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a) \
+		template<typename T, Location l> \
+		ExpressionContainer< TransformExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
-			return ExpressionContainer< TransformExpression< Accessor<T>, opName > >( TransformExpression< Accessor<T>, opName >(a) ); \
+			return ExpressionContainer< TransformExpression< Accessor<T,l>, opName > >( TransformExpression< Accessor<T,l>, opName >(a) ); \
 		} \
 		\
-		template<typename T> \
-		ExpressionContainer< TransformExpression< Accessor<T>, opName > > funcName (const Array<T>& a) \
+		template<typename T, Location l> \
+		ExpressionContainer< TransformExpression< Accessor<T,l>, opName > > funcName (const Array<T,l>& a) \
 		{ \
-			return ExpressionContainer< TransformExpression< Accessor<T>, opName > >( TransformExpression< Accessor<T>, opName >(a) ); \
+			return ExpressionContainer< TransformExpression< Accessor<T,l>, opName > >( TransformExpression< Accessor<T,l>, opName >(a) ); \
 		} \
 		\
 		template<typename T> \
@@ -308,34 +317,34 @@ namespace Kartet
 		};
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_FUNCTION_INTERFACE(funcName, opName) \
-		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Accessor<T>& a) \
+		template<typename T, Location l> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a.getLayout(), a) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.getLayout(), a) ); \
+		} \
+		\
+		template<typename T, Location l> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Array<T,l>& a) \
+		{ \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.getLayout(), a) ); \
+		} \
+		\
+		template<typename T, Location l> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Layout& layout, const Accessor<T,l>& a) \
+		{ \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(layout, a) ); \
+		} \
+		\
+		template<typename T, Location l> \
+		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Layout& layout, const Array<T,l>& a) \
+		{ \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(layout, a) ); \
 		} \
 		\
 		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Array<T>& a) \
+		ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > > funcName (const Layout& layout, const ExpressionContainer<T>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(a.getLayout(), a) ); \
-		} \
-		\
-		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Layout& l, const Accessor<T>& a) \
-		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(l, a) ); \
-		} \
-		\
-		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > > funcName (const Layout& l, const Array<T>& a) \
-		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T>, opName > >( LayoutReinterpretationExpression< Accessor<T>, opName >(l, a) ); \
-		} \
-		\
-		template<typename T> \
-		ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > > funcName (const Layout& l, const ExpressionContainer<T>& a) \
-		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > >( LayoutReinterpretationExpression< ExpressionContainer<T>, opName >(l, a) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > >( LayoutReinterpretationExpression< ExpressionContainer<T>, opName >(layout, a) ); \
 		} \
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, operation) \
@@ -380,40 +389,40 @@ namespace Kartet
 		};
 
 	#define STANDARD_BINARY_FUNCTION_INTERFACE(funcName, opName) \
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, T2, opName > > funcName (const Accessor<T1>& a, const T2& b) \
+		template<typename T1, Location l1, typename T2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, T2, opName > > funcName (const Accessor<T1,l1>& a, const T2& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, T2, opName > >( BinaryExpression< Accessor<T1>, T2, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, T2, opName > >( BinaryExpression< Accessor<T1,l1>, T2, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > > funcName (const Accessor<T1>& a, const Array<T2>& b) \
+		template<typename T1, Location l1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > > funcName (const Accessor<T1,l1>& a, const Array<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > >( BinaryExpression< Accessor<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > >( BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< T1, Accessor<T2>, opName > > funcName (const T1& a, const Accessor<T2>& b) \
+		template<typename T1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< T1, Accessor<T2,l2>, opName > > funcName (const T1& a, const Accessor<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< T1, Accessor<T2>, opName > >( BinaryExpression< T1, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< T1, Accessor<T2,l2>, opName > >( BinaryExpression< T1, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > > funcName (const Array<T1>& a, const Accessor<T2>& b) \
+		template<typename T1, Location l1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > > funcName (const Array<T1,l1>& a, const Accessor<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > >( BinaryExpression< Accessor<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > >( BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > > funcName (const Accessor<T1>& a, const Accessor<T2>& b) \
+		template<typename T1, Location l1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > > funcName (const Accessor<T1,l1>& a, const Accessor<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > >( BinaryExpression< Accessor<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > >( BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > > funcName (const Array<T1>& a, const Array<T2>& b) \
+		template<typename T1, Location l1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > > funcName (const Array<T1,l1>& a, const Array<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, Accessor<T2>, opName > >( BinaryExpression< Accessor<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName > >( BinaryExpression< Accessor<T1,l1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
 		template<typename T1, typename T2> \
@@ -422,10 +431,10 @@ namespace Kartet
 			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, T2, opName > >( BinaryExpression< ExpressionContainer<T1>, T2, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName > > funcName (const ExpressionContainer<T1>& a, const Array<T2>& b) \
+		template<typename T1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName > > funcName (const ExpressionContainer<T1>& a, const Array<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName > >( BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName > >( BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
 		template<typename T1, typename T2> \
@@ -434,22 +443,22 @@ namespace Kartet
 			return ExpressionContainer< BinaryExpression< T1, ExpressionContainer<T2>, opName > >( BinaryExpression< T1, ExpressionContainer<T2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName > > funcName (const Array<T1>& a, const ExpressionContainer<T2>& b) \
+		template<typename T1, Location l1, typename T2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName > > funcName (const Array<T1,l1>& a, const ExpressionContainer<T2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName > >( BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName > >( BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName > > funcName (const ExpressionContainer<T1>& a, const Accessor<T2>& b) \
+		template<typename T1, typename T2, Location l2> \
+		ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName > > funcName (const ExpressionContainer<T1>& a, const Accessor<T2,l2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName > >( BinaryExpression< ExpressionContainer<T1>, Accessor<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName > >( BinaryExpression< ExpressionContainer<T1>, Accessor<T2,l2>, opName >(a, b) ); \
 		} \
 		\
-		template<typename T1, typename T2> \
-		ExpressionContainer< BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName > > funcName (const Accessor<T1>& a, const ExpressionContainer<T2>& b) \
+		template<typename T1, Location l1, typename T2> \
+		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName > > funcName (const Accessor<T1,l1>& a, const ExpressionContainer<T2>& b) \
 		{ \
-			return ExpressionContainer< BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName > >( BinaryExpression< Accessor<T1>, ExpressionContainer<T2>, opName >(a, b) ); \
+			return ExpressionContainer< BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName > >( BinaryExpression< Accessor<T1,l1>, ExpressionContainer<T2>, opName >(a, b) ); \
 		} \
 		\
 		template<typename T1, typename T2> \

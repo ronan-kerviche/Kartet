@@ -73,7 +73,7 @@ namespace Kartet
 	ALL_PLATFORMS inline void complexCopy(TOut& a, const TIn& b)
 	{
 		// If the input type is complex, the output type must be complex :
-		STATIC_ASSERT( !(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex) )
+		StaticAssert<!(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex)>();
 
 		realRef(a) = real(b);
 		if(TypeInfo<TOut>::isComplex)
@@ -89,7 +89,7 @@ namespace Kartet
 	ALL_PLATFORMS inline TOut complexCopy(const TIn& b)
 	{
 		// If the input type is complex, the output type must be complex :
-		STATIC_ASSERT( !(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex) )
+		StaticAssert<!(!TypeInfo<TOut>::isComplex && TypeInfo<TIn>::isComplex)>();
 		
 		TOut res;
 		realRef(res) = real(b);

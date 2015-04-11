@@ -163,6 +163,7 @@ namespace Kartet
 		InvalidCuRandContext,
 		InvalidCuFFTContext,
 		InvalidContext,
+		InvalidLocation,
 		NullPointer,
 		NotSupported,
 		// Others :
@@ -293,6 +294,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( InvalidBLASContext )
 			EXCEPTION_MESSAGE( InvalidCuRandContext )
 			EXCEPTION_MESSAGE( InvalidContext )
+			EXCEPTION_MESSAGE( InvalidLocation )
 			EXCEPTION_MESSAGE( NullPointer )
 			EXCEPTION_MESSAGE( NotSupported )
 			EXCEPTION_MESSAGE( NoException )

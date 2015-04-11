@@ -504,6 +504,7 @@ namespace Kartet
 	{
 		// Op should have a function :
 		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const;
+
 		if(numRows==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
 			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
 		else if(numRows==getLeadingColumns())
@@ -644,92 +645,98 @@ namespace Kartet
 	}
 
 // Accessor :
-	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 : 	Layout(r, c, s, lc, ls, o),
-		devicePtr(NULL)	
+		ptr(NULL)	
 	{ }
 
-	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(const Layout& layout)
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(const Layout& layout)
 	 : 	Layout(layout), 
-		devicePtr(NULL)
+		ptr(NULL)
 	{ }
 
-	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 :	Layout(r, c, s, lc, ls, o),
-		devicePtr(ptr)
+		ptr(ptr)
 	{ }
 
-	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(T* ptr, const Layout& layout)
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, const Layout& layout)
 	 :	Layout(layout),
-		devicePtr(ptr)
+		ptr(ptr)
 	{ }
 	
-	template<typename T>
-	__host__ Accessor<T>::Accessor(const Array<T>& a)
+	template<typename T, Location l>
+	__host__ Accessor<T,l>::Accessor(const Array<T,l>& a)
 	 :	Layout(a), 
-		devicePtr(a.devicePtr)
+		ptr(a.ptr)
 	{ }
 
-	template<typename T>
-	__host__ __device__ Accessor<T>::Accessor(const Accessor<T>& a)
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(const Accessor<T,l>& a)
 	 : 	Layout(a),
-		devicePtr(a.devicePtr)
+		ptr(a.ptr)
 	{ }
 
-	template<typename T>
-	__host__ __device__ inline T* Accessor<T>::getPtr(void) const
+	template<typename T, Location l>
+	__host__ __device__ Location Accessor<T,l>::getLocation(void) const
 	{
-		return devicePtr;
+		return l;
 	}
 
-	template<typename T>
-	__host__ __device__ inline size_t Accessor<T>::getSize(void) const
+	template<typename T, Location l>
+	__host__ __device__ T* Accessor<T,l>::getPtr(void) const
+	{
+		return ptr;
+	}
+
+	template<typename T, Location l>
+	__host__ __device__ size_t Accessor<T,l>::getSize(void) const
 	{
 		return static_cast<size_t>(getNumElements())*sizeof(T);
 	}	
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::data(index_t i, index_t j, index_t k) const
+	template<typename T, Location l>
+	__host__ __device__ inline T& Accessor<T,l>::data(index_t i, index_t j, index_t k) const
 	{
-		return devicePtr[getIndex(i, j, k)];
+		return ptr[getIndex(i, j, k)];
 	}
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::data(index_t p) const
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::data(index_t p) const
 	{
-		return devicePtr[p];
+		return ptr[p];
 	}
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::data(void) const
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::data(void) const
 	{
-		return devicePtr[getIndex()];
+		return ptr[getIndex()];
 	}
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::dataInSlice(int k) const
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataInSlice(int k) const
 	{
-		return devicePtr[getIndex(getI(),getJ(),k)];
+		return ptr[getIndex(getI(),getJ(),k)];
 	}
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::dataFFTShift(void) const
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataFFTShift(void) const
 	{
-		return devicePtr[getIndexFFTShift()];
+		return ptr[getIndexFFTShift()];
 	}
 
-	template<typename T>
-	__device__ inline T& Accessor<T>::dataFFTInverseShift(void) const
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataFFTInverseShift(void) const
 	{
-		return devicePtr[getIndexFFTInverseShift()];
+		return ptr[getIndexFFTInverseShift()];
 	}
 
-	template<typename T>
-	T* Accessor<T>::getData(void) const
+	template<typename T, Location l>
+	T* Accessor<T,l>::getData(void) const
 	{	
 		T* ptr = new T[getNumElements()];
 		getData(ptr);
@@ -737,7 +744,7 @@ namespace Kartet
 	}
 
 	// Tools for the memcpy :
-		template<typename T>
+		template<typename T, Location l>
 		struct MemCpyToolBox
 		{			
 			const cudaMemcpyKind 	kind;
@@ -774,45 +781,45 @@ namespace Kartet
 			}
 		};
 
-	template<typename T>
-	void Accessor<T>::getData(T* ptr) const
+	template<typename T, Location l>
+	void Accessor<T,l>::getData(T* dst) const
 	{
-		if(ptr==NULL)
+		if(dst==NULL)
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-		MemCpyToolBox<T> toolbox(cudaMemcpyDeviceToHost, ptr, devicePtr, *this);
+		MemCpyToolBox<T,l> toolbox(cudaMemcpyDeviceToHost, dst, ptr, *this);
 		hostScan(toolbox);
 	}
 
-	template<typename T>
-	void Accessor<T>::setData(const T* ptr) const
+	template<typename T, Location l>
+	void Accessor<T,l>::setData(const T* src) const
 	{
-		if(ptr==NULL)
+		if(src==NULL)
 			throw NullPointer;
 
 		cudaDeviceSynchronize();
-		MemCpyToolBox<T> toolbox(cudaMemcpyHostToDevice, devicePtr, ptr, *this);
+		MemCpyToolBox<T,l> toolbox(cudaMemcpyHostToDevice, ptr, src, *this);
 		hostScan(toolbox);
 	}
 
-	template<typename T>
-	__host__ const Layout& Accessor<T>::getLayout(void) const
+	template<typename T, Location l>
+	__host__ const Layout& Accessor<T,l>::getLayout(void) const
 	{
 		return (*this);
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::element(index_t i, index_t j, index_t k) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::element(index_t i, index_t j, index_t k) const
 	{
 		if(!isInside(i, j, k))
 			throw OutOfRange;		
 
-		return Accessor<T>(devicePtr + getIndex(i, j, k), 1, 1, 1, 1, 1, getOffset()+getIndex(i, j, k));
+		return Accessor<T,l>(ptr + getIndex(i, j, k), 1, 1, 1, 1, 1, getOffset()+getIndex(i, j, k));
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::elements(index_t p, index_t numElements) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::elements(index_t p, index_t numElements) const
 	{
 		if(p<0 || numElements<0 || p>=getNumElements() || (p+numElements)>getNumElements())
 			throw OutOfRange;
@@ -835,115 +842,115 @@ namespace Kartet
 					throw OutOfRange;
 			}
 		}
-		return Accessor<T>(devicePtr + p, numElements, 1, 1, numElements, numElements, getOffset()+p);
+		return Accessor<T,l>(ptr + p, numElements, 1, 1, numElements, numElements, getOffset()+p);
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::vector(index_t j) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::vector(index_t j) const
 	{
 		if(!validColumnIndex(j))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices(), getOffset()+getIndex(0,j,0));
+		return Accessor<T,l>(ptr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices(), getOffset()+getIndex(0,j,0));
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::endVector(void) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::endVector(void) const
 	{
 		return vector(getNumColumns()-1);
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::vectors(index_t jBegin, index_t numVectors, index_t jStep) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::vectors(index_t jBegin, index_t numVectors, index_t jStep) const
 	{
 		if(jStep<=0 || numVectors<=0)
 			throw InvalidNegativeStep;
 		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,jBegin,0));
+		return Accessor<T,l>(ptr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,jBegin,0));
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::slice(index_t k) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::slice(index_t k) const
 	{
 		if(!validSliceIndex(k))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns(), getOffset()+getIndex(0,0,k));
+		return Accessor<T,l>(ptr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns(), getOffset()+getIndex(0,0,k));
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::endSlice(void) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::endSlice(void) const
 	{
 		return slice(getNumSlices()-1);
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::slices(index_t kBegin, index_t numSlices, index_t kStep) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::slices(index_t kBegin, index_t numSlices, index_t kStep) const
 	{
 		if(kStep<0 || numSlices<=0)
 			throw InvalidNegativeStep;
 		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep-1))
 			throw OutOfRange;
 
-		return Accessor<T>(devicePtr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices(), getOffset()+getIndex(0,0,kBegin));
+		return Accessor<T,l>(ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices(), getOffset()+getIndex(0,0,kBegin));
 	}
 
-	template<typename T>
-	__host__ Accessor<T> Accessor<T>::subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const
 	{
 		if(numRows<=0 || numColumns<=0)
 			throw InvalidNegativeStep;
 		if(!validRowIndex(iBegin) || !validRowIndex(iBegin+numRows-1) || !validColumnIndex(jBegin) || !validColumnIndex(jBegin+numColumns-1))
 			throw OutOfRange;
 		
-		return Accessor<T>(devicePtr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(iBegin,jBegin,0));
+		return Accessor<T,l>(ptr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(iBegin,jBegin,0));
 	}
 
-	template<typename T>
-	__host__  std::vector< Accessor<T> > Accessor<T>::splitColumns(index_t jBegin, index_t numVectors) const
+	template<typename T, Location l>
+	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitColumns(index_t jBegin, index_t numVectors) const
 	{
-		std::vector< Accessor<T> > pages;
+		std::vector< Accessor<T,l> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
 		const std::vector<Layout> pagesLayout = tmp.splitLayoutColumns(jBegin, numVectors);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
-			pages.push_back( Accessor<T>(devicePtr + it->getOffset(), *it) );
+			pages.push_back( Accessor<T,l>(ptr + it->getOffset(), *it) );
 			pages.back().setOffset(getOffset() + pages.back().getOffset());
 		}
 
 		return pages;
 	}
 
-	template<typename T>
-	__host__  std::vector< Accessor<T> > Accessor<T>::splitSlices(index_t kBegin, index_t numSlices) const
+	template<typename T, Location l>
+	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitSlices(index_t kBegin, index_t numSlices) const
 	{
-		std::vector< Accessor<T> > pages;
+		std::vector< Accessor<T,l> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
 		const std::vector<Layout> pagesLayout = tmp.splitLayoutSlices(kBegin, numSlices);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
-			pages.push_back( Accessor<T>(devicePtr + it->getOffset(), *it) );
+			pages.push_back( Accessor<T,l>(ptr + it->getOffset(), *it) );
 			pages.back().setOffset(getOffset() + pages.back().getOffset());
 		}
 
 		return pages;
 	}
 
-	template<typename T>
+	template<typename T, Location l>
 	template<class Op>
-	__host__ void Accessor<T>::hostScan(const Op& op) const
+	__host__ void Accessor<T,l>::hostScan(const Op& op) const
 	{
-		Layout::hostScan(devicePtr, op);
+		Layout::hostScan(ptr, op);
 	}
 
-	template<typename T>
-	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T>& A)
+	template<typename T, Location l>
+	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T,l>& A)
 	{
 		typedef typename MetaIf<SameTypes<T, char>::test || SameTypes<T, unsigned char>::test, int, T>::TValue CastType;
 
@@ -952,121 +959,140 @@ namespace Kartet
 			  maxWidth = precision+3;
 		const char fillCharacter = ' ';
 		const char* spacing = "  ";
-		const Kartet::Layout l = A.getMonolithicLayout();
-		T* tmp = A.getData();
-		
+		const Kartet::Layout layout = A.getMonolithicLayout();
+
+		T* tmp = (A.getLocation()==DeviceSide) ? A.getData() : A.getPtr();
+
 		// Get old parameter :
 		const int oldPrecision = os.precision(precision);
 
-		os << "(Array of size " << A.getLayout() << ')' << std::endl;
-		for(int k=0; k<l.getNumSlices(); k++)
+		os << "(Array of size " << A.getLayout() << ", " << ((A.getLocation()==DeviceSide) ? "DeviceSide" : "HostSide") << ')' << std::endl;
+		for(int k=0; k<layout.getNumSlices(); k++)
 		{
-			if(l.getNumSlices()>1)
+			if(layout.getNumSlices()>1)
 				os << "Slice " << k << " : "<< std::endl;
 	
-			for(int i=0; i<l.getNumRows(); i++)
+			for(int i=0; i<layout.getNumRows(); i++)
 			{
-				for(int j=0; j<(l.getNumColumns()-1); j++)
-					os << FMT << static_cast<CastType>(tmp[l.getIndex(i,j,k)]) << spacing;
-				os << FMT << static_cast<CastType>(tmp[l.getIndex(i,l.getNumColumns()-1,k)]) << std::endl;
+				for(int j=0; j<(layout.getNumColumns()-1); j++)
+					os << FMT << static_cast<CastType>(tmp[layout.getIndex(i,j,k)]) << spacing;
+				os << FMT << static_cast<CastType>(tmp[layout.getIndex(i,layout.getNumColumns()-1,k)]) << std::endl;
 			}
 		}
 		#undef FMT
 
 		os.precision(oldPrecision);
 
-		delete[] tmp;
+		if(A.getLocation()==DeviceSide)
+			delete[] tmp;
+		
 		return os;
 	}
 
 // Array :
-	template<typename T>
-	__host__ Array<T>::Array(index_t r, index_t c, index_t s)
-	 :	Accessor<T>(r, c, s)
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(index_t r, index_t c, index_t s)
+	 :	Accessor<T,l>(r, c, s)
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();	
 	}
 	
-	template<typename T>
-	__host__ Array<T>::Array(const Layout& layout)
-	 :	Accessor<T>(layout.getMonolithicLayout())
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const Layout& layout)
+	 :	Accessor<T,l>(layout.getMonolithicLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 	}
 
-	template<typename T>
-	__host__ Array<T>::Array(const T* ptr, index_t r, index_t c, index_t s)
-	 :	Accessor<T>(r, c, s)
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const T* ptr, index_t r, index_t c, index_t s)
+	 :	Accessor<T,l>(r, c, s)
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 		setData(ptr);
 	}
 
-	template<typename T>
-	__host__ Array<T>::Array(const T* ptr, const Layout& layout)
-	 :	Accessor<T>(layout.getMonolithicLayout())
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const T* ptr, const Layout& layout)
+	 :	Accessor<T,l>(layout.getMonolithicLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 		setData(ptr);
 	}
 
-	template<typename T>
-	__host__ Array<T>::Array(const Array<T>& A)
-	 :	Accessor<T>(A.getMonolithicLayout())
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const Array<T,l>& A)
+	 :	Accessor<T,l>(A.getMonolithicLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 		(*this) = A;
 	}
 
-	template<typename T>
+	template<typename T, Location l>
 	template<typename TIn>
-	__host__ Array<T>::Array(const Accessor<TIn>& A)
-	 : 	Accessor<T>(A.getMonolithicLayout())
+	__host__ Array<T,l>::Array(const Accessor<TIn,l>& A)
+	 : 	Accessor<T,l>(A.getMonolithicLayout())
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 		(*this) = A;
 	}
 	
-	template<typename T>
-	__host__ Array<T>::Array(const std::string& filename, bool convert, size_t maxBufferSize)
-	 :	Accessor<T>(Layout::readFromFile(filename))
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const std::string& filename, bool convert, size_t maxBufferSize)
+	 :	Accessor<T,l>(Layout::readFromFile(filename))
 	{
-		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&this->devicePtr), getNumElements()*sizeof(T));
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		allocateMemory();
 		readFromFile(filename, convert, maxBufferSize);
 	}
 
-	template<typename T>
-	__host__ Array<T>::~Array(void)
+	template<typename T, Location l>
+	__host__ Array<T,l>::~Array(void)
 	{
-		cudaDeviceSynchronize();	
-		cudaError_t err = cudaFree(this->devicePtr);
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
-		this->devicePtr = NULL;
+		cudaError_t err = cudaSuccess;
+		switch(l)
+		{
+			case DeviceSide :
+				cudaDeviceSynchronize();	
+				err = cudaFree(this->ptr);
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
+				break;
+			case HostSide :
+				delete[] this->ptr;
+				break;
+			default :
+				throw InvalidLocation;
+		}
+		this->ptr = NULL;
 	}
 
-	template<typename T>
-	__host__ Accessor<T>& Array<T>::accessor(void)
+	template<typename T, Location l>
+	__host__ void Array<T,l>::allocateMemory(void)
+	{
+		cudaError_t err = cudaSuccess;
+		switch(l)
+		{
+			case DeviceSide :
+				err = cudaMalloc(reinterpret_cast<void**>(&this->ptr), getNumElements()*sizeof(T));
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
+				break;
+			case HostSide :
+				this->ptr = new T[getNumElements()];
+				break;
+			default :
+				throw InvalidLocation;
+		}
+	}
+
+	template<typename T, Location l>
+	__host__ Accessor<T,l>& Array<T,l>::accessor(void)
 	{
 		return (*this);
 	}
 
-	template<typename T>
-	__host__ void Array<T>::readFromFile(std::fstream& file, bool convert, size_t maxBufferSize)
+	template<typename T, Location l>
+	__host__ void Array<T,l>::readFromFile(std::fstream& file, bool convert, size_t maxBufferSize)
 	{
 		if(!isMonolithic())
 			throw InvalidOperation;
@@ -1132,8 +1158,8 @@ namespace Kartet
 		delete bufferCast;
 	}
 
-	template<typename T>
-	__host__ void Array<T>::readFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
+	template<typename T, Location l>
+	__host__ void Array<T,l>::readFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
 	{
 		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
 
@@ -1148,8 +1174,8 @@ namespace Kartet
 		file.close();
 	}
 
-	template<typename T>
-	__host__ void Array<T>::writeToFile(std::fstream& file, size_t maxBufferSize)
+	template<typename T, Location l>
+	__host__ void Array<T,l>::writeToFile(std::fstream& file, size_t maxBufferSize)
 	{
 		if(!isMonolithic())
 			throw InvalidOperation;
@@ -1193,8 +1219,8 @@ namespace Kartet
 		delete buffer;
 	}
 
-	template<typename T>
-	__host__ void Array<T>::writeToFile(const std::string& filename, size_t maxBufferSize)
+	template<typename T, Location l>
+	__host__ void Array<T,l>::writeToFile(const std::string& filename, size_t maxBufferSize)
 	{
 		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
 

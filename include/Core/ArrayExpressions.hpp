@@ -40,7 +40,7 @@ namespace Kartet
 		// Default expression mechanism (transparent).
 		typedef T ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const T& expr, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const T& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
 			return expr;
 		}
@@ -53,7 +53,7 @@ namespace Kartet
 		typedef T ReturnType;
 		
 		// Const reference to const pointer :
-		__device__ inline static ReturnType evaluate(const T* const& expr, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) 
+		__host__ __device__ inline static ReturnType evaluate(const T* const& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k) 
 		{
 			return expr[p];
 		}
@@ -65,31 +65,31 @@ namespace Kartet
 		// Mechanism for a ExpressionContainer Object :
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
 
-		__device__ inline static ReturnType evaluate(const ExpressionContainer<T>& container, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const ExpressionContainer<T>& container, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			return ExpressionEvaluation<T>::evaluate(container.expr, l, p, i, j, k);
+			return ExpressionEvaluation<T>::evaluate(container.expr, layout, p, i, j, k);
 		}
 	};
 
-	template<typename T>
-	struct ExpressionEvaluation< Accessor<T> >
+	template<typename T, Location l>
+	struct ExpressionEvaluation< Accessor<T,l> >
 	{
 		// Mechanism for a Accessor Object :
 		typedef T ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const Accessor<T>& accessor, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const Accessor<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
 			return accessor.data(p);
 		}
 	};
 
-	template<typename T>
-	struct ExpressionEvaluation< Array<T> >
+	template<typename T, Location l>
+	struct ExpressionEvaluation< Array<T,l> >
 	{
 		// Mechanism for a Array Object :
 		typedef T ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const Array<T>& accessor, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const Array<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
 			return accessor.data(p);
 		}
@@ -102,9 +102,9 @@ namespace Kartet
 		typedef Op Operator;
 		typedef typename Op::ReturnType ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const NullaryExpression<Op>& nullaryExpression, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const NullaryExpression<Op>& nullaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			return Operator::apply(l, p, i, j, k);
+			return Operator::apply(layout, p, i, j, k);
 		}
 	};
 
@@ -117,9 +117,9 @@ namespace Kartet
 		typedef typename Op< 	typename ExpressionEvaluation<T>::ReturnType 
 					>::ReturnType ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const UnaryExpression<T, Op>& unaryExpression, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const UnaryExpression<T, Op>& unaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			return Operator::apply(		ExpressionEvaluation<T>::evaluate(unaryExpression.a, l, p, i, j, k) );
+			return Operator::apply(	ExpressionEvaluation<T>::evaluate(unaryExpression.a, layout, p, i, j, k) );
 		}
 	};
 
@@ -130,10 +130,10 @@ namespace Kartet
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const TransformExpression<T, Op>& transfomExpression, const Layout& l, index_t p, index_t i, index_t j, index_t k)
+		__host__ __device__ inline static ReturnType evaluate(const TransformExpression<T, Op>& transfomExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
-			Operator::apply(l, p, i, j, k); // Change in shape
-			return ExpressionEvaluation<T>::evaluate(transfomExpression.a, l, p, i, j, k); // Use sub type with new coordinates
+			Operator::apply(layout, p, i, j, k); // Change in shape
+			return ExpressionEvaluation<T>::evaluate(transfomExpression.a, layout, p, i, j, k); // Use sub type with new coordinates
 		}
 	};
 
@@ -144,9 +144,9 @@ namespace Kartet
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const LayoutReinterpretationExpression<T, Op>& layoutReinterpretationExpression, const Layout& l, index_t p, index_t i, index_t j, index_t k)
+		__host__ __device__ inline static ReturnType evaluate(const LayoutReinterpretationExpression<T, Op>& layoutReinterpretationExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
-			Operator::apply(l, layoutReinterpretationExpression.layout, p, i, j, k); // Change in shape according to a new layout
+			Operator::apply(layout, layoutReinterpretationExpression.layout, p, i, j, k); // Change in shape according to a new layout
 			return ExpressionEvaluation<T>::evaluate(layoutReinterpretationExpression.a, layoutReinterpretationExpression.layout, p, i, j, k); // Use sub type with new coordinates AND new layout
 		}
 	};
@@ -162,10 +162,10 @@ namespace Kartet
 					typename ExpressionEvaluation<T2>::ReturnType 
 					>::ReturnType ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, l, p, i, j, k), 	
-							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, l, p, i, j, k)
+			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, layout, p, i, j, k), 	
+							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, layout, p, i, j, k)
 						);
 		}
 	};
@@ -184,11 +184,11 @@ namespace Kartet
 					typename ExpressionEvaluation<T3>::ReturnType >::ReturnType 
 					ReturnType;
 		
-		__device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
+		__host__ __device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(ternaryExpression.a, l, p, i, j, k), 
-							ExpressionEvaluation<T2>::evaluate(ternaryExpression.b, l, p, i, j, k),
-							ExpressionEvaluation<T3>::evaluate(ternaryExpression.c, l, p, i, j, k)
+			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(ternaryExpression.a, layout, p, i, j, k), 
+							ExpressionEvaluation<T2>::evaluate(ternaryExpression.b, layout, p, i, j, k),
+							ExpressionEvaluation<T3>::evaluate(ternaryExpression.c, layout, p, i, j, k)
 						);
 		}
 	};
@@ -268,8 +268,8 @@ namespace Kartet
 		Layout layout;
 		T a;
 		
-		__host__ LayoutReinterpretationExpression(const Layout& l, const T& _a)
-		 : layout(l), a(_a) 
+		__host__ LayoutReinterpretationExpression(const Layout& _layout, const T& _a)
+		 : layout(_layout), a(_a) 
 		{ }
 
 		__host__ __device__ LayoutReinterpretationExpression(const LayoutReinterpretationExpression<T, Op>& e)
@@ -320,8 +320,8 @@ namespace Kartet
 	};
 
 // Evaluation functions :
-	template<typename T, typename TExpr>
-	__global__ void evaluateExpression(const Accessor<T> array, const TExpr expr)
+	template<typename T, Location l, typename TExpr>
+	__global__ void evaluateExpression(const Accessor<T,l> array, const TExpr expr)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
@@ -337,6 +337,29 @@ namespace Kartet
 			T buffer;
 			complexCopy(buffer, t);
 			array.data() = buffer;
+		}
+	}
+
+	template<typename T, Location l, typename TExpr>
+	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr expr)
+	{
+		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+
+		for(index_t k=0; k<array.getNumSlices(); k++)
+		{
+			for(index_t j=0; j<array.getNumColumns(); j++)
+			{
+				for(index_t i=0; i<array.getNumRows(); i++)
+				{
+					index_t p = array.getIndex(i, j, k);
+					
+					ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
+
+					T buffer;
+					complexCopy(buffer, t);
+					array.data(i, j, k) = buffer;
+				}
+			}
 		}
 	}
 
