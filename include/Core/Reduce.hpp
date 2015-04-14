@@ -53,59 +53,59 @@ namespace Kartet
 			__host__ TOut reduce(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue);
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType min(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ T min(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ T min(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType max(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ T max(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ T max(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType sum(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ T sum(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ T sum(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType mean(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ T mean(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ T mean(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ typename ExpressionEvaluation<TExpr>::ReturnType prod(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ T prod(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ T prod(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ bool all(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ bool all(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ bool all(const Accessor<T,l>& accessor);
 			template<typename TExpr>
 			__host__ bool any(const Layout& layout, const TExpr& expr);
-			template<typename T>
-			__host__ bool any(const Accessor<T>& accessor);
+			template<typename T, Location l>
+			__host__ bool any(const Accessor<T,l>& accessor);
 
-			template<template<typename,typename> class Op, typename TExpr, typename TOut>
-			__host__ void reduceMulti(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void minMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ void minMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void maxMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ T maxMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void sumMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ void sumMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void prodMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ void prodMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void allMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ void allMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
-			template<typename TExpr, typename TOut>
-			__host__ void anyMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output);
-			template<typename T, typename TOut>
-			__host__ void anyMulti(const Accessor<T>& accessor, const Accessor<TOut>& output);
+			template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
+			__host__ void reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ void minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ T maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ void sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ void prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ void allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			template<typename TExpr, typename TOut, Location l>
+			__host__ void anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			template<typename T, typename TOut, Location l>
+			__host__ void anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 	};
 
 // Kernels :
@@ -183,8 +183,8 @@ namespace Kartet
 		}
 	}
 
-	template<template<typename,typename> class Op, typename TOut, typename TExpr>
-	__global__ void reduceToLayoutKernel_LargeReductionMode(const Layout layout, const Layout reductionBlockLayout, const dim3 blockSteps, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut> output, const unsigned int totalNumThreads, const unsigned int maxPow2Half)
+	template<template<typename,typename> class Op, typename TOut, Location l, typename TExpr>
+	__global__ void reduceToLayoutKernel_LargeReductionMode(const Layout layout, const Layout reductionBlockLayout, const dim3 blockSteps, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l> output, const unsigned int totalNumThreads, const unsigned int maxPow2Half)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		ReturnType *sharedData = SharedMemory<ReturnType>();
@@ -228,8 +228,8 @@ namespace Kartet
 			output.data(blockIdx.x, blockIdx.y, blockIdx.z) = complexCopy<TOut>(sharedData[0]);
 	}
 
-	template<template<typename,typename> class Op, typename TOut, typename TExpr>
-	__global__ void reduceToLayoutKernel_SmallReductionMode(const Layout layout, const Layout reductionBlockLayout, const dim3 blockSteps, const dim3 numSubReductionBlocks, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut> output)
+	template<template<typename,typename> class Op, typename TOut, Location l, typename TExpr>
+	__global__ void reduceToLayoutKernel_SmallReductionMode(const Layout layout, const Layout reductionBlockLayout, const dim3 blockSteps, const dim3 numSubReductionBlocks, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l> output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		ReturnType *sharedData = SharedMemory<ReturnType>();
@@ -298,6 +298,7 @@ namespace Kartet
 		}
 	}
 
+// Implementation :
 	__host__ inline ReduceContext::ReduceContext(void)
 	 : 	fillNumBlocks(128),
 		maxMemory(16384),
@@ -324,51 +325,71 @@ namespace Kartet
 	__host__ TOut ReduceContext::reduce(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-		TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
-			*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
 
-		const dim3	blockSize = layout.getBlockSize(),
-				numBlocks = layout.getNumBlock();
+		if(ExpressionEvaluation<TExpr>::location==DeviceSide || ExpressionEvaluation<TExpr>::location==AnySide)
+		{			
+			TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
+				*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
 
-		// Compute the stride for each block, in order to limit the total number of blocks to fillNumBlocks :
-		dim3	reducedNumBlocks,
-			blockSteps;
+			const dim3	blockSize = layout.getBlockSize(),
+					numBlocks = layout.getNumBlock();
 
-		reducedNumBlocks.x	= std::min(numBlocks.x, fillNumBlocks);
-		blockSteps.x		= (numBlocks.x + reducedNumBlocks.x - 1) / reducedNumBlocks.x;
-		reducedNumBlocks.y	= std::min(numBlocks.y, fillNumBlocks / reducedNumBlocks.x);
-		blockSteps.y		= (numBlocks.y + reducedNumBlocks.y - 1) / reducedNumBlocks.y;
-		reducedNumBlocks.z	= std::min(numBlocks.z, fillNumBlocks / (reducedNumBlocks.x * reducedNumBlocks.y));
-		blockSteps.z		= (numBlocks.z + reducedNumBlocks.z - 1) / reducedNumBlocks.z;
+			// Compute the stride for each block, in order to limit the total number of blocks to fillNumBlocks :
+			dim3	reducedNumBlocks,
+				blockSteps;
+
+			reducedNumBlocks.x	= std::min(numBlocks.x, fillNumBlocks);
+			blockSteps.x		= (numBlocks.x + reducedNumBlocks.x - 1) / reducedNumBlocks.x;
+			reducedNumBlocks.y	= std::min(numBlocks.y, fillNumBlocks / reducedNumBlocks.x);
+			blockSteps.y		= (numBlocks.y + reducedNumBlocks.y - 1) / reducedNumBlocks.y;
+			reducedNumBlocks.z	= std::min(numBlocks.z, fillNumBlocks / (reducedNumBlocks.x * reducedNumBlocks.y));
+			blockSteps.z		= (numBlocks.z + reducedNumBlocks.z - 1) / reducedNumBlocks.z;
 		
-		const unsigned int 	totalNumBlocks = reducedNumBlocks.x * reducedNumBlocks.y * reducedNumBlocks.z,
-					totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
-					maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
-		const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
+			const unsigned int 	totalNumBlocks = reducedNumBlocks.x * reducedNumBlocks.y * reducedNumBlocks.z,
+						totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
+						maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
+			const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
 
-		/* // Testing the computation layouts :
-		std::cout << "numBlocks        : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
-		std::cout << "blockSize        : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
-		std::cout << "reducedNumBlocks : " << reducedNumBlocks.x << ", " << reducedNumBlocks.y << ", " << reducedNumBlocks.z << std::endl;
-		std::cout << "blockSteps       : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
-		std::cout << "totalNumBlocks   : " << totalNumBlocks << std::endl;
-		std::cout << "totalNumThreads  : " << totalNumThreads << std::endl;
-		std::cout << "maxPow2Half      : " <<  maxPow2Half << std::endl;
-		*/
+			/* // Testing the computation layouts :
+			std::cout << "numBlocks        : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
+			std::cout << "blockSize        : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
+			std::cout << "reducedNumBlocks : " << reducedNumBlocks.x << ", " << reducedNumBlocks.y << ", " << reducedNumBlocks.z << std::endl;
+			std::cout << "blockSteps       : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
+			std::cout << "totalNumBlocks   : " << totalNumBlocks << std::endl;
+			std::cout << "totalNumThreads  : " << totalNumThreads << std::endl;
+			std::cout << "maxPow2Half      : " <<  maxPow2Half << std::endl;
+			*/
 
-		// Do the single-pass reduction :
-		reduceKernel<Op><<<reducedNumBlocks, blockSize, sharedMemorySize>>>(layout, blockSteps, expr, defaultValue, castDevicePtr,  totalNumThreads, maxPow2Half);
+			// Do the single-pass reduction :
+			reduceKernel<Op><<<reducedNumBlocks, blockSize, sharedMemorySize>>>(layout, blockSteps, expr, defaultValue, castDevicePtr,  totalNumThreads, maxPow2Half);
 
-		// Copy back to the Host side and complete :
-		cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), totalNumBlocks*sizeof(TOut), cudaMemcpyDeviceToHost);
-		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+			// Copy back to the Host side and complete :
+			cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), totalNumBlocks*sizeof(TOut), cudaMemcpyDeviceToHost);
+			if(err!=cudaSuccess)
+				throw static_cast<Exception>(CudaExceptionsOffset + err);
 
-		for(int k=1; k<totalNumBlocks; k++)
-			castHostPtr[0] = Op<TOut, TOut>::apply(castHostPtr[0], castHostPtr[k]);
+			for(int k=1; k<totalNumBlocks; k++)
+				castHostPtr[0] = Op<TOut, TOut>::apply(castHostPtr[0], castHostPtr[k]);
 
-		// Return :
-		return castHostPtr[0];
+			// Return :
+			return castHostPtr[0];
+		}
+		else
+		{
+			ReturnType result = defaultValue;
+
+			for(index_t k=0, j=0, i=0, q=0; q<layout.getNumElements(); q++)
+			{
+				index_t p = layout.getIndex(i, j, k);
+				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
+
+				i = ((i+1) % layout.getNumRows());
+				j = (i==0) ? (j+1) : j;
+				k = (i==0 && j==0) ? (k+1) : k;
+			}
+
+			return result;
+		}
 	}
 
 	// Specific tools :
@@ -379,8 +400,8 @@ namespace Kartet
 			return reduce<BinOp_min, ReturnType>(layout, expr, std::numeric_limits<ReturnType>::max());
 		}
 
-		template<typename T>
-		__host__ T ReduceContext::min(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ T ReduceContext::min(const Accessor<T,l>& accessor)
 		{
 			return min(accessor.getLayout(), accessor);
 		}
@@ -393,8 +414,8 @@ namespace Kartet
 			return reduce<BinOp_max, ReturnType>(layout, expr, defaultValue);
 		}
 
-		template<typename T>
-		__host__ T ReduceContext::max(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ T ReduceContext::max(const Accessor<T,l>& accessor)
 		{
 			return max(accessor.getLayout(), accessor);
 		}
@@ -406,8 +427,8 @@ namespace Kartet
 			return reduce<BinOp_Plus, ReturnType>(layout, expr, complexCopy<ReturnType>(0));
 		}
 
-		template<typename T>
-		__host__ T ReduceContext::sum(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ T ReduceContext::sum(const Accessor<T,l>& accessor)
 		{
 			return sum(accessor.getLayout(), accessor);
 		}
@@ -418,8 +439,8 @@ namespace Kartet
 			return sum(layout, expr) / layout.getNumElements();
 		}
 
-		template<typename T>
-		__host__ T ReduceContext::mean(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ T ReduceContext::mean(const Accessor<T,l>& accessor)
 		{
 			return sum(accessor.getLayout(), accessor) / accessor.getNumElements();
 		}
@@ -431,8 +452,8 @@ namespace Kartet
 			return reduce<BinOp_Times, ReturnType>(layout, expr, complexCopy<ReturnType>(1));
 		}
 
-		template<typename T>
-		__host__ T ReduceContext::prod(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ T ReduceContext::prod(const Accessor<T,l>& accessor)
 		{
 			return prod(accessor.getLayout(), accessor);
 		}
@@ -443,8 +464,8 @@ namespace Kartet
 			return reduce<BinOp_And, bool>(layout, expr, true);
 		}
 
-		template<typename T>
-		__host__ bool ReduceContext::all(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ bool ReduceContext::all(const Accessor<T,l>& accessor)
 		{
 			return all(accessor.getLayout(), accessor);
 		}
@@ -455,174 +476,207 @@ namespace Kartet
 			return reduce<BinOp_Or, bool>(layout, expr, false);
 		}
 
-		template<typename T>
-		__host__ bool ReduceContext::any(const Accessor<T>& accessor)
+		template<typename T, Location l>
+		__host__ bool ReduceContext::any(const Accessor<T,l>& accessor)
 		{
 			return any(accessor.getLayout(), accessor);
 		}
 
 	// Binning-like operations :
-	template<template<typename,typename> class Op, typename TExpr, typename TOut>
-	__host__ void ReduceContext::reduceMulti(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut>& output)
+	template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
+	__host__ void ReduceContext::reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+		StaticAssert<ExpressionEvaluation<TExpr>::Location==l>(); // The expression must be on the same side than the output.
 
 		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)	
 			throw InvalidOperation;
-		
-		dim3	blockSize = layout.getBlockSize(),
-			numBlocks = layout.getNumBlock(),
-			blockSteps,				// The steps to cover one block.
-			numSubReductionBlocks;			// The number of sub-blocks covered.
-		const Layout reductionBlockLayout(layout.getNumRows()/output.getNumRows(), layout.getNumColumns()/output.getNumColumns(), layout.getNumSlices()/output.getNumSlices());
 
-		/* The approach here is to split the code in two different methods depending on the size of the block to be reduced.
-		   The chosen limit is still somewhat arbitrary and needs to be refined.
-		*/
-		//std::cout << "[WARNING] Forcing small reduction mode." << std::endl;
-		bool largeReductionMode = (reductionBlockLayout.getNumElements()>=(Layout::StaticContainer<void>::numThreads/2)); // Ad-hoc coefficient decision.
-		if(largeReductionMode)
+		if(ExpressionEvaluation<TExpr>::location==DeviceSide || ExpressionEvaluation<TExpr>::location==AnySide)
 		{
-			//std::cout << "Large reduction mode : " << reductionBlockLayout << std::endl;
+			dim3	blockSize = layout.getBlockSize(),
+				numBlocks = layout.getNumBlock(),
+				blockSteps,				// The steps to cover one block.
+				numSubReductionBlocks;			// The number of sub-blocks covered.
+			const Layout reductionBlockLayout(layout.getNumRows()/output.getNumRows(), layout.getNumColumns()/output.getNumColumns(), layout.getNumSlices()/output.getNumSlices());
 
-			// Cut to the block size layout :
-			blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.getNumRows());
-			blockSize.y = std::min(Layout::StaticContainer<void>::numThreads/blockSize.x, reductionBlockLayout.getNumColumns());
-			blockSize.z = std::min(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y), reductionBlockLayout.getNumSlices());
-			
-			// The number of steps to do depends on the previous cut :
-			blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
-			blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
-			blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z- 1) / blockSize.z;
-			
-			// There will be exactly one block per output values :
-			numBlocks.x = output.getNumRows();
-			numBlocks.y = output.getNumColumns();
-			numBlocks.z = output.getNumSlices();
+			/* The approach here is to split the code in two different methods depending on the size of the block to be reduced.
+			   The chosen limit is still somewhat arbitrary and needs to be refined.
+			*/
+			//std::cout << "[WARNING] Forcing small reduction mode." << std::endl;
+			bool largeReductionMode = (reductionBlockLayout.getNumElements()>=(Layout::StaticContainer<void>::numThreads/2)); // Ad-hoc coefficient decision.
+			if(largeReductionMode)
+			{
+				//std::cout << "Large reduction mode : " << reductionBlockLayout << std::endl;
 
-			// Each Cuda Block will only take care of one block :
-			numSubReductionBlocks.x = 1;
-			numSubReductionBlocks.y = 1;
-			numSubReductionBlocks.z = 1;
+				// Cut to the block size layout :
+				blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.getNumRows());
+				blockSize.y = std::min(Layout::StaticContainer<void>::numThreads/blockSize.x, reductionBlockLayout.getNumColumns());
+				blockSize.z = std::min(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y), reductionBlockLayout.getNumSlices());
+			
+				// The number of steps to do depends on the previous cut :
+				blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
+				blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
+				blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z- 1) / blockSize.z;
+			
+				// There will be exactly one block per output values :
+				numBlocks.x = output.getNumRows();
+				numBlocks.y = output.getNumColumns();
+				numBlocks.z = output.getNumSlices();
+
+				// Each Cuda Block will only take care of one block :
+				numSubReductionBlocks.x = 1;
+				numSubReductionBlocks.y = 1;
+				numSubReductionBlocks.z = 1;
+			}
+			else
+			{
+				//std::cout << "Small reduction mode : " << reductionBlockLayout << std::endl;
+
+				// Cut the block size to fit an integer number of blocks :
+				blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.getNumRows(), reductionBlockLayout.getNumRows() % blockSize.x), static_cast<index_t>(1));
+				blockSize.y = std::max( std::max(blockSize.y - blockSize.y % reductionBlockLayout.getNumColumns(), reductionBlockLayout.getNumColumns() % blockSize.y), static_cast<index_t>(1));
+				blockSize.z = std::max( std::max(blockSize.z - blockSize.z % reductionBlockLayout.getNumSlices(), reductionBlockLayout.getNumSlices() % blockSize.z), static_cast<index_t>(1));
+			
+				// The number of steps to do also depends on the previous cut :
+				blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
+				blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
+				blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z - 1) / blockSize.z;
+			
+				// numBlocks
+				numBlocks.x = (output.getNumRows() + (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows()) - 1) / (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows());
+				numBlocks.y = (output.getNumColumns() + (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns()) - 1) / (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns());
+				numBlocks.z = (output.getNumSlices() + (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices()) - 1) / (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices());
+			
+				// Each Cuda Block will take care of multiple blocks :
+				numSubReductionBlocks.x = blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows();
+				numSubReductionBlocks.y = blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns();
+				numSubReductionBlocks.z = blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices();
+			}
+
+			// Testing the computation layouts :
+			/*std::cout << "numBlocks             : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
+			std::cout << "blockSize             : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
+			std::cout << "blockSteps            : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
+			std::cout << "numSubReductionBlocks : " << numSubReductionBlocks.x << ", " << numSubReductionBlocks.y << ", " << numSubReductionBlocks.z << std::endl;*/
+
+			const unsigned int 	totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
+						maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
+			const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
+
+			// Do the single-pass reduction :
+			if(largeReductionMode)
+				reduceToLayoutKernel_LargeReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, expr, defaultValue, output, totalNumThreads, maxPow2Half);
+			else
+				reduceToLayoutKernel_SmallReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, numSubReductionBlocks, expr, defaultValue, output);
 		}
 		else
 		{
-			//std::cout << "Small reduction mode : " << reductionBlockLayout << std::endl;
+			const Layout block(layout.getNumRows()/output.getNumRows(), layout.getNumColumns()/output.getNumColumns(), layout.getNumSlices()/output.getNumSlices());
 
-			// Cut the block size to fit an integer number of blocks :
-			blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.getNumRows(), reductionBlockLayout.getNumRows() % blockSize.x), static_cast<index_t>(1));
-			blockSize.y = std::max( std::max(blockSize.y - blockSize.y % reductionBlockLayout.getNumColumns(), reductionBlockLayout.getNumColumns() % blockSize.y), static_cast<index_t>(1));
-			blockSize.z = std::max( std::max(blockSize.z - blockSize.z % reductionBlockLayout.getNumSlices(), reductionBlockLayout.getNumSlices() % blockSize.z), static_cast<index_t>(1));
-			
-			// The number of steps to do also depends on the previous cut :
-			blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
-			blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
-			blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z - 1) / blockSize.z;
-			
-			// numBlocks
-			numBlocks.x = (output.getNumRows() + (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows()) - 1) / (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows());
-			numBlocks.y = (output.getNumColumns() + (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns()) - 1) / (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns());
-			numBlocks.z = (output.getNumSlices() + (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices()) - 1) / (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices());
-			
-			// Each Cuda Block will take care of multiple blocks :
-			numSubReductionBlocks.x = blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows();
-			numSubReductionBlocks.y = blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns();
-			numSubReductionBlocks.z = blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices();
+			for(index_t ko=0, jo=0, io=0, qo=0; qo<output.getNumElements(); qo++)
+			{
+				ReturnType result = defaultValue;
+
+				for(index_t kb=0, jb=0, ib=0, qb=0; qb<block.getNumElements(); qb++)
+				{
+					index_t	i = io * block.getNumRows() + ib,
+						j = jo * block.getNumColumns() + jb,
+						k = ko * block.getNumSlices() + kb,
+						p = layout.getIndex(i, j, k);
+
+					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
+
+					ib = ((ib+1) % block.getNumRows());
+					jb = (ib==0) ? (jb+1) : jb;
+					kb = (ib==0 && jb==0) ? (kb+1) : kb;
+				}
+				
+				output.data(io, jo, ko) = complexCopy<TOut>(result);
+
+				io = ((io+1) % output.getNumRows());
+				jo = (io==0) ? (jo+1) : jo;
+				ko = (io==0 && jo==0) ? (ko+1) : ko;
+			}
 		}
-
-		// Testing the computation layouts :
-		/*std::cout << "numBlocks             : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
-		std::cout << "blockSize             : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
-		std::cout << "blockSteps            : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
-		std::cout << "numSubReductionBlocks : " << numSubReductionBlocks.x << ", " << numSubReductionBlocks.y << ", " << numSubReductionBlocks.z << std::endl;*/
-
-		const unsigned int 	totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
-					maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
-		const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
-
-		// Do the single-pass reduction :
-		if(largeReductionMode)
-			reduceToLayoutKernel_LargeReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, expr, defaultValue, output, totalNumThreads, maxPow2Half);
-		else
-			reduceToLayoutKernel_SmallReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, numSubReductionBlocks, expr, defaultValue, output);
 	}
 
 	// Specific tools :
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::minMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceMulti<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
+			reduceBlock<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
 		}
 
-		template<typename T, typename TOut>
-		__host__ void ReduceContext::minMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
+		template<typename T, typename TOut, Location l>
+		__host__ void ReduceContext::minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			minMulti(accessor.getLayout(), accessor, output);
+			minBlock(accessor.getLayout(), accessor, output);
 		}
 
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::maxMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 			ReturnType defaultValue = std::numeric_limits<ReturnType>::is_integer ? std::numeric_limits<ReturnType>::min() : -std::numeric_limits<ReturnType>::max();
-			reduceMulti<BinOp_max>(layout, expr, defaultValue, output);
+			reduceBlock<BinOp_max>(layout, expr, defaultValue, output);
 		}
 
-		template<typename T, typename TOut>
-		__host__ T ReduceContext::maxMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
+		template<typename T, typename TOut, Location l>
+		__host__ T ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			maxMulti(accessor.getLayout(), accessor, output);
+			maxBlock(accessor.getLayout(), accessor, output);
 		}
 
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::sumMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
-		{
-			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceMulti<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
-		}
-
-		template<typename T, typename TOut>
-		__host__ void ReduceContext::sumMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
-		{
-			sumMulti(accessor.getLayout(), accessor, output);
-		}
-
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::prodMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceMulti<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
+			reduceBlock<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
 		}
 
-		template<typename T, typename TOut>
-		__host__ void ReduceContext::prodMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
+		template<typename T, typename TOut, Location l>
+		__host__ void ReduceContext::sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			prodMulti(accessor.getLayout(), accessor, output);
+			sumBlock(accessor.getLayout(), accessor, output);
 		}
 
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::allMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
-			reduceMulti<BinOp_And>(layout, expr, true, output);
+			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+			reduceBlock<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
 		}
 
-		template<typename T, typename TOut>
-		__host__ void ReduceContext::allMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
+		template<typename T, typename TOut, Location l>
+		__host__ void ReduceContext::prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			allMulti(accessor.getLayout(), accessor, output);
+			prodBlock(accessor.getLayout(), accessor, output);
 		}
 
-		template<typename TExpr, typename TOut>
-		__host__ void ReduceContext::anyMulti(const Layout& layout, const TExpr& expr, const Accessor<TOut>& output)
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
-			reduceMulti<BinOp_Or>(layout, expr, false, output);
+			reduceBlock<BinOp_And>(layout, expr, true, output);
 		}
 
-		template<typename T, typename TOut>
-		__host__ void ReduceContext::anyMulti(const Accessor<T>& accessor, const Accessor<TOut>& output)
+		template<typename T, typename TOut, Location l>
+		__host__ void ReduceContext::allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			anyMulti(accessor.getLayout(), accessor, output);
+			allBlock(accessor.getLayout(), accessor, output);
+		}
+
+		template<typename TExpr, typename TOut, Location l>
+		__host__ void ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		{
+			reduceBlock<BinOp_Or>(layout, expr, false, output);
+		}
+
+		template<typename T, typename TOut, Location l>
+		__host__ void ReduceContext::anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		{
+			anyBlock(accessor.getLayout(), accessor, output);
 		}
 
 } // namespace Kartet

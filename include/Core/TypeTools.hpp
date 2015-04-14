@@ -331,7 +331,7 @@ namespace Kartet
 		#define SPECIAL_COPY( TypeName ) \
 			case GetIndex<TypesSortedByAccuracy, TypeName>::value :	\
 				for(int k=0; k<count; k++) \
-					protectedComplexCopy<T>(dst[k], reinterpret_cast<const TypeName *>(src)[k]); \
+					unprotectedComplexCopy<T>(dst[k], reinterpret_cast<const TypeName *>(src)[k]); \
 				break;
 
 		if(isComplex(typeIndex) && !TypeInfo<T>::isComplex)

@@ -301,14 +301,27 @@ int main(int argc, char** argv)
 		Kartet::Array<double> A(4,4);
 		A = Kartet::IndexI() + Kartet::IndexJ();
 		A = A + 1.0;
-		std::cout << A << std::endl;
+		std::cout << "A = " << A << std::endl;
 
 		std::cout << "Host side..." << std::endl;
-		Kartet::Array<double, Kartet::HostSide> B(4,4);
+		Kartet::Array<double, Kartet::HostSide> B(4,4), C(B.getLayout());
 		B = 23.0;
 		B = sin(B-2.0)/7.0 + Kartet::IndexI();
-		std::cout << "Trying..." << std::endl;
-		std::cout << B << std::endl;
+		std::cout << "B = " << B << std::endl;
+
+		std::cout << "Transfer test : " << std::endl;
+		B = A;
+		C = B;
+		std::cout << "B = " << B << std::endl;
+		B = 4.0;
+		A = B;
+		std::cout << "A = " << A << std::endl;
+
+		Kartet::ReduceContext reduceContext;
+		std::cout << "C        = " << C << std::endl;
+		std::cout << "max(C)   = " << reduceContext.max(C) << std::endl;
+		std::cout << "min(C)   = " << reduceContext.min(C) << std::endl;
+		std::cout << "sum(C>4) = " << reduceContext.sum(C.getLayout(), Kartet::cast<int>(C>4.0)) << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

@@ -47,7 +47,8 @@ namespace Kartet
 		enum Location
 		{
 			HostSide,
-			DeviceSide
+			DeviceSide,
+			AnySide
 		};
 
 	// Prototypes : 
@@ -190,6 +191,9 @@ namespace Kartet
 				template<class Op, typename T>
 				__host__ void hostScan(T* ptr, const Op& op) const;
 
+				template<class Op, typename T>
+				__host__ static void dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op);
+
 				__host__ static inline Layout readFromFile(std::fstream& file, int* typeIndex=NULL);
 				__host__ static inline Layout readFromFile(const std::string& filename, int* typeIndex=NULL);
 				__host__ inline void writeToFile(std::fstream& file, int typeIndex);
@@ -258,11 +262,19 @@ namespace Kartet
 				template<typename TExpr>
 				Accessor<T,l>& assign(const TExpr& expr, cudaStream_t stream=NULL);
 				Accessor<T,l>& assign(const Accessor<T,l>& a, cudaStream_t stream=NULL);
+				template<Location l2>
+				Accessor<T,l>& assign(const Accessor<T,l2>& a, cudaStream_t stream=NULL);
+				Accessor<T,l>& assign(const Array<T,l>& a, cudaStream_t stream=NULL);
+				template<Location l2>
+				Accessor<T,l>& assign(const Array<T,l2>& a, cudaStream_t stream=NULL);
 
 			// Operator =
 				template<typename TExpr>
 				Accessor<T,l>& operator=(const TExpr& expr);
-				Accessor<T,l>& operator=(const Accessor<T,l>& a);	 
+				Accessor<T,l>& operator=(const Accessor<T,l>& a);
+				template<Location l2>
+				Accessor<T,l>& operator=(const Accessor<T,l2>& a);
+				
 
 			// Masked assignment : 
 				template<typename TExprMask, typename TExpr>
@@ -349,6 +361,7 @@ namespace Kartet
 			using Accessor<T,l>::hostScan;
 			
 			Accessor<T,l>& accessor(void);
+			const Accessor<T,l>& accessor(void) const;
 			void readFromFile(std::fstream& file, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			void readFromFile(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			void writeToFile(std::fstream& file, size_t maxBufferSize=104857600); // 100 MB
@@ -361,7 +374,7 @@ namespace Kartet
 	#include "Core/TypeTools.hpp"
 	#include "Core/ArrayTools.hpp"
 	#include "Core/ArrayExpressions.hpp"
-	#include "Core/ArrayOperators.hpp"	
+	#include "Core/ArrayOperators.hpp"
 
 #endif
 

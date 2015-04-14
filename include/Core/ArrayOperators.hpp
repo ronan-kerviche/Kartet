@@ -58,15 +58,68 @@ namespace Kartet
 		return *this;
 	}
 
+		template<typename T>
+		struct MemCpyDualToolBox
+		{			
+			const cudaMemcpyKind direction;
+
+			__host__ MemCpyDualToolBox(const cudaMemcpyKind _d)
+			 :	direction(_d)
+			{ }
+
+			__host__ MemCpyDualToolBox(const MemCpyDualToolBox& m)
+			 :	direction(m.direction)
+			{ }
+			
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* dst, T* src, size_t offsetDst, size_t offsetSrc, int i, int j, int k) const
+			{
+				cudaError_t err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
+			}
+		};
+
+	template<typename T, Location l>
+	template<Location l2>
+	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l2>& a, cudaStream_t stream)
+	{
+		StaticAssert<l!=l2>(); // The two accessors are on different sides.
+		
+		MemCpyDualToolBox<T> op((getLocation()==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost);
+		dualScan(*this, getPtr(), a, a.getPtr(), op);
+			
+		return *this;
+	}
+
+	template<typename T, Location l>
+	Accessor<T,l>& Accessor<T,l>::assign(const Array<T,l>& a, cudaStream_t stream)
+	{
+		return assign(a.accessor(), stream);
+	}
+
+	template<typename T, Location l>
+	template<Location l2>
+	Accessor<T,l>& Accessor<T,l>::assign(const Array<T,l2>& a, cudaStream_t stream)
+	{
+		return assign(a.accessor(), stream);
+	}
+
 	template<typename T, Location l>
 	template<typename TExpr>
 	Accessor<T,l>& Accessor<T,l>::operator=(const TExpr& expr)
-	{		
+	{
 		return assign(expr);
 	}
 
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::operator=(const Accessor<T,l>& a)
+	{
+		return assign(a);
+	}
+
+	template<typename T, Location l>
+	template<Location l2>
+	Accessor<T,l>& Accessor<T,l>::operator=(const Accessor<T,l2>& a)
 	{
 		return assign(a);
 	}

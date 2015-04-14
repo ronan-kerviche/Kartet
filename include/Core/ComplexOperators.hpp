@@ -104,7 +104,7 @@ namespace Kartet
 	}
 
 	template<typename TOut, typename TIn>
-	ALL_PLATFORMS inline void protectedComplexCopy(TOut& a, const TIn& b)
+	ALL_PLATFORMS inline void unprotectedComplexCopy(TOut& a, const TIn& b)
 	{
 		// Do not test the operation first.
 		realRef(a) = real(b);
@@ -118,7 +118,7 @@ namespace Kartet
 	}
 
 	template<typename TOut, typename TIn>
-	ALL_PLATFORMS inline TOut protectedComplexCopy(const TIn& b)
+	ALL_PLATFORMS inline TOut unprotectedComplexCopy(const TIn& b)
 	{
 		// Do not test the operation first.
 		TOut res;

@@ -524,6 +524,38 @@ namespace Kartet
 		}
 	}
 
+	template<class Op, typename T>
+	__host__ void Layout::dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op)
+	{
+		// Op should have a function :
+		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, int i, int j, int k) const;
+
+		if(!layoutA.getMonolithicLayout().sameLayoutAs(layoutB.getMonolithicLayout()))
+			throw IncompatibleLayout;
+
+		if(	(layoutA.getNumRows()==layoutA.getLeadingColumns() && layoutA.getNumElementsPerSlice()==layoutA.getLeadingSlices()) &&
+			(layoutB.getNumRows()==layoutB.getLeadingColumns() && layoutB.getNumElementsPerSlice()==layoutB.getLeadingSlices()) )
+		{
+			op.apply(layoutA, layoutA, ptrA, ptrB, 0, 0, 0, 0, 0);
+		}
+		else if((layoutA.getNumRows()==layoutA.getLeadingColumns()) &&
+			(layoutB.getNumRows()==layoutB.getLeadingColumns()) )
+		{
+			const Layout sliceLayout = layoutA.getSliceLayout();
+			for(index_t k=0; k<layoutA.getNumSlices(); k++)
+				op.apply(layoutA, sliceLayout, ptrA, ptrB, k*layoutA.getLeadingSlices(), k*layoutB.getLeadingSlices(), 0, 0, k);
+		}
+		else
+		{
+			const Layout vectorLayout = layoutA.getVectorLayout();
+			for(index_t k=0; k<layoutA.getNumSlices(); k++)
+			{
+				for(index_t j=0; j<layoutB.getNumColumns(); j++)
+					op.apply(layoutA, vectorLayout, ptrA, ptrB, (k*layoutA.getLeadingSlices() + j*layoutA.getLeadingColumns()), (k*layoutB.getLeadingSlices() + j*layoutB.getLeadingColumns()), 0, j, k);
+			}
+		}
+	}
+
 	__host__ inline Layout Layout::readFromFile(std::fstream& file, int* typeIndex)
 	{
 		if(!file.is_open())
@@ -1069,6 +1101,8 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ void Array<T,l>::allocateMemory(void)
 	{
+		StaticAssert<(l==DeviceSide) || (l==HostSide)>();
+
 		cudaError_t err = cudaSuccess;
 		switch(l)
 		{
@@ -1087,6 +1121,12 @@ namespace Kartet
 
 	template<typename T, Location l>
 	__host__ Accessor<T,l>& Array<T,l>::accessor(void)
+	{
+		return (*this);
+	}
+
+	template<typename T, Location l>
+	__host__ const Accessor<T,l>& Array<T,l>::accessor(void) const
 	{
 		return (*this);
 	}

@@ -39,7 +39,8 @@ namespace Kartet
 	{
 		// Default expression mechanism (transparent).
 		typedef T ReturnType;
-		
+		static const Location location = AnySide;	
+
 		__host__ __device__ inline static ReturnType evaluate(const T& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
 			return expr;
@@ -51,6 +52,7 @@ namespace Kartet
 	{
 		// Mechanism over a pointer.
 		typedef T ReturnType;
+		static const Location location = AnySide;
 		
 		// Const reference to const pointer :
 		__host__ __device__ inline static ReturnType evaluate(const T* const& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k) 
@@ -64,6 +66,7 @@ namespace Kartet
 	{
 		// Mechanism for a ExpressionContainer Object :
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
+		static const Location location = ExpressionEvaluation<T>::location;
 
 		__host__ __device__ inline static ReturnType evaluate(const ExpressionContainer<T>& container, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -76,6 +79,7 @@ namespace Kartet
 	{
 		// Mechanism for a Accessor Object :
 		typedef T ReturnType;
+		static const Location location = l;
 		
 		__host__ __device__ inline static ReturnType evaluate(const Accessor<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -88,6 +92,7 @@ namespace Kartet
 	{
 		// Mechanism for a Array Object :
 		typedef T ReturnType;
+		static const Location location = l;
 		
 		__host__ __device__ inline static ReturnType evaluate(const Array<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -101,6 +106,7 @@ namespace Kartet
 		// Mechanism for a NullaryExpression :
 		typedef Op Operator;
 		typedef typename Op::ReturnType ReturnType;
+		static const Location location = AnySide;
 		
 		__host__ __device__ inline static ReturnType evaluate(const NullaryExpression<Op>& nullaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -116,6 +122,7 @@ namespace Kartet
 					> Operator;
 		typedef typename Op< 	typename ExpressionEvaluation<T>::ReturnType 
 					>::ReturnType ReturnType;
+		static const Location location = ExpressionEvaluation<T>::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const UnaryExpression<T, Op>& unaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -129,6 +136,7 @@ namespace Kartet
 		// Mechanism for a TransformExpression :
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
+		static const Location location = AnySide;
 		
 		__host__ __device__ inline static ReturnType evaluate(const TransformExpression<T, Op>& transfomExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
@@ -143,6 +151,7 @@ namespace Kartet
 		// Mechanism for a LayoutReinterpretationExpression :
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
+		static const Location location = AnySide;
 		
 		__host__ __device__ inline static ReturnType evaluate(const LayoutReinterpretationExpression<T, Op>& layoutReinterpretationExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
@@ -161,9 +170,15 @@ namespace Kartet
 		typedef typename Op< 	typename ExpressionEvaluation<T1>::ReturnType, 
 					typename ExpressionEvaluation<T2>::ReturnType 
 					>::ReturnType ReturnType;
+		static const Location location = ExpressionEvaluation<T1>::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			// Both branches must be on the same side.
+			StaticAssert<	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location) ||
+					(ExpressionEvaluation<T1>::location==AnySide) ||
+					(ExpressionEvaluation<T2>::location==AnySide)>(); 
+
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, layout, p, i, j, k), 	
 							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, layout, p, i, j, k)
 						);
@@ -183,9 +198,21 @@ namespace Kartet
 					typename ExpressionEvaluation<T2>::ReturnType, 
 					typename ExpressionEvaluation<T3>::ReturnType >::ReturnType 
 					ReturnType;
+		static const Location location = ExpressionEvaluation<T1>::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			// All branches must be on the same side.
+			StaticAssert<	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location ||
+					 ExpressionEvaluation<T1>::location==AnySide ||
+					 ExpressionEvaluation<T2>::location==AnySide) &&
+					(ExpressionEvaluation<T2>::location==ExpressionEvaluation<T3>::location ||
+					 ExpressionEvaluation<T2>::location==AnySide ||
+					 ExpressionEvaluation<T3>::location==AnySide) &&
+					(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T3>::location ||
+					 ExpressionEvaluation<T1>::location==AnySide ||
+					 ExpressionEvaluation<T3>::location==AnySide)	>();
+
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(ternaryExpression.a, layout, p, i, j, k), 
 							ExpressionEvaluation<T2>::evaluate(ternaryExpression.b, layout, p, i, j, k),
 							ExpressionEvaluation<T3>::evaluate(ternaryExpression.c, layout, p, i, j, k)
@@ -193,7 +220,7 @@ namespace Kartet
 		}
 	};
 
-// Expression Container (transparent expression) :
+// Expression Container (transparent expression, used as an expression filter) :
 	template<typename T>
 	struct ExpressionContainer
 	{
@@ -214,7 +241,7 @@ namespace Kartet
 	template<class Op>
 	struct NullaryExpression
 	{
-		typedef typename Op::ReturnType ReturnType; 
+		typedef typename Op::ReturnType ReturnType;
 
 		__host__ NullaryExpression(void)
 		{ }
@@ -341,11 +368,11 @@ namespace Kartet
 	}
 
 	template<typename T, Location l, typename TExpr>
-	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr expr)
+	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		for(index_t k=0; k<array.getNumSlices(); k++)
+		/*for(index_t k=0; k<array.getNumSlices(); k++)
 		{
 			for(index_t j=0; j<array.getNumColumns(); j++)
 			{
@@ -360,6 +387,21 @@ namespace Kartet
 					array.data(i, j, k) = buffer;
 				}
 			}
+		}*/
+		
+		for(index_t k=0, j=0, i=0, q=0; q<array.getNumElements(); q++)
+		{
+			index_t p = array.getIndex(i, j, k);
+					
+			ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
+
+			T buffer;
+			complexCopy(buffer, t);
+			array.data(i, j, k) = buffer;
+
+			i = ((i+1) % array.getNumRows());
+			j = (i==0) ? (j+1) : j;
+			k = (i==0 && j==0) ? (k+1) : k;
 		}
 	}
 
