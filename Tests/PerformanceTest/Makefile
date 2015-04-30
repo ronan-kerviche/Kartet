@@ -1,8 +1,8 @@
-#Test Program
+# Performance Test Program
 
-# Default plateform level :
+# Default plateform level, change with :
+# make TGPU=<platform code>
 ifeq ($(TGPU),)
-        #$(error GPU PLATFORM IS UNDEFINED. Use make TGPU=<platform code> where <platform code> is a two-digits code (e.g. 35))
 	TGPU = 35
 endif
 

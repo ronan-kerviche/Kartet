@@ -235,11 +235,11 @@ namespace Kartet
 			StaticAssert<i2!=-1> C2;
 
 			static const bool test1 = (i1>=i2); // First type has higher accuracy.
-			typedef typename MetaIf<test1, pT1, pT2>::TValue StdType;
+			typedef typename StaticIf<test1, pT1, pT2>::TValue StdType;
 			static const bool test2 = (TypeInfo<T1>::isComplex && SameTypes<typename RemovePointer<T2>::Type ,double>::test) || (TypeInfo<T2>::isComplex && SameTypes<typename RemovePointer<T1>::Type ,double>::test);
 		public :
 			#if defined(__CUDACC__)
-				typedef typename MetaIf<test2, cuDoubleComplex, StdType>::TValue Type;
+				typedef typename StaticIf<test2, cuDoubleComplex, StdType>::TValue Type;
 			#else
 				typedef StdType Type;
 			#endif

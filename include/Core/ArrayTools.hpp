@@ -878,6 +878,14 @@ namespace Kartet
 	}
 
 	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::elements(void) const
+	{
+		if(!isMonolithic())
+			throw InvalidOperation;
+		return Accessor<T,l>(ptr, getNumElements(), 1, 1, getNumElements(), getNumElements(), getOffset());
+	}
+
+	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::vector(index_t j) const
 	{
 		if(!validColumnIndex(j))
@@ -984,7 +992,7 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T,l>& A)
 	{
-		typedef typename MetaIf<SameTypes<T, char>::test || SameTypes<T, unsigned char>::test, int, T>::TValue CastType;
+		typedef typename StaticIf<SameTypes<T, char>::test || SameTypes<T, unsigned char>::test, int, T>::TValue CastType;
 
 		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
 		const int precision = 4,
@@ -1061,8 +1069,8 @@ namespace Kartet
 	}
 
 	template<typename T, Location l>
-	template<typename TIn>
-	__host__ Array<T,l>::Array(const Accessor<TIn,l>& A)
+	template<typename TIn, Location lin>
+	__host__ Array<T,l>::Array(const Accessor<TIn,lin>& A)
 	 : 	Accessor<T,l>(A.getMonolithicLayout())
 	{
 		allocateMemory();

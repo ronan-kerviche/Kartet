@@ -39,20 +39,18 @@ namespace Kartet
 	struct StaticAssert<true>
 	{ };
 
-	//#define STATIC_ASSERT( ... ) Kartet::StaticAssert< __VA_ARGS__ >();
-
 	// If statement
 	template<bool statement, class TrueStatement, class FalseStatement>
-	struct MetaIf;
+	struct StaticIf;
 
 	template<class TrueStatement, class FalseStatement>
-	struct MetaIf< true, TrueStatement, FalseStatement>
+	struct StaticIf< true, TrueStatement, FalseStatement>
 	{
 		typedef TrueStatement TValue;
 	};
 
 	template<class TrueStatement, class FalseStatement>
-	struct MetaIf< false , TrueStatement, FalseStatement>
+	struct StaticIf< false , TrueStatement, FalseStatement>
 	{
 		typedef FalseStatement TValue;
 	};
@@ -134,29 +132,29 @@ namespace Kartet
 
 	// For Loop statement
 	template<bool statement, int start, int end, template<int current, class Argument> class Algorithm, class Argument>
-	struct MetaLoopFor;
+	struct StaticFor;
 
 	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
-	struct MetaLoopFor<false, start, end, Algorithm, Argument>
+	struct StaticFor<false, start, end, Algorithm, Argument>
 	{
 		typedef Argument Result;
 	};
 
 	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
-	struct MetaLoopFor<true, start, end, Algorithm, Argument>
+	struct StaticFor<true, start, end, Algorithm, Argument>
 	{
 		private: //Temp
 			typedef Algorithm<start, Argument> NewStep;
 			static const int tmp = NewStep::next; //calculate new index
 			typedef typename NewStep::NewArgument NewArgument; // get new argument : Newargument = Algorithm(OldArgument);
 		public:
-			typedef typename MetaLoopFor< (tmp<end), tmp, end, Algorithm, NewArgument>::Result Result;
+			typedef typename StaticFor< (tmp<end), tmp, end, Algorithm, NewArgument>::Result Result;
 	};
 
 	template<int start, int end, template<int current, class Argument> class Algorithm, class Argument>
 	struct MetaFor
 	{
-		typedef typename MetaLoopFor< (start<end), start, end, Algorithm, Argument>::Result Result;
+		typedef typename StaticFor< (start<end), start, end, Algorithm, Argument>::Result Result;
 	};
 
 	/*Test :

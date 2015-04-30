@@ -248,6 +248,7 @@ namespace Kartet
 				__host__	           const Layout& getLayout(void) const;
 				__host__	           Accessor<T,l> element(index_t i, index_t j=0, index_t k=0) const;
 				__host__	           Accessor<T,l> elements(index_t p, index_t numElements) const;
+				__host__	           Accessor<T,l> elements(void) const;
 				__host__ 	           Accessor<T,l> vector(index_t j) const;
 				__host__ 	           Accessor<T,l> endVector(void) const;
 				__host__ 	           Accessor<T,l> vectors(index_t jBegin, index_t numVectors, index_t jStep=1) const;
@@ -300,8 +301,8 @@ namespace Kartet
 			__host__ Array(const T* ptr, index_t r, index_t c=1, index_t s=1);
 			__host__ Array(const T* ptr, const Layout& layout);
 			__host__ Array(const Array<T,l>& a);
-			template<typename TIn>
-			__host__ Array(const Accessor<TIn,l>& a);
+			template<typename TIn, Location lin>
+			__host__ Array(const Accessor<TIn,lin>& a);
 			__host__ Array(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			__host__ ~Array(void);
 

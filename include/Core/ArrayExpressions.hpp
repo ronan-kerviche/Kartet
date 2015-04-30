@@ -39,7 +39,7 @@ namespace Kartet
 	{
 		// Default expression mechanism (transparent).
 		typedef T ReturnType;
-		static const Location location = AnySide;	
+		static const Location location = AnySide;
 
 		__host__ __device__ inline static ReturnType evaluate(const T& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -48,6 +48,9 @@ namespace Kartet
 	};
 
 	template<typename T>
+	struct ExpressionEvaluation<T*>;
+
+	/*template<typename T>
 	struct ExpressionEvaluation<T*>
 	{
 		// Mechanism over a pointer.
@@ -59,7 +62,7 @@ namespace Kartet
 		{
 			return expr[p];
 		}
-	};
+	};*/
 
 	template<typename T>
 	struct ExpressionEvaluation< ExpressionContainer<T> >
@@ -136,7 +139,7 @@ namespace Kartet
 		// Mechanism for a TransformExpression :
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
-		static const Location location = AnySide;
+		static const Location location = ExpressionEvaluation<T>::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const TransformExpression<T, Op>& transfomExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
@@ -151,7 +154,7 @@ namespace Kartet
 		// Mechanism for a LayoutReinterpretationExpression :
 		typedef Op Operator;
 		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
-		static const Location location = AnySide;
+		static const Location location = ExpressionEvaluation<T>::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const LayoutReinterpretationExpression<T, Op>& layoutReinterpretationExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
 		{
@@ -170,8 +173,8 @@ namespace Kartet
 		typedef typename Op< 	typename ExpressionEvaluation<T1>::ReturnType, 
 					typename ExpressionEvaluation<T2>::ReturnType 
 					>::ReturnType ReturnType;
-		static const Location location = ExpressionEvaluation<T1>::location;
-		
+		static const Location 	location = StaticIf<ExpressionEvaluation<T1>::location!=AnySide, ExpressionEvaluation<T1>, ExpressionEvaluation<T2> >::TValue::location;
+
 		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
 			// Both branches must be on the same side.
@@ -198,7 +201,8 @@ namespace Kartet
 					typename ExpressionEvaluation<T2>::ReturnType, 
 					typename ExpressionEvaluation<T3>::ReturnType >::ReturnType 
 					ReturnType;
-		static const Location location = ExpressionEvaluation<T1>::location;
+		static const Location location = StaticIf<ExpressionEvaluation<T1>::location!=AnySide, ExpressionEvaluation<T1>, 
+						 StaticIf<ExpressionEvaluation<T2>::location!=AnySide, ExpressionEvaluation<T2>, ExpressionEvaluation<T3> > >::TValue::location;
 		
 		__host__ __device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -224,8 +228,6 @@ namespace Kartet
 	template<typename T>
 	struct ExpressionContainer
 	{
-		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType;
-
 		T expr;
 
 		__host__ ExpressionContainer(const T& e)
@@ -241,8 +243,6 @@ namespace Kartet
 	template<class Op>
 	struct NullaryExpression
 	{
-		typedef typename Op::ReturnType ReturnType;
-
 		__host__ NullaryExpression(void)
 		{ }
 
@@ -256,8 +256,6 @@ namespace Kartet
 	template<typename T, template<typename> class Op >
 	struct UnaryExpression
 	{
-		typedef typename Op< typename ExpressionEvaluation<T>::ReturnType >::ReturnType ReturnType; 
-
 		T a;
 
 		__host__ UnaryExpression(const T& _a)
@@ -273,8 +271,6 @@ namespace Kartet
 	template<typename T, class Op >
 	struct TransformExpression
 	{
-		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType; 
-
 		T a;
 
 		__host__ TransformExpression(const T& _a)
@@ -290,8 +286,6 @@ namespace Kartet
 	template<typename T, class Op >
 	struct LayoutReinterpretationExpression
 	{
-		typedef typename ExpressionEvaluation<T>::ReturnType ReturnType; 
-
 		Layout layout;
 		T a;
 		
@@ -308,10 +302,6 @@ namespace Kartet
 	template<typename T1, typename T2, template<typename,typename> class Op >
 	struct BinaryExpression
 	{
-		typedef typename Op< 	typename ExpressionEvaluation<T1>::ReturnType, 
-					typename ExpressionEvaluation<T2>::ReturnType 
-					>::ReturnType ReturnType; 
-		
 		T1 a;
 		T2 b;
 
@@ -328,11 +318,6 @@ namespace Kartet
 	template<typename T1, typename T2, typename T3, template<typename, typename, typename> class Op >
 	struct TernaryExpression
 	{
-		typedef typename Op<	typename ExpressionEvaluation<T1>::ReturnType, 
-					typename ExpressionEvaluation<T2>::ReturnType,
-					typename ExpressionEvaluation<T3>::ReturnType
-					>::ReturnType ReturnType; 
-
 		T1 a;
 		T2 b;
 		T3 c;

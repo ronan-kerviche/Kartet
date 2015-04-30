@@ -230,6 +230,8 @@ namespace Kartet
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ynf,			ynf,			::ynf(static_cast<float>(a),static_cast<float>(b)) )
 
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToComplex, 		toComplex,		toComplex(a, b) )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToFloatComplex, 		toFloatComplex,		toFloatComplex(a, b) )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToDoubleComplex, 		toDoubleComplex,	toDoubleComplex(a, b) )
 
 } // Namespace Kartet
 

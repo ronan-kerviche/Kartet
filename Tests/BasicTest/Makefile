@@ -1,15 +1,15 @@
-#Test Program
+# Basic Program
 
-# Default plateform level :
+# Default plateform level, change with :
+# make TGPU=<platform code>
 ifeq ($(TGPU),)
-        #$(error GPU PLATFORM IS UNDEFINED. Use make TGPU=<platform code> where <platform code> is a two-digits code (e.g. 35))
 	TGPU = 35
 endif
 
 EXEC		= kartetBasicTest
 INCLUDES	= -I../../include/ -I/usr/local/cuda/include
 NVCCFLAGS	= -arch=compute_$(TGPU) -code=sm_$(TGPU) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler -m64
-NVCCLDFLAGS	= -L/usr/local/cuda/lib64 -lcufft -lcublas -lcurand
+NVCCLDFLAGS	= -L/usr/local/cuda/lib64 -lcufft -lcublas -lcurand -lcblas # You can add -latlas to link against atlas
 
 all : main.o
 	@echo 'Linking (platform code $(TGPU))...'
