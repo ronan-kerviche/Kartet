@@ -198,31 +198,49 @@ namespace Kartet
 	}
 
 // Functions : 
-	template<typename T>
-	__host__ int BLASContext::amax(const Accessor<T>& x)
+	template<typename T, Location l>
+	__host__ int BLASContext::Iamax(const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		int res;
-		cublasStatus_t err;
-		IF_FLOAT
-			err = cublasIsamax(handle, x.getNumElements(), FPTR(x.getPtr()), 1, &res);
-		else IF_DOUBLE
-			err = cublasIdamax(handle, x.getNumElements(), DPTR(x.getPtr()), 1, &res);
-		else IF_CX_FLOAT
-			err = cublasIcamax(handle, x.getNumElements(), CPTR(x.getPtr()), 1, &res);
-		else IF_CX_DOUBLE
-			err = cublasIzamax(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, &res);
-		TEST_EXCEPTION(err)
+
+		if(l==DeviceSide)
+		{
+			cublasStatus_t err;
+			IF_FLOAT
+				err = cublasIsamax(handle, x.getNumElements(), FPTR(x.getPtr()), 1, &res);
+			else IF_DOUBLE
+				err = cublasIdamax(handle, x.getNumElements(), DPTR(x.getPtr()), 1, &res);
+			else IF_CX_FLOAT
+				err = cublasIcamax(handle, x.getNumElements(), CPTR(x.getPtr()), 1, &res);
+			else IF_CX_DOUBLE
+				err = cublasIzamax(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, &res);
+			TEST_EXCEPTION(err)
+		}
+		else
+		{
+			IF_FLOAT
+				res = cblas_isamax(x.getNumElements(), FPTR(x.getPtr()), 1);
+			else IF_DOUBLE
+				res = cblas_idamax(x.getNumElements(), DPTR(x.getPtr()), 1);
+			else IF_CX_FLOAT
+				res = cblas_icamax(x.getNumElements(), CPTR(x.getPtr()), 1);
+			else IF_CX_DOUBLE
+				res = cblas_izamax(x.getNumElements(), ZPTR(x.getPtr()), 1);
+		}
+
 		return res;
 	}
 
-	template<typename T>
-	__host__ int BLASContext::amin(const Accessor<T>& x)
+	template<typename T, Location l>
+	__host__ int BLASContext::Iamin(const Accessor<T,l>& x)
 	{
+		StaticAssert<l==DeviceSide>();
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		int res;
+
 		cublasStatus_t err;
 		IF_FLOAT
 			err = cublasIsamin(handle, x.getNumElements(), FPTR(x.getPtr()), 1, &res);
@@ -233,6 +251,7 @@ namespace Kartet
 		else IF_CX_DOUBLE
 			err = cublasIzamin(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, &res);
 		TEST_EXCEPTION(err)
+
 		return res;
 	}
 
@@ -405,13 +424,13 @@ namespace Kartet
 			{
 				CCST(alpha)
 				CCST(beta)
-				cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), _alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, _beta, CPTR(y.getPtr()), 1);
+				cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, _beta, CPTR(y.getPtr()), 1);
 			}
 			else IF_CX_DOUBLE
 			{
 				ZCST(alpha)
 				ZCST(beta)
-				cblas_sgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, _beta, ZPTR(y.getPtr()), 1);
+				cblas_sgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, _beta, ZPTR(y.getPtr()), 1);
 			}
 		}
 	}
@@ -488,17 +507,17 @@ namespace Kartet
 			{
 				CCST(alpha)
 				if(!conjugate)
-					cblas_cgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_cgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
 				else
-					cblas_cgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_cgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
 			}
 			else IF_CX_DOUBLE
 			{
 				ZCST(alpha)
 				if(!conjugate)
-					cblas_zgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_zgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
 				else
-					cblas_zgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_zgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
 			}
 		}
 	}
@@ -575,46 +594,73 @@ namespace Kartet
 			symv(alpha, uplo, A, x, beta, y);
 		}
 	
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::syr(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::syr(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(x, OpNo, x, OpTr, A)
-		cublasStatus_t err;
-		IF_FLOAT
+		
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			err = cublasSsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			cublasStatus_t err;
+			IF_FLOAT
+			{
+				FCST(alpha)
+				err = cublasSsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				err = cublasDsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasZsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			err = cublasDsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				cblas_ssyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, FPTR(x.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				cblas_dsyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, DPTR(x.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				cblas_csyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				cblas_zsyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			err = cublasCsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			err = cublasZsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::syr(MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x)
+		template<typename T, Location l>
+		__host__ void BLASContext::syr(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
 			const T alpha = complexCopy<T>(1);
 			syr(alpha, uplo, A, x);
 		}
 
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::syr2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::syr2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -622,140 +668,223 @@ namespace Kartet
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(x, OpNo, y, OpTr, A)
 		TEST_PRODUCT(y, OpNo, x, OpTr, A)
-		cublasStatus_t err;
-		IF_FLOAT
+
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			cublasStatus_t err;
+			IF_FLOAT
+			{
+				FCST(alpha)
+				err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				err = cublasDsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasZsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			FCST(alpha)
-			err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				FCST(alpha)
+				cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else
+				throw NotSupported;
 		}
-		else IF_CX_FLOAT
-		{
-			FCST(alpha)
-			err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			FCST(alpha)
-			err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::syr2(MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		template<typename T, Location l>
+		__host__ void BLASContext::syr2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1);
 			syr2(alpha, uplo, A, x, y);
 		}
 
-	template<typename T>
-	__host__ void BLASContext::trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation op, const Accessor<T>& x)
+	template<typename T, Location l>
+	__host__ void BLASContext::trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(A, op, x, OpNo, x)
-		cublasStatus_t err;
-		IF_FLOAT
-			err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
-		else IF_DOUBLE
-			err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
-		else IF_CX_FLOAT
-			err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
-		else IF_CX_DOUBLE
-			err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
-		TEST_EXCEPTION(err)
+
+		if(l==DeviceSide)
+		{
+			cublasStatus_t err;
+			IF_FLOAT
+				err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+			else IF_DOUBLE
+				err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+			else IF_CX_FLOAT
+				err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+			else IF_CX_DOUBLE
+				err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+			TEST_EXCEPTION(err)
+		}
+		else
+		{
+			IF_FLOAT
+				cblas_strmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+			else IF_DOUBLE
+				cblas_dtrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+			else IF_CX_FLOAT
+				cblas_ctrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+			else IF_CX_DOUBLE
+				cblas_ztrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+		}
 	}
 
-		
-
-	template<typename T>
-	__host__ void BLASContext::trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation op, const Accessor<T>& x)
+	template<typename T, Location l>
+	__host__ void BLASContext::trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(A, op, x, OpNo, x)
-		cublasStatus_t err;
-		IF_FLOAT
-			err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
-		else IF_DOUBLE
-			err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
-		else IF_CX_FLOAT
-			err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
-		else IF_CX_DOUBLE
-			err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
-		TEST_EXCEPTION(err)
+
+		if(l==DeviceSide)
+		{
+			cublasStatus_t err;
+			IF_FLOAT
+				err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+			else IF_DOUBLE
+				err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+			else IF_CX_FLOAT
+				err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+			else IF_CX_DOUBLE
+				err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+			TEST_EXCEPTION(err)
+		}
+		else
+		{
+			IF_FLOAT
+				cblas_strsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+			else IF_DOUBLE
+				cblas_dtrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+			else IF_CX_FLOAT
+				cblas_ctrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+			else IF_CX_DOUBLE
+				cblas_ztrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+		}
 	}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const TBeta& beta, const Accessor<T>& y)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(A, OpNo, x, OpNo, y)
-		cublasStatus_t err;
-		IF_CX_FLOAT
+
+		if(l==DeviceSide)
 		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasChemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasChemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZhemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_CX_DOUBLE
+		else
 		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZhemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_chemv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zhemv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+			}
 		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::hemv(MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		template<typename T, Location l>
+		__host__ void BLASContext::hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			hemv(alpha, uplo, A, x, beta, y);
 		}
 
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::her(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::her(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(x, OpNo, x, OpHr, A)
-		cublasStatus_t err;
-		IF_CX_FLOAT
+
+		if(l==DeviceSide)
 		{
-			CCST(alpha)
-			err = cublasCher(handle, getCuBLASFillMode(uplo), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
-		}                
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			err = cublasZher(handle, getCuBLASFillMode(uplo), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCher(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}                
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasZher(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		TEST_EXCEPTION(err)
+		else
+		{
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				cblas_cher(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}                
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				cblas_zher(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
+		}
 	}
 
-		template<typename T>
-		__host__ void BLASContext::her(MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x)
+		template<typename T, Location l>
+		__host__ void BLASContext::her(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
 			const T alpha = complexCopy<T>(1);
 			her(alpha, uplo, A, x);
 		}
 
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::her2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::her2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -763,82 +892,130 @@ namespace Kartet
 		TEST_SINGLE_SLICE(A)
 		TEST_PRODUCT(x, OpNo, y, OpHr, A)
 		TEST_PRODUCT(y, OpNo, x, OpHr, A)
-		cublasStatus_t err;
-		IF_CX_FLOAT
+
+		if(l==DeviceSide)
 		{
-			CCST(alpha)
-			err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_CX_DOUBLE
+		else
 		{
-			ZCST(alpha)
-			err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				cblas_cher2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				cblas_zher2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+			}
 		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::her2(MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& y)
+		template<typename T, Location l>
+		__host__ void BLASContext::her2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1);
 			her2(alpha, uplo, A, x, y);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::gemm(const TAlpha& alpha, const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B, MatrixOperation opb, const TBeta& beta, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
 		TEST_SINGLE_SLICE(B)
 		TEST_SINGLE_SLICE(C)
 		TEST_PRODUCT(A, opa, B, opb, C)
-		cublasStatus_t err;
 		const int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
-		IF_FLOAT
+
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			FCST(beta)
-			err = cublasSgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;			
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				err = cublasSgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				err = cublasDgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}		
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			DCST(beta)
-			err = cublasDgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				cblas_sgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				cblas_dgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_cgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}		
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
-		}		
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
-		}	
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::gemm(const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B, MatrixOperation opb, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			gemm(alpha, A, opa, B, opb, beta, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::gemm(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			gemm(alpha, A, OpNo, B, OpNo, beta, C);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -848,44 +1025,75 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, B, OpNo, C)
 		else // MatrixRightSide
 			TEST_PRODUCT(B, OpNo, A, OpNo, C)
-		cublasStatus_t err;
-		IF_FLOAT
+	
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			FCST(beta)
-			err = cublasSsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				err = cublasSsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+		        else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				err = cublasDsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-                else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			DCST(beta)
-			err = cublasDsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				cblas_ssymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+		        else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				cblas_dsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_csymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			symm(side, alpha, uplo, A, B, beta, C);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::syrk(const TAlpha& alpha, const Accessor<T>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -894,53 +1102,84 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, A, OpTr, C)
 		else
 			TEST_PRODUCT(A, OpTr, A, OpNo, C)
-		cublasStatus_t err;
 		const int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
-		IF_FLOAT
+
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			FCST(beta)
-			err = cublasSsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;		
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				err = cublasSsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				err = cublasDsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			DCST(beta)
-			err = cublasDsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				cblas_ssyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				cblas_dsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_csyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::syrk(const Accessor<T>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			syrk(alpha, A, opa, beta, uplo, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::syrk(const Accessor<T>& A, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			syrk(alpha, A, OpNo, beta, uplo, C);
 		}
 
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T>& A, const Accessor<T>& B, const T& beta, MatrixFillMode uplo, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -954,54 +1193,85 @@ namespace Kartet
 		{
 			TEST_PRODUCT(A, OpTr, B, OpNo, C)
 			TEST_PRODUCT(B, OpTr, A, OpNo, C)
-		}	
-		cublasStatus_t err;
+		}
 		const int k = (op==OpTr || op==OpHr) ? A.getNumRows() : A.getNumColumns();
-		IF_FLOAT
+
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			FCST(beta)
-			err = cublasSsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;		
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				err = cublasSsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				err = cublasDsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			DCST(beta)
-			err = cublasDsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				FCST(beta)
+				cblas_ssyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				DCST(beta)
+				cblas_dsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_csyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::syr2k(MatrixOperation op, const Accessor<T>& A, const Accessor<T>& B, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			syr2k(op, alpha, A, B, beta, uplo, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::syr2k(const Accessor<T>& A, const Accessor<T>& B, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			syr2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1012,46 +1282,73 @@ namespace Kartet
 		else // MatrixRightSide
 			TEST_PRODUCT(B, OpNo, A, opa, C)
 		TEST_PRODUCT(A, OpNo, B, OpTr, C)
-		cublasStatus_t err;
-		IF_FLOAT
+
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			err = cublasStrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;
+			IF_FLOAT
+			{
+				FCST(alpha)
+				err = cublasStrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				err = cublasDtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasZtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			err = cublasDtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				cblas_strmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				cblas_dtrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				cblas_ctrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				cblas_ztrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			err = cublasCtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			err = cublasZtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1);
 			trmm(side, alpha, uplo, diag, A, opa, B, C);
 		}
 		
-		template<typename T>
-		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1);
 			trmm(side, alpha, uplo, diag, A, OpNo, B, C);
 		}
 		
-	template<typename T, typename TAlpha>
-	__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation opa, const TAlpha& alpha, const Accessor<T>& B)
+	template<typename T, Location l, typename TAlpha>
+	__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, const Accessor<T,l>& B)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1060,46 +1357,73 @@ namespace Kartet
 			TEST_PRODUCT(A, opa, B, OpNo, B)
 		else // MatrixRightSide
 			TEST_PRODUCT(B, OpNo, A, opa, B)
-		cublasStatus_t err;
-		IF_FLOAT
+	
+		if(l==DeviceSide)
 		{
-			FCST(alpha)
-			err = cublasStrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns());
+			cublasStatus_t err;
+			IF_FLOAT
+			{
+				FCST(alpha)
+				err = cublasStrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				err = cublasDtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				err = cublasCtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				err = cublasZtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_DOUBLE
+		else
 		{
-			DCST(alpha)
-			err = cublasDtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns());
+			IF_FLOAT
+			{
+				FCST(alpha)
+				cblas_strsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_DOUBLE
+			{
+				DCST(alpha)
+				cblas_dtrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_CX_FLOAT
+			{
+				CCST(alpha)
+				cblas_ctrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				cblas_ztrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns());
+			}
 		}
-		else IF_CX_FLOAT
-		{
-			CCST(alpha)
-			err = cublasCtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns());
-		}
-		else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			err = cublasZtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns());
-		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B)
+		template<typename T, Location l>
+		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B)
 		{
 			const T alpha = complexCopy<T>(1);
 			trsm(side, uplo, diag, A, opa, alpha, B);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T>& A, const Accessor<T>& B)
+		template<typename T, Location l>
+		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B)
 		{
 			const T alpha = complexCopy<T>(1);
 			trsm(side, uplo, diag, A, OpNo, alpha, B);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1110,32 +1434,51 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, B, OpNo, C)
 		else // MatrixRightSide
 			TEST_PRODUCT(B, OpNo, A, OpNo, C)
-		cublasStatus_t err;
-		IF_CX_FLOAT
+
+		if(l==DeviceSide)
 		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasChemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), CPTR(&alpha), CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(&beta), CPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasChemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZhemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		else IF_CX_DOUBLE
+		else
 		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZhemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), ZPTR(&alpha), ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(&beta), ZPTR(C.getPtr()), C.getLeadingColumns());
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_chemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zhemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			hemm(side, alpha, uplo, A, B, beta, C);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::herk(const TAlpha& alpha, const Accessor<T>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1145,42 +1488,60 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, A, OpHr, C)
 		else
 			TEST_PRODUCT(A, OpHr, A, OpNo, C)
-		cublasStatus_t err;
 		int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
-		IF_CX_FLOAT
-		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, CPTR(&alpha), CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(&beta), CPTR(C.getPtr()), C.getLeadingColumns());
-		}
-                else IF_CX_DOUBLE
-		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, ZPTR(&alpha), ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(&beta), ZPTR(C.getPtr()), C.getLeadingColumns());
-		}
 
-		TEST_EXCEPTION(err)
+		if(l==DeviceSide)
+		{
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+		        else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
+		}
+		else
+		{
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_cherk(CblasColMajor, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+		        else IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zherk(CblasColMajor, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+		}
 	}
 
-		template<typename T>
-		__host__ void BLASContext::herk(const Accessor<T>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			herk(alpha, A, opa, beta, uplo, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::herk(const Accessor<T>& A, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			herk(alpha, A, OpNo, beta, uplo, C);
 		}		
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T>& A, const Accessor<T>& B, const TBeta& beta, MatrixFillMode uplo, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1197,42 +1558,62 @@ namespace Kartet
 			TEST_PRODUCT(A, OpHr, B, OpNo, C)
 			TEST_PRODUCT(B, OpHr, A, OpNo, C)
 		}	
-		cublasStatus_t err;
 		const int k = (op==OpTr || op==OpHr) ? A.getNumRows() : A.getNumColumns();
-		IF_CX_FLOAT
+
+		if(l==DeviceSide)
 		{
-			CCST(alpha)
-			CCST(beta)
-			err = cublasCher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, CPTR(&alpha), CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(&beta), CPTR(C.getPtr()), C.getLeadingColumns());
+			cublasStatus_t err;
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				err = cublasCher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				err = cublasZher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			TEST_EXCEPTION(err)
 		}
-		IF_CX_DOUBLE
+		else
 		{
-			ZCST(alpha)
-			ZCST(beta)
-			err = cublasZher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, ZPTR(&alpha), ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(&beta), ZPTR(C.getPtr()), C.getLeadingColumns());
+			IF_CX_FLOAT
+			{
+				CCST(alpha)
+				CCST(beta)
+				cblas_cher2k(CblasColMajor, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+			}
+			IF_CX_DOUBLE
+			{
+				ZCST(alpha)
+				ZCST(beta)
+				cblas_zher2k(CblasColMajor, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+			}
 		}
-		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::her2k(MatrixOperation op, const Accessor<T>& A, const Accessor<T>& B, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			her2k(op, alpha, A, B, beta, uplo, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::her2k(const Accessor<T>& A, const Accessor<T>& B, MatrixFillMode uplo, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			her2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
-	template<typename T, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::geam(const TAlpha& alpha, const Accessor<T>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T>& B, MatrixOperation opb, const Accessor<T>& C)
+	template<typename T, Location l, typename TAlpha, typename TBeta>
+	__host__ void BLASContext::geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 	{
+		StaticAssert<l==DeviceSide>();
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
 		TEST_SINGLE_SLICE(B)
@@ -1265,25 +1646,26 @@ namespace Kartet
 		TEST_EXCEPTION(err)
 	}
 
-		template<typename T>
-		__host__ void BLASContext::geam(const Accessor<T>& A, MatrixOperation opa, const Accessor<T>& B, MatrixOperation opb, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			geam(alpha, A, opa, beta, B, opb, C);
 		}
 
-		template<typename T>
-		__host__ void BLASContext::geam(const Accessor<T>& A, const Accessor<T>& B, const Accessor<T>& C)
+		template<typename T, Location l>
+		__host__ void BLASContext::geam(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
 			geam(alpha, A, OpNo, beta, B, OpNo, C);
 		}
 
-	template<typename T>
-	__host__ void BLASContext::dgmm(MatrixSideMode side, const Accessor<T>& A, const Accessor<T>& x, const Accessor<T>& C)
+	template<typename T, Location l>
+	__host__ void BLASContext::dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& C)
 	{
+		StaticAssert<l==DeviceSide>();
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)

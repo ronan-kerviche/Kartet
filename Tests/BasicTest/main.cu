@@ -89,20 +89,6 @@ int main(int argc, char** argv)
 		
 		const double sum1 = reduceContext.sum(A.getLayout(), abs(A-B));
 		std::cout << "Sum over |A-B| : " << sum1 << std::endl;
-
-		{
-			Kartet::BLASContext blas;
-			const double sa = blas.asum(A);
-			std::cout << "Sum of A : " << sa << std::endl;
-
-			Kartet::Array<double, Kartet::HostSide> Ac(A.getLayout());
-			Ac = A;
-			const double sac = blas.asum(Ac);
-			std::cout << "Sum of Ac : " << sac << std::endl;
-
-			//std::cout << blas.dot(A.elements(),  A.elements()) << std::endl;
-			//std::cout << blas.dot(Ac.elements(), Ac.elements()) << std::endl;
-		}
 	}
 	catch(Kartet::Exception& e)
 	{
