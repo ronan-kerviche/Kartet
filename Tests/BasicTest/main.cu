@@ -87,17 +87,18 @@ int main(int argc, char** argv)
 		const double sum1 = reduceContext.sum(A.getLayout(), abs(A-B));
 		std::cout << "Sum over |A-B| : " << sum1 << std::endl;
 
-		{
-			const Kartet::Layout l(8,8);
-			Kartet::Array<double> A(l), B(l), C(l);
-			A = Kartet::IndexI();
-			B = (Kartet::IndexI() + Kartet::IndexJ())/2.0;
-			C = 0.0;
+		// BLAS Example :
+		const Kartet::Layout matrixLayout(4,4);
+		Kartet::Array<double> M1(matrixLayout), M2(matrixLayout), M3(matrixLayout);
+		M1 = Kartet::IndexI();
+		M2 = (Kartet::IndexI() + Kartet::IndexJ())/2.0;
+		M3 = 0.0;
 
-			Kartet::BLASContext blas;
-			blas.gemm(A,B,C);
-			std::cout << "C = " << C << std::endl;
-		}
+		Kartet::BLASContext blas;
+		blas.gemm(M1,M2,M3);
+		std::cout << "M1 = " << M1 << std::endl;
+		std::cout << "M2 = " << M2 << std::endl;
+		std::cout << "M3 = " << M3 << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{
