@@ -84,7 +84,7 @@ namespace Kartet
 			 :	direction(m.direction)
 			{ }
 			
-			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* dst, T* src, size_t offsetDst, size_t offsetSrc, int i, int j, int k) const
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* dst, T* src, size_t offsetDst, size_t offsetSrc, index_t i, index_t j, index_t k) const
 			{
 				cudaError_t err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
 				if(err!=cudaSuccess)

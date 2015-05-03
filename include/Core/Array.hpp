@@ -262,6 +262,7 @@ namespace Kartet
 				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 
 		public :
+			// Constructor :
 				__host__            Accessor(const Array<T,l>& a);
 				__host__ __device__ Accessor(const Accessor<T,l>& a);
 			

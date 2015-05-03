@@ -72,16 +72,10 @@ int main(int argc, char** argv)
 		C.vector(0) = C.vector(2) - C.vector(1);
 		std::cout << "C = " << C << std::endl;
 		
-		#ifdef __CUDACC__
-			// Generate random numbers :
-			Kartet::UniformSource uniformSource;
-			uniformSource.setSeed();
-			uniformSource >> A;
-			uniformSource >> B;
-		#else
-			A = 1.0 + Kartet::IndexI();
-			B = B.getNumColumns() - Kartet::IndexJ();
-		#endif
+		Kartet::UniformSource<> uniformSource;
+		uniformSource.setSeed();
+		uniformSource >> A;
+		uniformSource >> B;
 		std::cout << "A = " << A << std::endl;
 		std::cout << "B = " << B << std::endl;
 
@@ -95,7 +89,7 @@ int main(int argc, char** argv)
 
 		{
 			const Kartet::Layout l(8,8);
-			Kartet::Array<double, Kartet::DeviceSide> A(l), B(l), C(l);
+			Kartet::Array<double> A(l), B(l), C(l);
 			A = Kartet::IndexI();
 			B = (Kartet::IndexI() + Kartet::IndexJ())/2.0;
 			C = 0.0;

@@ -521,7 +521,7 @@ namespace Kartet
 	__host__ void Layout::hostScan(T* ptr, const Op& op) const
 	{
 		// Op should have a function :
-		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const;
+		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const;
 
 		if(numRows==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
 			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
@@ -546,7 +546,7 @@ namespace Kartet
 	__host__ void Layout::dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op)
 	{
 		// Op should have a function :
-		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, int i, int j, int k) const;
+		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, index_t i, index_t j, index_t k) const;
 
 		if(!layoutA.getMonolithicLayout().sameLayoutAs(layoutB.getMonolithicLayout()))
 			throw IncompatibleLayout;
@@ -818,7 +818,7 @@ namespace Kartet
 				#endif
 			}
 			
-			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
 			{
 				size_t	toOffset = 0,
 					fromOffset = 0;

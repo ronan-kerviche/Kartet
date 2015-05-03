@@ -41,245 +41,413 @@
 	#include "Core/Exceptions.hpp"
 	#include "Core/Array.hpp"
 
-#ifdef __CUDACC__
 namespace Kartet
 {
 // Classes :
+	template<Location l=KARTET_DEFAULT_LOCATION>
 	class RandomSourceContext
 	{
 		protected :
-			curandGenerator_t gen;
+			#ifdef __CUDACC__
+				curandGenerator_t gen;
 
-			//__host__ RandomSourceContext(const RandomSourceContext&);
-			__host__ inline RandomSourceContext(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+				__host__ RandomSourceContext(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			#else
+				__host__ RandomSourceContext(void);
+			#endif
 		public :
-			__host__ inline ~RandomSourceContext(void);
+			__host__ ~RandomSourceContext(void);
 
-			__host__ inline void setSeed(const unsigned long long& seed);
-			__host__ inline void setSeed(void);
+			__host__ void setSeed(const unsigned long long& seed);
+			__host__ void setSeed(void);
 	};
 	
-	class UniformSource : public RandomSourceContext
+	template<Location l=KARTET_DEFAULT_LOCATION>
+	class UniformSource : public RandomSourceContext<l>
 	{
 		private :
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
 
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-
-			//__host__ UniformSource(const UniformSource&);
+			friend class Layout;
 		public :
-			__host__ inline UniformSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
-			__host__ inline ~UniformSource(void);
+			#ifdef __CUDACC__
+				__host__ UniformSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			#else
+				__host__ UniformSource(void);
+			#endif
+			__host__ ~UniformSource(void);
 
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
+			__host__ const Accessor<float,l>& operator>>(const Accessor<float,l>& a) const;
+			__host__ const Accessor<double,l>& operator>>(const Accessor<double,l>& a) const;
 	};
 
-	class NormalSource : public RandomSourceContext
+	template<Location l=KARTET_DEFAULT_LOCATION>
+	class NormalSource : public RandomSourceContext<l>
 	{
 		private :
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
-			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
 
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-
-			//__host__ NormalSource(const NormalSource&);
+			friend class Layout;
 		public :
 			double mean, std;
 
-			__host__ inline NormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
-			__host__ inline NormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
-			__host__ inline ~NormalSource(void);
+			#ifdef __CUDACC__
+				__host__ NormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+				__host__ NormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			#else
+				__host__ NormalSource(void);
+				__host__ NormalSource(double _mean, double _std);
+			#endif
+			__host__ ~NormalSource(void);
 
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
+			__host__ const Accessor<float,l>& operator>>(const Accessor<float,l>& a) const;
+			__host__ const Accessor<double,l>& operator>>(const Accessor<double,l>& a) const;
 	};
-
-	class LogNormalSource : public RandomSourceContext
+	
+	template<Location l=KARTET_DEFAULT_LOCATION>
+	class LogNormalSource : public RandomSourceContext<l>
 	{
 		private :
 			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const;
 			__host__ inline void apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const;
 
-			friend Layout;
-			friend Accessor<float>;
-			friend Accessor<double>;
-
-			//__host__ LogNormalSource(const LogNormalSource&);
+			friend class Layout;
 		public :
 			double mean, std;
 
-			__host__ inline LogNormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
-			__host__ inline LogNormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
-			__host__ inline ~LogNormalSource(void);
+			#ifdef __CUDACC__
+				__host__ LogNormalSource(const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+				__host__ LogNormalSource(double _mean, double _std, const curandRngType_t& rngType = CURAND_RNG_PSEUDO_DEFAULT);
+			#else
+				__host__ LogNormalSource(void);
+				__host__ LogNormalSource(double _mean, double _std);
+			#endif
+			__host__ ~LogNormalSource(void);
 
-			__host__ inline const Accessor<float>& operator>>(const Accessor<float>& a) const;
-			__host__ inline const Accessor<double>& operator>>(const Accessor<double>& a) const;
+			__host__ const Accessor<float,l>& operator>>(const Accessor<float,l>& a) const;
+			__host__ const Accessor<double,l>& operator>>(const Accessor<double,l>& a) const;
 	};
 
 // Implementation :
 	#define TEST_EXCEPTION(x)	if(x!=CURAND_STATUS_SUCCESS) throw static_cast<Exception>(CuRandExceptionOffset + x);
 
-	__host__ inline RandomSourceContext::RandomSourceContext(const curandRngType_t& rngType)
+	template<Location l>
+	#ifdef __CUDACC__	
+	__host__ RandomSourceContext<l>::RandomSourceContext(const curandRngType_t& rngType)
+	#else
+	__host__ RandomSourceContext<l>::RandomSourceContext(void)
+	#endif
 	{
-		curandStatus_t err = curandCreateGenerator(&gen, rngType);
-		TEST_EXCEPTION(err)
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				curandStatus_t err = curandCreateGenerator(&gen, rngType);
+				TEST_EXCEPTION(err)
+			#else
+				throw NotSupported;
+			#endif
+		}
+		else
+			std::cerr << "RandomSourceContext<HostSide>::RandomSourceContext - WARNING : Random number generator setting discarded on host side." << std::endl;
 	}
 
-	__host__ inline RandomSourceContext::~RandomSourceContext(void)
+	template<Location l>
+	__host__ RandomSourceContext<l>::~RandomSourceContext(void)
 	{
-		curandStatus_t err = curandDestroyGenerator(gen);
-		TEST_EXCEPTION(err)
+		#ifdef __CUDACC__
+			if(l==DeviceSide)
+			{
+				curandStatus_t err = curandDestroyGenerator(gen);
+				TEST_EXCEPTION(err)
+			}
+		#endif
 	}
 
-	__host__ inline void RandomSourceContext::setSeed(const unsigned long long& seed)
+	template<Location l>
+	__host__ void RandomSourceContext<l>::setSeed(const unsigned long long& seed)
 	{
-		curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
-		TEST_EXCEPTION(err)
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
+				TEST_EXCEPTION(err)
+			#else
+				throw NotSupported;
+			#endif
+		}
+		else
+			std::cerr << "RandomSourceContext<HostSide>::setSeed(" << seed << ") - WARNING : seed discarded on host side." << std::endl;
 	}
 
-	__host__ inline void RandomSourceContext::setSeed(void)
+	template<Location l>
+	__host__ void RandomSourceContext<l>::setSeed(void)
 	{
-		const unsigned long long seed = static_cast<unsigned long long>(rand()) << 32 +  static_cast<unsigned long long>(rand()); // use rand to fill the seed.
-		curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
-		TEST_EXCEPTION(err)
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				const unsigned long long seed = static_cast<unsigned long long>(rand()) << 32 +  static_cast<unsigned long long>(rand()); // use rand to fill the seed.
+				curandStatus_t err = curandSetPseudoRandomGeneratorSeed(gen, seed);
+				TEST_EXCEPTION(err)
+			#else
+				throw NotSupported;
+			#endif
+		}
+		else
+			std::cerr << "RandomSourceContext<HostSide>::setSeed(void) - WARNING : seed discarded on host side." << std::endl;
 	}
 
 // Uniform :
-	__host__ inline UniformSource::UniformSource(const curandRngType_t& rngType)
-	 :	RandomSourceContext(rngType)	
+	template<Location l>
+	#ifdef __CUDACC__
+	__host__ UniformSource<l>::UniformSource(const curandRngType_t& rngType)
+	 :	RandomSourceContext<l>(rngType)
+	#else
+	__host__ UniformSource<l>::UniformSource(void)
+	#endif
 	{ }
 
-	__host__ inline UniformSource::~UniformSource(void)
+	template<Location l>
+	__host__ UniformSource<l>::~UniformSource(void)
 	{ }
 
-	__host__ inline void UniformSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void UniformSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateUniform(gen, ptr+offset, currentAccessLayout.getNumElements());
-		TEST_EXCEPTION(err)
+		
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				curandStatus_t err = curandGenerateUniform(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements());
+				TEST_EXCEPTION(err)
+			#else 
+				throw NotSupported;
+			#endif
+		}
+		else
+		{
+			for(index_t p=0; p<currentAccessLayout.getNumElements(); p++)
+				*(ptr+offset+p) = static_cast<float>(rand())/static_cast<float>(RAND_MAX);
+		}
 	}
 
-	__host__ inline void UniformSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void UniformSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateUniformDouble(gen, ptr+offset, currentAccessLayout.getNumElements());
-		TEST_EXCEPTION(err)
+
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				curandStatus_t err = curandGenerateUniformDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements());
+				TEST_EXCEPTION(err)
+			#else 
+				throw NotSupported;
+			#endif
+		}
+		else
+		{
+			for(index_t p=0; p<currentAccessLayout.getNumElements(); p++)
+				*(ptr+offset+p) = static_cast<double>(rand())/static_cast<double>(RAND_MAX);
+		}
 	}
 
-	__host__ inline const Accessor<float>& UniformSource::operator>>(const Accessor<float>& a) const
+	template<Location l>
+	__host__ const Accessor<float,l>& UniformSource<l>::operator>>(const Accessor<float,l>& a) const
 	{
 		a.hostScan(*this);
 		return a;
 	}
 
-	__host__ inline const Accessor<double>& UniformSource::operator>>(const Accessor<double>& a) const
+	template<Location l>
+	__host__ const Accessor<double,l>& UniformSource<l>::operator>>(const Accessor<double,l>& a) const
 	{
 		a.hostScan(*this);
 		return a;
 	}
 
 // Normal :
-	__host__ inline NormalSource::NormalSource(const curandRngType_t& rngType)
-	 : 	RandomSourceContext(rngType),
+	template<Location l>
+	#ifdef __CUDACC__
+	__host__ NormalSource<l>::NormalSource(const curandRngType_t& rngType)
+	 : 	RandomSourceContext<l>(rngType),
 		mean(0.0), 
 		std(1.0)
+	#else
+	__host__ NormalSource<l>::NormalSource(void)
+	 : 	mean(0.0), 
+		std(1.0)
+	#endif
 	{ }
-	__host__ inline NormalSource::NormalSource(double _mean, double _std, const curandRngType_t& rngType)
-	 : 	RandomSourceContext(rngType),
+
+	template<Location l>
+	#ifdef __CUDACC__
+	__host__ NormalSource<l>::NormalSource(double _mean, double _std, const curandRngType_t& rngType)
+	 : 	RandomSourceContext<l>(rngType),
 		mean(_mean), 
 		std(_std)
+	#else
+	__host__ NormalSource<l>::NormalSource(double _mean, double _std)
+	 : 	mean(_mean), 
+		std(_std)
+	#endif
 	{ }
 
-	__host__ inline NormalSource::~NormalSource(void)
+	template<Location l>
+	__host__ NormalSource<l>::~NormalSource(void)
 	{ }
 
-	__host__ inline void NormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void NormalSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateNormal(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
-		TEST_EXCEPTION(err)
+
+		#ifdef __CUDACC__
+			if(l==DeviceSide)
+			{
+				curandStatus_t err = curandGenerateNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				TEST_EXCEPTION(err)
+			}
+			else
+		#endif
+				throw NotSupported;
 	}
 	
-	__host__ inline void NormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void NormalSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateNormalDouble(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
-		TEST_EXCEPTION(err)
+
+		#ifdef __CUDACC__
+			if(l==DeviceSide)
+			{
+				curandStatus_t err = curandGenerateNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				TEST_EXCEPTION(err)
+			}
+			else
+		#endif
+				throw NotSupported;
 	}
 
-	__host__ inline const Accessor<float>& NormalSource::operator>>(const Accessor<float>& a) const
+	template<Location l>
+	__host__ const Accessor<float,l>& NormalSource<l>::operator>>(const Accessor<float,l>& a) const
 	{
+		if(l!=DeviceSide)
+			throw NotSupported;
+
 		a.hostScan(*this);
 		return a;
 	}
 
-	__host__ inline const Accessor<double>& NormalSource::operator>>(const Accessor<double>& a) const
+	template<Location l>
+	__host__ const Accessor<double,l>& NormalSource<l>::operator>>(const Accessor<double,l>& a) const
 	{
+		if(l!=DeviceSide)
+			throw NotSupported;
+
 		a.hostScan(*this);
 		return a;
 	}
 
 // LogNormal :
-	__host__ inline LogNormalSource::LogNormalSource(const curandRngType_t& rngType)
-	 : 	RandomSourceContext(rngType),
+	template<Location l>
+	#ifdef __CUDACC__
+	__host__ inline LogNormalSource<l>::LogNormalSource(const curandRngType_t& rngType)
+	 : 	RandomSourceContext<l>(rngType),
 		mean(0.0), 
 		std(1.0)
+	#else
+	__host__ inline LogNormalSource<l>::LogNormalSource(void)
+	 : 	mean(0.0), 
+		std(1.0)
+	#endif
 	{ }
-	__host__ inline LogNormalSource::LogNormalSource(double _mean, double _std, const curandRngType_t& rngType)
-	 : 	RandomSourceContext(rngType),
+
+	template<Location l>
+	#ifdef __CUDACC__
+	__host__ LogNormalSource<l>::LogNormalSource(double _mean, double _std, const curandRngType_t& rngType)
+	 : 	RandomSourceContext<l>(rngType),
 		mean(_mean), 
 		std(_std)
+	#else
+	__host__ LogNormalSource<l>::LogNormalSource(double _mean, double _std)
+	 : 	mean(_mean), 
+		std(_std)
+	#endif
+	{ }	
+
+	template<Location l>
+	__host__ LogNormalSource<l>::~LogNormalSource(void)
 	{ }
 
-	__host__ inline LogNormalSource::~LogNormalSource(void)
-	{ }
-
-	__host__ inline void LogNormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void LogNormalSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, float* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateLogNormal(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
-		TEST_EXCEPTION(err)
+
+		#ifdef __CUDACC__
+			if(l==DeviceSide)
+			{
+				curandStatus_t err = curandGenerateLogNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				TEST_EXCEPTION(err)
+			}
+			else
+		#endif
+				throw NotSupported;
 	}
 	
-	__host__ inline void LogNormalSource::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
+	template<Location l>
+	__host__ void LogNormalSource<l>::apply(const Layout& mainLayout, const Layout& currentAccessLayout, double* ptr, size_t offset, int i, int j, int k) const
 	{
 		UNUSED_PARAMETER(mainLayout)
 		UNUSED_PARAMETER(i)
 		UNUSED_PARAMETER(j)
 		UNUSED_PARAMETER(k)
-		curandStatus_t err = curandGenerateLogNormalDouble(gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
-		TEST_EXCEPTION(err)
+
+		#ifdef __CUDACC__
+			if(l==DeviceSide)
+			{
+				curandStatus_t err = curandGenerateLogNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				TEST_EXCEPTION(err)
+			}
+			else
+		#endif
+				throw NotSupported;
 	}
 
-	__host__ inline const Accessor<float>& LogNormalSource::operator>>(const Accessor<float>& a) const
+	template<Location l>
+	__host__ const Accessor<float,l>& LogNormalSource<l>::operator>>(const Accessor<float,l>& a) const
 	{
+		if(l!=DeviceSide)
+			throw NotSupported;
+
 		a.hostScan(*this);
 		return a;
 	}
 
-	__host__ inline const Accessor<double>& LogNormalSource::operator>>(const Accessor<double>& a) const
+	template<Location l>
+	__host__ const Accessor<double,l>& LogNormalSource<l>::operator>>(const Accessor<double,l>& a) const
 	{
+		if(l!=DeviceSide)
+			throw NotSupported;
+
 		a.hostScan(*this);
 		return a;
 	}
@@ -287,7 +455,6 @@ namespace Kartet
 	#undef TEST_EXCEPTION
 
 } // namespace Kartet
-#endif
 
 #endif
 
