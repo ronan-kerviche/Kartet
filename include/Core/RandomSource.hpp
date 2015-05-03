@@ -31,11 +31,17 @@
 
 // Includes :
 	#include <ctime>
-	#include <curand.h>
+	#include <cstdlib>
+	
+	#ifdef __CUDACC__
+		#include <curand.h>
+	#endif
+
 	#include "Core/LibTools.hpp"
 	#include "Core/Exceptions.hpp"
 	#include "Core/Array.hpp"
 
+#ifdef __CUDACC__
 namespace Kartet
 {
 // Classes :
@@ -281,6 +287,7 @@ namespace Kartet
 	#undef TEST_EXCEPTION
 
 } // namespace Kartet
+#endif
 
 #endif
 

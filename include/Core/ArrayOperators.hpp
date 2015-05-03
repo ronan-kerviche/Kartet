@@ -39,8 +39,14 @@ namespace Kartet
 		// Make sure we are not computing complex numbers to store in a real array :
 		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
 
-		if(getLocation()==DeviceSide)
-			evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+			#else
+				throw NotSupported;
+			#endif
+		}		
 		else
 			evaluateExpressionOverLayout(*this, expr);
 
@@ -50,14 +56,21 @@ namespace Kartet
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l>& a, cudaStream_t stream)
 	{
-		if(getLocation()==DeviceSide)
-			evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+			#else
+				throw NotSupported;
+			#endif
+		}
 		else
 			evaluateExpressionOverLayout(*this, a);
 
 		return *this;
 	}
 
+	#ifdef __CUDACC__
 		template<typename T>
 		struct MemCpyDualToolBox
 		{			
@@ -78,17 +91,22 @@ namespace Kartet
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			}
 		};
+	#endif
 
 	template<typename T, Location l>
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l2>& a, cudaStream_t stream)
 	{
 		StaticAssert<l!=l2>(); // The two accessors are on different sides.
-		
-		MemCpyDualToolBox<T> op((getLocation()==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost);
-		dualScan(*this, getPtr(), a, a.getPtr(), op);
+
+		#ifdef __CUDACC__
+			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost);
+			dualScan(*this, getPtr(), a, a.getPtr(), op);
 			
-		return *this;
+			return *this;
+		#else
+			throw NotSupported;
+		#endif
 	}
 
 	template<typename T, Location l>
@@ -131,7 +149,18 @@ namespace Kartet
 	{
 		// Make sure we are not computing complex numbers to store in a real array :
 		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
-		evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
+
+		if(l==DeviceSide)
+		{
+			#ifdef __CUDACC__
+				evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
+			#else
+				throw NotSupported;
+			#endif
+		}
+		else
+			evaluateExpressionWithMaskOverLayout(*this, exprMask, expr);
+
 		return *this;
 	}
 

@@ -332,9 +332,11 @@ namespace Kartet
 	};
 
 // Evaluation functions :
+#ifdef __CUDACC__
 	template<typename T, Location l, typename TExpr>
 	__global__ void evaluateExpression(const Accessor<T,l> array, const TExpr expr)
 	{
+		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==DeviceSide>();
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
 		index_t i = array.getI(),
@@ -351,10 +353,12 @@ namespace Kartet
 			array.data() = buffer;
 		}
 	}
+#endif
 
 	template<typename T, Location l, typename TExpr>
 	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr& expr)
 	{
+		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==HostSide>();
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
 		/*for(index_t k=0; k<array.getNumSlices(); k++)
@@ -390,9 +394,12 @@ namespace Kartet
 		}
 	}
 
+#ifdef __CUDACC__
 	template<typename T, typename TExprMask, typename TExpr>
 	__global__ void evaluateExpressionWithMask(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
 	{
+		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==DeviceSide>();
+		//StaticAssert<ExpressionEvaluation<TExprMask>::location==AnySide || ExpressionEvaluation<TExprMask>::location==DeviceSide>();
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
@@ -412,6 +419,36 @@ namespace Kartet
 				T buffer;
 				complexCopy(buffer, t);
 				array.data() = buffer;
+			}
+		}
+	}
+#endif
+
+	template<typename T, Location l, typename TExprMask, typename TExpr>
+	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
+	{
+		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==HostSide>();
+		//StaticAssert<ExpressionEvaluation<TExprMask>::location==AnySide || ExpressionEvaluation<TExprMask>::location==HostSide>();
+		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
+		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
+
+		for(index_t k=0, j=0, i=0, q=0; q<array.getNumElements(); q++)
+		{
+			index_t p = array.getIndex(i, j, k);
+			
+			MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, p, i, j, k);
+	
+			if(test)
+			{
+				ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
+
+				T buffer;
+				complexCopy(buffer, t);
+				array.data(i, j, k) = buffer;
+
+				i = ((i+1) % array.getNumRows());
+				j = (i==0) ? (j+1) : j;
+				k = (i==0 && j==0) ? (k+1) : k;
 			}
 		}
 	}

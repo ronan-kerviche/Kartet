@@ -32,6 +32,7 @@
 namespace Kartet
 {
 // Kernels :
+#ifdef __CUDACC__
 	template<template<typename,typename> class Op, typename TOut, typename TExpr>
 	__global__ void reduceKernel(const Layout layout, const dim3 blockSteps, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, TOut* outputBuffer, const unsigned int totalNumThreads, const unsigned int maxPow2Half)
 	{
@@ -220,6 +221,7 @@ namespace Kartet
 			output.data(iBP, jBP, kBP) = complexCopy<TOut>(v);	
 		}
 	}
+#endif
 
 // Implementation :
 	__host__ inline ReduceContext::ReduceContext(void)
@@ -230,18 +232,22 @@ namespace Kartet
 	{
 		StaticAssert<sizeof(char)==1>();
 
+		#ifdef __CUDACC__
 		hostPtr = new char[maxMemory];
 		cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&devicePtr), maxMemory);
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		#endif
 	}
 
 	__host__ inline ReduceContext::~ReduceContext(void)
 	{
+		#ifdef __CUDACC__
 		delete[] hostPtr;
 		cudaError_t err = cudaFree(devicePtr);
 		if(err!=cudaSuccess)
 			throw static_cast<Exception>(CudaExceptionsOffset + err);
+		#endif
 	}
 
 	template<template<typename,typename> class Op, typename TOut, typename TExpr>
@@ -249,8 +255,9 @@ namespace Kartet
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
+		#ifdef __CUDACC__
 		if(ExpressionEvaluation<TExpr>::location==DeviceSide || ExpressionEvaluation<TExpr>::location==AnySide)
-		{			
+		{
 			TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
 				*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
 
@@ -296,6 +303,11 @@ namespace Kartet
 
 			// Return :
 			return castHostPtr[0];
+		#else
+		if(ExpressionEvaluation<TExpr>::location==DeviceSide)
+		{
+			throw NotSupported;
+		#endif
 		}
 		else
 		{
@@ -415,6 +427,7 @@ namespace Kartet
 		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)	
 			throw InvalidOperation;
 
+		#ifdef __CUDACC__
 		if(ExpressionEvaluation<TExpr>::location==DeviceSide || ExpressionEvaluation<TExpr>::location==AnySide)
 		{
 			dim3	blockSize = layout.getBlockSize(),
@@ -492,6 +505,11 @@ namespace Kartet
 				reduceToLayoutKernel_LargeReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, expr, defaultValue, output, totalNumThreads, maxPow2Half);
 			else
 				reduceToLayoutKernel_SmallReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, numSubReductionBlocks, expr, defaultValue, output);
+		#else
+		if(ExpressionEvaluation<TExpr>::location==DeviceSide)
+		{
+			throw NotSupported;
+		#endif
 		}
 		else
 		{

@@ -84,12 +84,16 @@ namespace Kartet
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_cbrt, 			cbrt,			::cbrt(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_ceil, 			ceil,			::ceil(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_cosh, 			cosh,			::cosh(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_cospi, 			cospi,			::cospi(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erf, 			erf,			::erf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfc, 			erfc,			::erfc(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcinv, 			erfcinv,		::erfcinv(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcx, 			erfcx,			::erfcx(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfinv, 			erfinv,			::erfinv(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp10, 			exp10,			::exp10(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp2, 			exp2,			::exp2(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_expm1, 			expm1,			::expm1(a) )
@@ -106,12 +110,18 @@ namespace Kartet
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_log1p, 			log1p,			::log1p(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_lrint, 			lrint,			::lrint(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_lround, 			lround,			::lround(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rcbrt, 			rcbrt,			::rcbrt(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rint, 			rint,			::rint(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_round, 			round,			::round(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rsqrt, 			rsqrt,			::rsqrt(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_sinh, 			sinh,			::sinh(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_sinpi, 			sinpi,			::sinpi(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tan, 			tan,			::tan(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tanh, 			tanh,			::tanh(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tgamma, 			tgamma,			::tgamma(a) )
@@ -128,12 +138,16 @@ namespace Kartet
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_cbrtf, 			cbrtf,			::cbrtf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_ceilf, 			ceilf,			::ceilf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_coshf, 			coshf,			::coshf(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_cospif, 			cospif,			::cospif(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erff, 			erff,			::erff(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcf, 			erfcf,			::erfcf(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcinvf, 			erfcinvf,		::erfcinvf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcxf, 			erfcxf,			::erfcxf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfinvf, 			erfinvf,		::erfinvf(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp10f, 			exp10f,			::exp10f(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp2f, 			exp2f,			::exp2f(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_floorf, 			floorf,			::floorf(a) )
@@ -145,22 +159,30 @@ namespace Kartet
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_log2f, 			log2f,			::log2f(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_lrintf, 			lrintf,			::lrintf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_lroundf, 			lroundf,		::lroundf(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rcbrtf, 			rcbrtf,			::rcbrtf(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rintf, 			rintf,			::rintf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_roundf, 			roundf,			::roundf(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_rsqrtf, 			rsqrtf,			::rsqrtf(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_sinhf, 			sinhf,			::sinhf(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_sinpif, 			sinpif,			::sinpif(a) )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tanf, 			tanf,			::tanf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tanhf, 			tanhf,			::tanhf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tgammaf, 			tgammaf,		::tgammaf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_truncf, 			truncf,			::truncf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_y0f, 			y0f,			::y0f(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_y1f,			y1f,			::y1f(a) )
+#ifdef __CUDACC__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_normcdff,			normcdff,		::normcdff(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_normcdf,			normcdf,		::normcdf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_normcdfinvf,		normcdfinvf,		::normcdfinvf(a) )
 	STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_normcdfinv,		normcdfinv,		::normcdfinv(a) )
+#endif
 
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_real, 			real,			real(a) )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			imag(a) )
@@ -206,8 +228,13 @@ namespace Kartet
 // Binary functions : 
 	/* Note that if the input arguments are not of the type specified by the Cuda library, the call might fail.
 	   The error reported is : calling a __host__ function <function name>. */
+#ifdef __CUDACC__
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_min,			min,			::min(a, b) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_max,			max,			::max(a, b) )
+#else
+	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_min,			min,			min(a, b) )
+	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_max,			max,			max(a, b) )
+#endif
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_atan2,			atan2, 			::atan2(static_cast<double>(a),static_cast<double>(b)) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_fmax,			fmax,			::fmax(static_cast<double>(a),static_cast<double>(b)) )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_fmin,			fmin,			::fmin(static_cast<double>(a),static_cast<double>(b)) )

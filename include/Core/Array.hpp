@@ -36,10 +36,19 @@
 	#include <fstream>
 	#include <string>	
 	#include <cstring>
-	#include "Exceptions.hpp"
-	#include "TemplateSharedMemory.hpp"
-	#include "MetaAlgorithm.hpp"
-	#include "TypeTools.hpp"
+	#include "Core/LibTools.hpp"
+	#include "Core/Exceptions.hpp"
+	#include "Core/TemplateSharedMemory.hpp"
+	#include "Core/MetaAlgorithm.hpp"
+	#include "Core/TypeTools.hpp"
+
+#ifndef KARTET_DEFAULT_LOCATION
+	#ifdef __CUDACC__
+		#define KARTET_DEFAULT_LOCATION DeviceSide
+	#else
+		#define KARTET_DEFAULT_LOCATION HostSide
+	#endif
+#endif
 
 namespace Kartet
 {
@@ -49,6 +58,14 @@ namespace Kartet
 			HostSide,
 			DeviceSide,
 			AnySide
+		};
+
+		enum Direction
+		{
+			HostToHost,
+			HostToDevice,
+			DeviceToDevice,
+			DeviceToHost
 		};
 
 	// Prototypes : 
@@ -117,8 +134,10 @@ namespace Kartet
 				__host__ __device__ inline index_t getLeadingSlices(void) const;
 				__host__ __device__ inline index_t getOffset(void) const;
 				__host__ __device__ inline index_t setOffset(index_t newOffset);
+				#ifdef __CUDACC__
 				__host__ __device__ inline dim3 getDimensions(void) const;
 				__host__ __device__ inline dim3 getStride(void) const;
+				#endif
 				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__ __device__ inline bool isSliceMonolithic(void) const;
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
@@ -131,33 +150,39 @@ namespace Kartet
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
 
 			// Position tools :
+			#ifdef __CUDACC__
 			static		 __device__ inline index_t getI(void);
 			static 		 __device__ inline index_t getJ(void);
 			static		 __device__ inline index_t getK(void);
+			#endif
 					template<typename TOut>
 				__host__ __device__ inline TOut getINorm(index_t i) const; // exclusive, from 0 to 1, (1 NOT INCLUDED)
 					template<typename TOut>
 				__host__ __device__ inline TOut getJNorm(index_t j) const; // exclusive
 					template<typename TOut>
 				__host__ __device__ inline TOut getKNorm(index_t k) const; // exclusive
+			#ifdef __CUDACC__
 					template<typename TOut>
 					 __device__ inline TOut getINorm(void) const; // exclusive
 					template<typename TOut>
 					 __device__ inline TOut getJNorm(void) const; // exclusive
 					template<typename TOut>
 					 __device__ inline TOut getKNorm(void) const; // exclusive 
+			#endif
 					 template<typename TOut>
 				__host__ __device__ inline TOut getINormIncl(index_t i) const; // inclusive
 					template<typename TOut>
 				__host__ __device__ inline TOut getJNormIncl(index_t j) const; // inclusive
 					template<typename TOut>
 				__host__ __device__ inline TOut getKNormIncl(index_t k) const; // inclusive
+			#ifdef __CUDACC__
 					template<typename TOut>
 					 __device__ inline TOut getINormIncl(void) const; // inclusive
 					template<typename TOut>
 					 __device__ inline TOut getJNormIncl(void) const; // inclusive
 					template<typename TOut>
 					 __device__ inline TOut getKNormIncl(void) const; // inclusive
+			#endif
 				__host__ __device__ inline index_t getIClamped(index_t i) const;
 				__host__ __device__ inline index_t getJClamped(index_t j) const;
 				__host__ __device__ inline index_t getKClamped(index_t k) const;
@@ -165,25 +190,33 @@ namespace Kartet
 				__host__ __device__ inline index_t getJWrapped(index_t j) const;
 				__host__ __device__ inline index_t getKWrapped(index_t k) const;
 				__host__ __device__ inline index_t getIndex(index_t i, index_t j=0, index_t k=0) const;
+			#ifdef __CUDACC__
 					 __device__ inline index_t getIndex(void) const;
+			#endif
 				__host__ __device__ inline index_t getIndicesFFTShift(index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline index_t getIndexFFTShift(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline index_t getIndicesFFTInverseShift(index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline index_t getIndexFFTInverseShift(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline index_t getIndexClampedToEdge(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline index_t getIndexWarped(index_t i, index_t j, index_t k=0) const;
+			#ifdef __CUDACC__
 					 __device__ inline index_t getIndexFFTShift(void) const;
 					 __device__ inline index_t getIndexFFTInverseShift(void) const;
-				__host__ __device__ inline bool isInside(index_t i, index_t j, index_t k=0) const;
+			#endif
+				__host__ __device__ inline bool isInside(index_t i, index_t j, index_t k=0) const;	
+			#ifdef __CUDACC__
 					 __device__ inline bool isInside(void) const;
+			#endif
 				__host__ __device__ inline bool validRowIndex(index_t i) const;
 				__host__ __device__ inline bool validColumnIndex(index_t j) const;
 				__host__ __device__ inline bool validSliceIndex(index_t k) const;
 				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const;
 
 			// Other Tools : 
+				#ifdef __CUDACC__
 				__host__ 	    inline dim3 getBlockSize(void) const;
 				__host__ 	    inline dim3 getNumBlock(void) const;
+				#endif
 				__host__	    inline Layout getVectorLayout(void) const;
 				__host__	    inline Layout getSliceLayout(void) const;
 				__host__	    inline Layout getMonolithicLayout(void) const;
@@ -213,9 +246,11 @@ namespace Kartet
 	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";
 
 	// To compute on a specific layout : 
-	#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
- 	
-	template<typename T, Location l=DeviceSide>
+	#ifdef __CUDACC__
+		#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
+	#endif 	
+
+	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Accessor : public Layout
 	{
 		protected :
@@ -236,10 +271,12 @@ namespace Kartet
 				__host__ __device__        size_t getSize(void) const;
 				__host__ __device__ inline T& data(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline T& data(index_t p) const;
+				#ifdef __CUDACC__
 					 __device__ inline T& data(void) const;
 					 __device__ inline T& dataInSlice(int k) const;
 					 __device__ inline T& dataFFTShift(void) const;
 					 __device__ inline T& dataFFTInverseShift(void) const;
+				#endif
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr) const;
 				__host__                   void setData(const T* ptr) const;
@@ -289,7 +326,7 @@ namespace Kartet
 				__host__ friend std::ostream& operator<<(std::ostream& os, const Accessor<TBis, lBis>& A); // For debug, not for performance.
 	};
 
-	template<typename T, Location l=DeviceSide>
+	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Array : public Accessor<T, l>
 	{
 		private :
@@ -318,7 +355,10 @@ namespace Kartet
 			using Accessor<T,l>::Layout::getLeadingSlices;
 			using Accessor<T,l>::Layout::getOffset;
 			using Accessor<T,l>::Layout::setOffset;
+			#ifdef __CUDACC__
 			using Accessor<T,l>::Layout::getDimensions;
+			using Accessor<T,l>::getStride;
+			#endif
 			using Accessor<T,l>::Layout::isMonolithic;
 			using Accessor<T,l>::Layout::isSliceMonolithic;
 			using Accessor<T,l>::Layout::reinterpretLayout;
@@ -328,16 +368,20 @@ namespace Kartet
 			using Accessor<T,l>::Layout::splitLayoutSlices;
 			using Accessor<T,l>::Layout::sameLayoutAs;
 			using Accessor<T,l>::Layout::sameSliceLayoutAs;
+			#ifdef __CUDACC__
 			using Accessor<T,l>::Layout::getI;
 			using Accessor<T,l>::Layout::getJ;
 			using Accessor<T,l>::Layout::getK;
+			#endif
 			using Accessor<T,l>::Layout::getIndex;
 			using Accessor<T,l>::Layout::isInside;
 			using Accessor<T,l>::Layout::validRowIndex;
 			using Accessor<T,l>::Layout::validColumnIndex;
 			using Accessor<T,l>::Layout::validSliceIndex;
+			#ifdef __CUDACC__
 			using Accessor<T,l>::Layout::getBlockSize;
-			using Accessor<T,l>::Layout::getNumBlock;		
+			using Accessor<T,l>::Layout::getNumBlock;
+			#endif		
 
 			// From Accessor<T,l>
 			using Accessor<T,l>::getLocation;

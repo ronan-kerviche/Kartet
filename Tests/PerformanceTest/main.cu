@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 		// Test :
 		timer.start();
 		for(int l=0; l<L; l++)
-			reduceContext.sumMulti(A.getLayout(), A*A, C);
+			reduceContext.sumBlock(A.getLayout(), A*A, C);
 		timer.stop();
 		t = timer.getElapsedTime_s();
 		std::cout << "Expression Reduction multi-sum : " << std::endl;
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 		for(int l=0; l<L; l++)
 		{
 			B = A*A;
-			blasContext.gemm(ones.vector(0), CUBLAS_OP_T, B, CUBLAS_OP_N, C);
+			blasContext.gemm(ones.vector(0), Kartet::OpTr, B, Kartet::OpNo, C);
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();

@@ -29,8 +29,22 @@
 #ifndef __KARTET_BLAS__
 #define __KARTET_BLAS__
 
-	#include <cublas_v2.h>
-	#include <cblas.h>
+	#ifdef __CUDACC__
+		#include <cublas_v2.h>
+	#endif
+
+	#ifdef KARTET_USE_ATLAS
+		#ifdef __cplusplus
+		extern "C"
+		{
+		#endif
+			#include <atlas/cblas.h>
+		#ifdef __cplusplus
+		}
+		#endif
+	#endif
+
+	#include "Core/LibTools.hpp"
 	#include "Core/Array.hpp"
 
 namespace Kartet
@@ -64,25 +78,29 @@ namespace Kartet
 	class BLASContext
 	{
 		private :
-			cublasHandle_t 	handle;	
+			#ifdef __CUDACC__
+				cublasHandle_t 	handle;
+			#endif
 
 			__host__ inline BLASContext(const BLASContext&);
 		public :
-			__host__ inline BLASContext(void);
+			__host__ inline BLASContext(bool initDevice=true);
 			__host__ inline ~BLASContext(void);
 
 			// Converters :
+			#ifdef __CUDACC__
 			__host__ static inline cublasOperation_t getCuBLASOperation(const MatrixOperation& op);
-			__host__ static inline CBLAS_TRANSPOSE getCBLASOperation(const MatrixOperation& op);
-
 			__host__ static inline cublasFillMode_t getCuBLASFillMode(const MatrixFillMode& m);
-			__host__ static inline CBLAS_UPLO getCBLASFillMode(const MatrixFillMode& m);
-
 			__host__ static inline cublasDiagType_t getCuBLASDiagType(const MatrixDiagType& t);
-			__host__ static inline CBLAS_DIAG getCBLASDiagType(const MatrixDiagType& t);
-	
 			__host__ static inline cublasSideMode_t getCuBLASSideMode(const MatrixSideMode& s);
+			#endif
+
+			#ifdef KARTET_USE_ATLAS
+			__host__ static inline CBLAS_TRANSPOSE getCBLASOperation(const MatrixOperation& op);
+			__host__ static inline CBLAS_UPLO getCBLASFillMode(const MatrixFillMode& m);
+			__host__ static inline CBLAS_DIAG getCBLASDiagType(const MatrixDiagType& t);
 			__host__ static inline CBLAS_SIDE getCBLASSideMode(const MatrixSideMode& s);
+			#endif
 
 			// Layout tools :
 			__host__ static inline bool isProductValid(const Layout& A, MatrixOperation opa, const Layout& B, MatrixOperation opb, const Layout& C);

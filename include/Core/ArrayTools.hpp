@@ -29,6 +29,8 @@
 #ifndef __KARTET_ARRAY_TOOLS__
 #define __KARTET_ARRAY_TOOLS__
 
+	#include <cmath>
+
 namespace Kartet
 {
 // Layout :
@@ -143,6 +145,7 @@ namespace Kartet
 		return oldOffset;
 	}
 
+	#ifdef __CUDACC__
 	__host__ __device__ inline dim3 Layout::getDimensions(void) const
 	{
 		return dim3(numRows, numColumns, numSlices);
@@ -152,6 +155,7 @@ namespace Kartet
 	{
 		return dim3(1, leadingColumns, leadingSlices);
 	}
+	#endif
 
 	__host__ __device__ inline bool Layout::isMonolithic(void) const
 	{
@@ -214,7 +218,7 @@ namespace Kartet
 			throw OutOfRange;
 	
 		for(index_t j=jBegin; j<numColumns; j+=numVectors)
-			pages.push_back(Layout(numRows, min(numVectors, numColumns-j), numSlices, getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
+			pages.push_back(Layout(numRows, std::min(numVectors, numColumns-j), numSlices, getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
 
 		return pages;
 	}
@@ -227,7 +231,7 @@ namespace Kartet
 			throw OutOfRange;
 	
 		for(index_t k=kBegin; k<numSlices; k+=numSlices)
-			pages.push_back(Layout(numRows, numColumns, min(numSlices, numSlices-k), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,0,k)));
+			pages.push_back(Layout(numRows, numColumns, std::min(numSlices, numSlices-k), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,0,k)));
 
 		return pages;
 	}
@@ -242,6 +246,7 @@ namespace Kartet
 		return (numRows==other.numRows && numColumns==other.numColumns && leadingColumns==other.leadingColumns); 
 	}
 
+	#ifdef __CUDACC__
 	__device__ inline index_t Layout::getI(void)
 	{
 		//return blockIdx.y*blockDim.y+threadIdx.y;
@@ -258,6 +263,7 @@ namespace Kartet
 	{
 		return blockIdx.z*blockDim.z+threadIdx.z;
 	}
+	#endif
 
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getINorm(index_t i) const
@@ -277,6 +283,7 @@ namespace Kartet
 		return static_cast<TOut>(k)/static_cast<TOut>(numSlices);
 	}
 
+	#ifdef __CUDACC__
 	template<typename TOut>
 	__device__ inline TOut Layout::getINorm(void) const
 	{
@@ -294,6 +301,7 @@ namespace Kartet
 	{
 		return getKNorm<TOut>(getK());
 	}
+	#endif
 
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getINormIncl(index_t i) const
@@ -313,6 +321,7 @@ namespace Kartet
 		return static_cast<TOut>(k)/static_cast<TOut>(numSlices-1);
 	}
 
+	#ifdef __CUDACC__
 	template<typename TOut>
 	__device__ inline TOut Layout::getINormIncl(void) const
 	{
@@ -330,33 +339,34 @@ namespace Kartet
 	{
 		return getKNormIncl<TOut>(getK());
 	}
+	#endif
 
-	__device__ inline index_t Layout::getIClamped(index_t i) const
+	__host__ __device__ inline index_t Layout::getIClamped(index_t i) const
 	{
 		return min( max(static_cast<index_t>(0), i), numRows-1);
 	}
 
-	__device__ inline index_t Layout::getJClamped(index_t j) const
+	__host__ __device__ inline index_t Layout::getJClamped(index_t j) const
 	{
 		return min( max(static_cast<index_t>(0), j), numColumns-1);
 	}
 
-	__device__ inline index_t Layout::getKClamped(index_t k) const
+	__host__ __device__ inline index_t Layout::getKClamped(index_t k) const
 	{
 		return min( max(static_cast<index_t>(0), k), numSlices-1);
 	}
 
-	__device__ inline index_t Layout::getIWrapped(index_t i) const
+	__host__ __device__ inline index_t Layout::getIWrapped(index_t i) const
 	{
 		return (i % numRows);
 	}
 
-	__device__ inline index_t Layout::getJWrapped(index_t j) const
+	__host__ __device__ inline index_t Layout::getJWrapped(index_t j) const
 	{
 		return (j % numColumns);
 	}
 
-	__device__ inline index_t Layout::getKWrapped(index_t k) const
+	__host__ __device__ inline index_t Layout::getKWrapped(index_t k) const
 	{
 		return (k % numSlices);	
 	}
@@ -366,11 +376,13 @@ namespace Kartet
 		return k*leadingSlices + j*leadingColumns + i;
 	}
 
+	#ifdef __CUDACC__
 	__device__ inline index_t Layout::getIndex(void) const
 	{
 		return getIndex(getI(), getJ(), getK());
 	}
-	
+	#endif	
+
 	__host__ __device__ inline index_t Layout::getIndicesFFTShift(index_t& i, index_t& j, index_t& k) const
 	{
 		const index_t	hi = numRows % 2,
@@ -419,6 +431,7 @@ namespace Kartet
 		return getIndex(getIWrapped(i), getJWrapped(j), getKWrapped(k));
 	}
 
+	#ifdef __CUDACC__
 	__device__ inline index_t Layout::getIndexFFTShift(void) const
 	{
 		return getIndexFFTShift(getI(), getJ(), getK());
@@ -428,16 +441,19 @@ namespace Kartet
 	{
 		return getIndexFFTInverseShift(getI(), getJ(), getK());
 	}
-
+	#endif
+	
 	__host__ __device__ inline bool Layout::isInside(index_t i, index_t j, index_t k) const
 	{
 		return (i>=0 && i<numRows && j>=0 && j<numColumns && k>=0 && k<numSlices);
 	}
 
+	#ifdef __CUDACC__
 	__device__ inline bool Layout::isInside(void) const
 	{
 		return  isInside(getI(), getJ(), getK());
 	}
+	#endif
 
 	__host__ __device__ inline bool Layout::validRowIndex(index_t i) const	
 	{
@@ -461,6 +477,7 @@ namespace Kartet
 		i = index - k*leadingSlices - j*leadingColumns;
 	}
 
+	#ifdef __CUDACC__
 	__host__ inline dim3 Layout::getBlockSize(void) const
 	{
 		dim3 d;
@@ -483,6 +500,7 @@ namespace Kartet
 		//std::cout << "Layout::getNumBlock : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}
+	#endif
 
 	__host__ inline Layout Layout::getVectorLayout(void) const
 	{
@@ -738,11 +756,12 @@ namespace Kartet
 	}
 
 	template<typename T, Location l>
-	__device__ inline T& Accessor<T,l>::data(index_t p) const
+	__host__ __device__ inline T& Accessor<T,l>::data(index_t p) const
 	{
 		return ptr[p];
 	}
 
+	#ifdef __CUDACC__
 	template<typename T, Location l>
 	__device__ inline T& Accessor<T,l>::data(void) const
 	{
@@ -766,6 +785,7 @@ namespace Kartet
 	{
 		return ptr[getIndexFFTInverseShift()];
 	}
+	#endif
 
 	template<typename T, Location l>
 	T* Accessor<T,l>::getData(void) const
@@ -779,37 +799,51 @@ namespace Kartet
 		template<typename T, Location l>
 		struct MemCpyToolBox
 		{			
-			const cudaMemcpyKind 	kind;
+			//const 	kind;
+			const Direction		direction;
 			const T			*from;
 			T			*to;
-			const Layout		deviceLayout,
+			const Layout		originalLayout,
 						solidLayout;
 
-			__host__ MemCpyToolBox(const cudaMemcpyKind _k, T* _to, const T* _from, const Layout& _deviceLayout)
-			 :	kind(_k), 
+			__host__ MemCpyToolBox(const Direction _d, T* _to, const T* _from, const Layout& _originalLayout)
+			 :	direction(_d),
 				from(_from),
 				to(_to),
-				deviceLayout(_deviceLayout),
-				solidLayout(_deviceLayout.getMonolithicLayout())
-			{ }
+				originalLayout(_originalLayout),
+				solidLayout(_originalLayout.getMonolithicLayout())
+			{
+				#ifdef __CUDACC__
+					cudaDeviceSynchronize();
+				#endif
+			}
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, int i, int j, int k) const
 			{
 				size_t	toOffset = 0,
 					fromOffset = 0;
-				if(kind==cudaMemcpyDeviceToHost)
+				if(direction==DeviceToHost)
 				{
 					toOffset	= solidLayout.getIndex(i, j, k);
-					fromOffset	= deviceLayout.getIndex(i, j, k);
+					fromOffset	= originalLayout.getIndex(i, j, k);
 				}
 				else
 				{
-					toOffset	= deviceLayout.getIndex(i, j, k);
+					toOffset	= originalLayout.getIndex(i, j, k);
 					fromOffset	= solidLayout.getIndex(i, j, k);
 				}
-				cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T), kind);
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(CudaExceptionsOffset + err);
+
+				#ifdef __CUDACC__
+					const cudaMemcpyKind _direction = 	(direction==HostToHost) ? cudaMemcpyHostToHost :
+										(direction==HostToDevice) ? cudaMemcpyHostToDevice :
+										(direction==DeviceToHost) ? cudaMemcpyDeviceToHost :
+											cudaMemcpyDeviceToDevice;
+					cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T), _direction);
+					if(err!=cudaSuccess)
+						throw static_cast<Exception>(CudaExceptionsOffset + err);
+				#else
+					memcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T));
+				#endif
 			}
 		};
 
@@ -819,8 +853,7 @@ namespace Kartet
 		if(dst==NULL)
 			throw NullPointer;
 
-		cudaDeviceSynchronize();
-		MemCpyToolBox<T,l> toolbox(cudaMemcpyDeviceToHost, dst, ptr, *this);
+		MemCpyToolBox<T,l> toolbox(DeviceToHost, dst, ptr, *this);
 		hostScan(toolbox);
 	}
 
@@ -830,8 +863,7 @@ namespace Kartet
 		if(src==NULL)
 			throw NullPointer;
 
-		cudaDeviceSynchronize();
-		MemCpyToolBox<T,l> toolbox(cudaMemcpyHostToDevice, ptr, src, *this);
+		MemCpyToolBox<T,l> toolbox(HostToDevice, ptr, src, *this);
 		hostScan(toolbox);
 	}
 
@@ -1088,14 +1120,20 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ Array<T,l>::~Array(void)
 	{
-		cudaError_t err = cudaSuccess;
 		switch(l)
 		{
 			case DeviceSide :
-				cudaDeviceSynchronize();	
-				err = cudaFree(this->ptr);
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(CudaExceptionsOffset + err);
+				{
+				#ifdef __CUDACC__
+					cudaError_t err = cudaSuccess;
+					cudaDeviceSynchronize();	
+					err = cudaFree(this->ptr);
+					if(err!=cudaSuccess)
+						throw static_cast<Exception>(CudaExceptionsOffset + err);
+				#else
+					throw NotSupported;
+				#endif
+				}
 				break;
 			case HostSide :
 				delete[] this->ptr;
@@ -1111,14 +1149,20 @@ namespace Kartet
 	{
 		StaticAssert<(l==DeviceSide) || (l==HostSide)>();
 
-		cudaError_t err = cudaSuccess;
 		switch(l)
 		{
 			case DeviceSide :
-				err = cudaMalloc(reinterpret_cast<void**>(&this->ptr), getNumElements()*sizeof(T));
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(CudaExceptionsOffset + err);
-				break;
+				{
+				#ifdef __CUDACC__
+					cudaError_t err = cudaSuccess;
+					err = cudaMalloc(reinterpret_cast<void**>(&this->ptr), getNumElements()*sizeof(T));
+					if(err!=cudaSuccess)
+						throw static_cast<Exception>(CudaExceptionsOffset + err);
+					break;
+				#else
+					throw NotSupported;
+				#endif
+				}
 			case HostSide :
 				this->ptr = new T[getNumElements()];
 				break;
@@ -1142,7 +1186,8 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ void Array<T,l>::readFromFile(std::fstream& file, bool convert, size_t maxBufferSize)
 	{
-		if(!isMonolithic())
+		throw NotSupported;
+		/*if(!isMonolithic())
 			throw InvalidOperation;
 
 		if(!file.is_open())
@@ -1203,7 +1248,7 @@ namespace Kartet
 			throw e;
 		}
 		delete bufferRead;
-		delete bufferCast;
+		delete bufferCast;*/
 	}
 
 	template<typename T, Location l>
@@ -1225,7 +1270,9 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ void Array<T,l>::writeToFile(std::fstream& file, size_t maxBufferSize)
 	{
-		if(!isMonolithic())
+		throw NotSupported;
+
+		/*if(!isMonolithic())
 			throw InvalidOperation;
 
 		if(!file.is_open())
@@ -1264,7 +1311,7 @@ namespace Kartet
 			delete buffer;
 			throw e;
 		}
-		delete buffer;
+		delete buffer;*/
 	}
 
 	template<typename T, Location l>

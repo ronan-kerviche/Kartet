@@ -29,8 +29,6 @@
 #include <iostream>
 #include "Kartet.hpp"
 
-	
-
 int main(int argc, char** argv)
 {
 	int returnCode = 0;
@@ -74,11 +72,16 @@ int main(int argc, char** argv)
 		C.vector(0) = C.vector(2) - C.vector(1);
 		std::cout << "C = " << C << std::endl;
 		
-		// Generate random numbers :
-		Kartet::UniformSource uniformSource;
-		uniformSource.setSeed();
-		uniformSource >> A;
-		uniformSource >> B;
+		#ifdef __CUDACC__
+			// Generate random numbers :
+			Kartet::UniformSource uniformSource;
+			uniformSource.setSeed();
+			uniformSource >> A;
+			uniformSource >> B;
+		#else
+			A = 1.0 + Kartet::IndexI();
+			B = B.getNumColumns() - Kartet::IndexJ();
+		#endif
 		std::cout << "A = " << A << std::endl;
 		std::cout << "B = " << B << std::endl;
 
@@ -89,6 +92,18 @@ int main(int argc, char** argv)
 		
 		const double sum1 = reduceContext.sum(A.getLayout(), abs(A-B));
 		std::cout << "Sum over |A-B| : " << sum1 << std::endl;
+
+		{
+			const Kartet::Layout l(8,8);
+			Kartet::Array<double, Kartet::DeviceSide> A(l), B(l), C(l);
+			A = Kartet::IndexI();
+			B = (Kartet::IndexI() + Kartet::IndexJ())/2.0;
+			C = 0.0;
+
+			Kartet::BLASContext blas;
+			blas.gemm(A,B,C);
+			std::cout << "C = " << C << std::endl;
+		}
 	}
 	catch(Kartet::Exception& e)
 	{

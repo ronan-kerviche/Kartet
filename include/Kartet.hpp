@@ -29,6 +29,7 @@
 #ifndef __KARTET_MAIN__
 #define __KARTET_MAIN__
 
+	#include "Core/TypeTools.hpp"
 	#include "Core/Array.hpp"
 	#include "Core/BLAS.hpp"
 	#include "Core/RandomSource.hpp"

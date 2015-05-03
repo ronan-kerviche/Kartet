@@ -29,9 +29,13 @@
 #ifndef __KARTET_FFT__
 #define __KARTET_FFT__
 
-	#include <cufft.h>
+	#ifdef __CUDACC__
+		#include <cufft.h>
+	#endif
+
 	#include "Core/Array.hpp"
 
+#ifdef __CUDACC__
 namespace Kartet
 {
 	template<typename TIn, typename TOut>
@@ -183,6 +187,7 @@ namespace Kartet
 	}
 
 } // namespace Kartet
+#endif
 
 #endif
 

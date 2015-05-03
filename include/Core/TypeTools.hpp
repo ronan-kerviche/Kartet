@@ -31,12 +31,14 @@
 
 // Includes :
 	#include <limits>
-	#include <complex>
-	#if defined(__CUDACC__)
+	//#include <complex>
+	#ifdef __CUDACC__
 		#include <cufft.h>
 	#endif
+	#include "Core/LibTools.hpp"
 	#include "Core/MetaList.hpp"
 	#include "Core/MetaAlgorithm.hpp"
+	#include "Core/Exceptions.hpp"
 	
 namespace Kartet
 {
@@ -59,11 +61,7 @@ namespace Kartet
 		typedef T SubType;
 		typedef T BaseType;
 		typedef std::numeric_limits<BaseType> BaseLimits;
-		#if defined(__CUDACC__)
-			typedef cuFloatComplex ComplexType;
-		#else
-			typedef std::complex<float> ComplexType;
-		#endif		
+		typedef cuFloatComplex ComplexType;	
 
 		static const bool 	isSigned	= BaseLimits::is_signed,
 					isConst 	= false,
@@ -78,11 +76,7 @@ namespace Kartet
 		typedef double SubType;
 		typedef double BaseType;
 		typedef std::numeric_limits<BaseType> BaseLimits;
-		#if defined(__CUDACC__)
-			typedef cuDoubleComplex ComplexType;
-		#else
-			typedef std::complex<double> ComplexType;
-		#endif		
+		typedef cuDoubleComplex ComplexType;	
 
 		static const bool 	isSigned	= BaseLimits::is_signed,
 					isConst 	= false,
@@ -137,37 +131,35 @@ namespace Kartet
 					isComplex 	= SubType::isComplex;
 	};
 
-	#if defined(__CUDACC__)
-		template<>
-		struct TypeInfo<cuFloatComplex>
-		{
-			typedef float SubType;
-			typedef float BaseType;
-			typedef cuFloatComplex ComplexType;
-			typedef std::numeric_limits<BaseType> BaseLimits;
+	template<>
+	struct TypeInfo<cuFloatComplex>
+	{
+		typedef float SubType;
+		typedef float BaseType;
+		typedef cuFloatComplex ComplexType;
+		typedef std::numeric_limits<BaseType> BaseLimits;
 
-			static const bool 	isSigned	= BaseLimits::is_signed,
-						isConst 	= false,
-						isPointer 	= false,
-						isReference 	= false,
-						isComplex 	= true;
-		};
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= true;
+	};
 
-		template<>
-		struct TypeInfo<cuDoubleComplex>
-		{
-			typedef double SubType;
-			typedef double BaseType;
-			typedef cuDoubleComplex ComplexType;
-			typedef std::numeric_limits<BaseType> BaseLimits;
+	template<>
+	struct TypeInfo<cuDoubleComplex>
+	{
+		typedef double SubType;
+		typedef double BaseType;
+		typedef cuDoubleComplex ComplexType;
+		typedef std::numeric_limits<BaseType> BaseLimits;
 
-			static const bool 	isSigned	= BaseLimits::is_signed,
-						isConst 	= false,
-						isPointer 	= false,
-						isReference 	= false,
-						isComplex 	= true;
-		};
-	#endif
+		static const bool 	isSigned	= BaseLimits::is_signed,
+					isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= true;
+	};
 
 	template<typename T>
 	struct RemovePointer
@@ -202,18 +194,10 @@ namespace Kartet
 		TypeList< float,
 		TypeList< double,
 		TypeList< long double,
-		#if defined(__CUDACC__)
-			TypeList< cuFloatComplex,
-			TypeList< cuDoubleComplex,
-			Void
-			> >
-		#else
-			TypeList< std::complex<float>,
-			TypeList< std::complex<double>,
-			Void
-			> >
-		#endif
-		> > > > > > > > > > > > > > > > > > > > TypesSortedByAccuracy;
+		TypeList< cuFloatComplex,
+		TypeList< cuDoubleComplex,
+		Void
+		> > > > > > > > > > > > > > > > > > > > > > TypesSortedByAccuracy;
 
 	template<typename T>
 	struct ResultingTypeOf
@@ -244,12 +228,7 @@ namespace Kartet
 				typedef StdType Type;
 			#endif
 	};
-}
 
-#include "Core/ComplexOperators.hpp"
-
-namespace Kartet
-{
 	// Dynamic tools for the types :
 	inline size_t sizeOfType(int typeIndex)
 	{
@@ -276,13 +255,8 @@ namespace Kartet
 			SPECIAL_SIZE( float )
 			SPECIAL_SIZE( double )
 			SPECIAL_SIZE( long double )
-			#if defined(__CUDACC__)
-				SPECIAL_SIZE( cuFloatComplex )
-				SPECIAL_SIZE( cuDoubleComplex )
-			#else
-				SPECIAL_SIZE( std::complex<float> )
-				SPECIAL_SIZE( std::complex<double> )
-			#endif
+			SPECIAL_SIZE( cuFloatComplex )
+			SPECIAL_SIZE( cuDoubleComplex )
 			default :
 				throw UnknownTypeIndex;
 		}
@@ -313,58 +287,8 @@ namespace Kartet
 			SPECIAL_CXTEST( float, false )
 			SPECIAL_CXTEST( double, false )
 			SPECIAL_CXTEST( long double, false )
-			#if defined(__CUDACC__)
-				SPECIAL_CXTEST( cuFloatComplex, true )
-				SPECIAL_CXTEST( cuDoubleComplex, true )
-			#else
-				SPECIAL_CXTEST( std::complex<float>, true )
-				SPECIAL_CXTEST( std::complex<double>, true )
-			#endif
-			default :
-				throw UnknownTypeIndex;
-		}
-	}
-
-	template<typename T>
-	void copy(T* dst, const void* src, int typeIndex, size_t count=1)
-	{
-		#define SPECIAL_COPY( TypeName ) \
-			case GetIndex<TypesSortedByAccuracy, TypeName>::value :	\
-				for(int k=0; k<count; k++) \
-					unprotectedComplexCopy<T>(dst[k], reinterpret_cast<const TypeName *>(src)[k]); \
-				break;
-
-		if(isComplex(typeIndex) && !TypeInfo<T>::isComplex)
-			throw InvalidOperation;
-
-		switch(typeIndex)
-		{
-			SPECIAL_COPY( bool )
-			SPECIAL_COPY( unsigned char )
-			SPECIAL_COPY( char )
-			SPECIAL_COPY( signed char )
-			SPECIAL_COPY( unsigned short )
-			//SPECIAL_COPY( short )
-			SPECIAL_COPY( signed short )
-			SPECIAL_COPY( unsigned int )
-			//SPECIAL_COPY( int )
-			SPECIAL_COPY( signed int )
-			SPECIAL_COPY( unsigned long )
-			//SPECIAL_COPY( long )
-			SPECIAL_COPY( signed long )
-			SPECIAL_COPY( unsigned long long )
-			//SPECIAL_COPY( long long )
-			SPECIAL_COPY( signed long long )
-			SPECIAL_COPY( float )
-			SPECIAL_COPY( double )
-			SPECIAL_COPY( long double )
-			#if defined(__CUDACC__)
-				SPECIAL_COPY( cuFloatComplex )
-				SPECIAL_COPY( cuDoubleComplex )
-			#else
-				SPECIAL_COPY( std::complex<float> )
-				SPECIAL_COPY( std::complex<double> )
-			#endif
+			SPECIAL_CXTEST( cuFloatComplex, true )
+			SPECIAL_CXTEST( cuDoubleComplex, true )
 			default :
 				throw UnknownTypeIndex;
 		}
@@ -372,7 +296,7 @@ namespace Kartet
 
 } // Namespace Kartet
 
-	#include "ComplexOperators.hpp"
+	#include "Core/ComplexOperators.hpp"
 
 #endif
 
