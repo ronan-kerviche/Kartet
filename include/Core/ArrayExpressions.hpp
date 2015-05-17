@@ -388,9 +388,7 @@ namespace Kartet
 			complexCopy(buffer, t);
 			array.data(i, j, k) = buffer;
 
-			i = ((i+1) % array.getNumRows());
-			j = (i==0) ? (j+1) : j;
-			k = (i==0 && j==0) ? (k+1) : k;
+			array.moveToNextIndex(i, j, k);
 		}
 	}
 
@@ -446,9 +444,7 @@ namespace Kartet
 				complexCopy(buffer, t);
 				array.data(i, j, k) = buffer;
 
-				i = ((i+1) % array.getNumRows());
-				j = (i==0) ? (j+1) : j;
-				k = (i==0 && j==0) ? (k+1) : k;
+				array.moveToNextIndex(i, j, k);
 			}
 		}
 	}

@@ -205,6 +205,11 @@ namespace Kartet
 		reinterpretLayout(numRows, numColumns*numSlices, 1);
 	}
 
+	__host__ inline void Layout::stretch(void)
+	{
+		reinterpretLayout(numRows*numColumns, numSlices, 1);
+	}
+
 	__host__ inline void Layout::vectorize(void)
 	{
 		reinterpretLayout(numRows*numColumns*numSlices, 1, 1);
@@ -475,6 +480,13 @@ namespace Kartet
 		k = index / leadingSlices;
 		j = (index - k*leadingSlices) / leadingColumns;
 		i = index - k*leadingSlices - j*leadingColumns;
+	}
+
+	__host__ __device__ inline void Layout::moveToNextIndex(index_t& i, index_t& j, index_t& k) const
+	{
+		i = ((i+1) % numRows);
+		j = (((i==0) ? (j+1) : j) % numColumns);
+		k = ((i==0 && j==0) ? (k+1) : k);
 	}
 
 	#ifdef __CUDACC__

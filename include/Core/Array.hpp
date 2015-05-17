@@ -143,6 +143,7 @@ namespace Kartet
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
 				__host__            inline void reinterpretLayout(const Layout& other);
 				__host__            inline void flatten(void);
+				__host__	    inline void stretch(void);
 				__host__            inline void vectorize(void);
 				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t numVectors) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t numSlices) const;
@@ -211,6 +212,7 @@ namespace Kartet
 				__host__ __device__ inline bool validColumnIndex(index_t j) const;
 				__host__ __device__ inline bool validSliceIndex(index_t k) const;
 				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline void moveToNextIndex(index_t& i, index_t& j, index_t& k) const;
 
 			// Other Tools : 
 				#ifdef __CUDACC__
@@ -258,12 +260,12 @@ namespace Kartet
 			
 				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
 				__host__ __device__ Accessor(const Layout& layout);
-				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0); // offset will not change the given ptr, and only is informative.
-				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 
 		public :
-			// Constructor :
-				__host__            Accessor(const Array<T,l>& a);
+			// Constructors :
+				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0); // offset will not change the given ptr, and only is informative.
+				__host__ __device__ Accessor(T* ptr, const Layout& layout);
+				__host__	    Accessor(const Array<T,l>& a);
 				__host__ __device__ Accessor(const Accessor<T,l>& a);
 			
 			// Data Tools :

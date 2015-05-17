@@ -318,9 +318,10 @@ namespace Kartet
 				index_t p = layout.getIndex(i, j, k);
 				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
 
-				i = ((i+1) % layout.getNumRows());
-				j = (i==0) ? (j+1) : j;
-				k = (i==0 && j==0) ? (k+1) : k;
+				layout.moveToNextIndex(i, j, k);
+				/*i = ((i+1) % layout.getNumRows());
+				j = (((i==0) ? (j+1) : j) % layout.getNumColumns());;
+				k = (i==0 && j==0) ? (k+1) : k;*/
 			}
 
 			return result;
@@ -422,7 +423,7 @@ namespace Kartet
 	__host__ void ReduceContext::reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-		StaticAssert<ExpressionEvaluation<TExpr>::location==l>(); // The expression must be on the same side than the output.
+		StaticAssert<ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide>(); // The expression must be on the same side than the output.
 
 		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)	
 			throw InvalidOperation;
@@ -528,16 +529,12 @@ namespace Kartet
 
 					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
 
-					ib = ((ib+1) % block.getNumRows());
-					jb = (ib==0) ? (jb+1) : jb;
-					kb = (ib==0 && jb==0) ? (kb+1) : kb;
+					block.moveToNextIndex(ib, jb, kb);
 				}
 				
 				output.data(io, jo, ko) = complexCopy<TOut>(result);
 
-				io = ((io+1) % output.getNumRows());
-				jo = (io==0) ? (jo+1) : jo;
-				ko = (io==0 && jo==0) ? (ko+1) : ko;
+				output.moveToNextIndex(io, jo, ko);
 			}
 		}
 	}
