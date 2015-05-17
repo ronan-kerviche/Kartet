@@ -278,8 +278,6 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorInvalidAddressSpace )
 			EXCEPTION_MESSAGE( CudaErrorInvalidPc )
 			EXCEPTION_MESSAGE( CudaErrorIllegalAddress )
-			EXCEPTION_MESSAGE( CudaErrorStartupFailure )
-			EXCEPTION_MESSAGE( CudaErrorApiFailureBase )
 			#endif
 			// CuBLAS :
 			EXCEPTION_MESSAGE( CuBLASNotInitialized )	
