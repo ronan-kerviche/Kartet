@@ -31,13 +31,10 @@
 
 // Includes :
 	#ifdef __CUDACC__
+		#include <cuda.h>
 		#include <cublas_v2.h>
 		#include <curand.h>
 		#include <cufft.h>
-
-		#ifndef __CUDA_API_VERSION__
-			#define __CUDA_API_VERSION__ 5000
-		#endif
 	#endif
 	#include "Core/LibTools.hpp"
 
@@ -121,15 +118,13 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorLaunchPendingCountExceeded ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotPermitted ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ),
-		#if __CUDA_API_VERSION__ > 5000
+		#if CUDA_VERSION > 5000
 		DEFINE_CUDA_EXCEPTION( udaErrorHardwareStackError ),
 		DEFINE_CUDA_EXCEPTION( udaErrorIllegalInstruction ),
 		DEFINE_CUDA_EXCEPTION( udaErrorMisalignedAddress ),
 		DEFINE_CUDA_EXCEPTION( udaErrorInvalidAddressSpace ),
 		DEFINE_CUDA_EXCEPTION( udaErrorInvalidPc ),
 		DEFINE_CUDA_EXCEPTION( udaErrorIllegalAddress ),
-		DEFINE_CUDA_EXCEPTION( udaErrorStartupFailure ),
-		DEFINE_CUDA_EXCEPTION( udaErrorApiFailureBase ),
 		#endif
 		#endif
 		// CuBLAS Specifics :
@@ -276,7 +271,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorLaunchPendingCountExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorNotPermitted ) 
 			EXCEPTION_MESSAGE( CudaErrorNotSupported )
-			#if __CUDA_API_VERSION__ > 5000
+			#if CUDA_VERSION > 5000
 			EXCEPTION_MESSAGE( CudaErrorHardwareStackError )
 			EXCEPTION_MESSAGE( CudaErrorIllegalInstruction )
 			EXCEPTION_MESSAGE( CudaErrorMisalignedAddress )
