@@ -319,9 +319,6 @@ namespace Kartet
 				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
 
 				layout.moveToNextIndex(i, j, k);
-				/*i = ((i+1) % layout.getNumRows());
-				j = (((i==0) ? (j+1) : j) % layout.getNumColumns());;
-				k = (i==0 && j==0) ? (k+1) : k;*/
 			}
 
 			return result;
