@@ -505,7 +505,7 @@ namespace Kartet
 	#undef MIXED_SCALAR_COMPLEX_OPERATOR
 
 	template<typename T>
-	void copy(T* dst, const void* src, int typeIndex, size_t count=1)
+	void dynamicCopy(T* dst, const void* src, const int typeIndex, const size_t count=1)
 	{
 		#define SPECIAL_COPY( TypeName ) \
 			case GetIndex<TypesSortedByAccuracy, TypeName>::value :	\

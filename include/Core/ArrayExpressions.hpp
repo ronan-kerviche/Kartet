@@ -336,7 +336,6 @@ namespace Kartet
 	template<typename T, Location l, typename TExpr>
 	__global__ void evaluateExpression(const Accessor<T,l> array, const TExpr expr)
 	{
-		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==DeviceSide>();
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
 		index_t i = array.getI(),
@@ -358,25 +357,7 @@ namespace Kartet
 	template<typename T, Location l, typename TExpr>
 	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr& expr)
 	{
-		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==HostSide>();
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
-		/*for(index_t k=0; k<array.getNumSlices(); k++)
-		{
-			for(index_t j=0; j<array.getNumColumns(); j++)
-			{
-				for(index_t i=0; i<array.getNumRows(); i++)
-				{
-					index_t p = array.getIndex(i, j, k);
-					
-					ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
-
-					T buffer;
-					complexCopy(buffer, t);
-					array.data(i, j, k) = buffer;
-				}
-			}
-		}*/
 		
 		for(index_t k=0, j=0, i=0, q=0; q<array.getNumElements(); q++)
 		{
@@ -396,8 +377,6 @@ namespace Kartet
 	template<typename T, typename TExprMask, typename TExpr>
 	__global__ void evaluateExpressionWithMask(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
 	{
-		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==DeviceSide>();
-		//StaticAssert<ExpressionEvaluation<TExprMask>::location==AnySide || ExpressionEvaluation<TExprMask>::location==DeviceSide>();
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
@@ -425,8 +404,6 @@ namespace Kartet
 	template<typename T, Location l, typename TExprMask, typename TExpr>
 	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
 	{
-		//StaticAssert<ExpressionEvaluation<TExpr>::location==AnySide || ExpressionEvaluation<TExpr>::location==HostSide>();
-		//StaticAssert<ExpressionEvaluation<TExprMask>::location==AnySide || ExpressionEvaluation<TExprMask>::location==HostSide>();
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 

@@ -33,6 +33,28 @@
 
 namespace Kartet
 {
+// Tools :
+	inline Direction getDirection(const Location& from, const Location& to)
+	{
+		if(from==AnySide || to==AnySide)
+			throw InvalidDirection;
+		else
+			return 	(from==HostSide && to==HostSide) ?	HostToHost : 
+				(from==HostSide && to==DeviceSide) ?	HostToDevice : 
+				(from==DeviceSide && to==DeviceSide) ?	DeviceToDevice :
+									DeviceToHost;
+	}
+
+	#ifdef __CUDACC__
+		inline cudaMemcpyKind getCudaDirection(const Direction& direction)
+		{
+			return 	(direction==HostToHost) ?	cudaMemcpyHostToHost :
+				(direction==HostToDevice) ?	cudaMemcpyHostToDevice :
+				(direction==DeviceToHost) ?	cudaMemcpyDeviceToHost :
+								cudaMemcpyDeviceToDevice;
+		}
+	#endif
+
 // Layout :
 	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 : 	numRows(r),
@@ -530,10 +552,16 @@ namespace Kartet
 	}
 
 	template<class Op, typename T>
-	__host__ void Layout::hostScan(T* ptr, const Op& op) const
+	__host__ void Layout::singleScan(T* ptr, const Op& op) const
 	{
-		// Op should have a function :
-		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const;
+		/* Op should have a function :
+		void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const;
+			mainLayout          : the original layout.
+			currentAccessLayout : the layout where access is currently granted.
+			ptr                 : the original pointer. DOES NOT CONTAIN THE OFFSET.
+			offset              : the offset leading to the right portion of the memory.
+			i, j, k             : the corresponding coordinates.
+		*/
 
 		if(numRows==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
 			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
@@ -557,8 +585,14 @@ namespace Kartet
 	template<class Op, typename T>
 	__host__ void Layout::dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op)
 	{
-		// Op should have a function :
-		// void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, index_t i, index_t j, index_t k) const;
+		/* Op should have a function :
+		void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, index_t i, index_t j, index_t k) const;
+			mainLayout          : the original layout.
+			currentAccessLayout : the layout where access is currently granted.
+			ptrA, ptrB          : the original pointers. DOES NOT CONTAIN THE OFFSET.
+			offsetA, offsetB    : the offset leading to the right portion of the memory.
+			i, j, k             : the corresponding coordinates.
+		*/
 
 		if(!layoutA.getMonolithicLayout().sameLayoutAs(layoutB.getMonolithicLayout()))
 			throw IncompatibleLayout;
@@ -808,10 +842,9 @@ namespace Kartet
 	}
 
 	// Tools for the memcpy :
-		template<typename T, Location l>
+		template<typename T>
 		struct MemCpyToolBox
 		{			
-			//const 	kind;
 			const Direction		direction;
 			const T			*from;
 			T			*to;
@@ -826,7 +859,8 @@ namespace Kartet
 				solidLayout(_originalLayout.getMonolithicLayout())
 			{
 				#ifdef __CUDACC__
-					cudaDeviceSynchronize();
+					if(direction==HostToDevice || direction==DeviceToHost || direction==DeviceToDevice)
+						cudaDeviceSynchronize();
 				#endif
 			}
 			
@@ -846,10 +880,7 @@ namespace Kartet
 				}
 
 				#ifdef __CUDACC__
-					const cudaMemcpyKind _direction = 	(direction==HostToHost) ? cudaMemcpyHostToHost :
-										(direction==HostToDevice) ? cudaMemcpyHostToDevice :
-										(direction==DeviceToHost) ? cudaMemcpyDeviceToHost :
-											cudaMemcpyDeviceToDevice;
+					const cudaMemcpyKind _direction = getCudaDirection(direction);
 					cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T), _direction);
 					if(err!=cudaSuccess)
 						throw static_cast<Exception>(CudaExceptionsOffset + err);
@@ -860,23 +891,234 @@ namespace Kartet
 		};
 
 	template<typename T, Location l>
-	void Accessor<T,l>::getData(T* dst) const
+	void Accessor<T,l>::getData(T* dst, const Location lout) const
 	{
 		if(dst==NULL)
 			throw NullPointer;
-
-		MemCpyToolBox<T,l> toolbox(DeviceToHost, dst, ptr, *this);
-		hostScan(toolbox);
+	
+		const Direction direction = getDirection(l, lout);
+		MemCpyToolBox<T> toolbox(direction, dst, ptr, *this);
+		singleScan(toolbox);
 	}
 
 	template<typename T, Location l>
-	void Accessor<T,l>::setData(const T* src) const
+	void Accessor<T,l>::setData(const T* src, const Location lin) const
 	{
 		if(src==NULL)
 			throw NullPointer;
 
-		MemCpyToolBox<T,l> toolbox(HostToDevice, ptr, src, *this);
-		hostScan(toolbox);
+		const Direction direction = getDirection(lin, l);
+		MemCpyToolBox<T> toolbox(direction, ptr, src, *this);
+		singleScan(toolbox);
+	}
+
+	// Tool for the file input : 
+		template<typename T>
+		struct FileInputToolBox
+		{
+			std::fstream& 		file;
+			const Location		destinationLocation;
+			const int		sourceTypeIndex;
+			const bool		conversion;
+			const size_t		sourceTypeSize,
+						numBufferElements;
+			char			*bufferRead,
+						*bufferCast;
+
+			__host__ FileInputToolBox(std::fstream& _file, const Location _destinationLocation, const int _sourceTypeIndex, const size_t _sourceTypeSize, const size_t _numBufferElements)
+			 :	file(_file),
+				destinationLocation(_destinationLocation),
+				conversion(_sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value),
+				sourceTypeIndex(_sourceTypeIndex),
+				sourceTypeSize(_sourceTypeSize),
+				numBufferElements(_numBufferElements),
+				bufferRead(NULL),
+				bufferCast(NULL)
+			{
+				// Allocation of the write buffer :
+				if(destinationLocation==DeviceSide)
+				{
+					#ifdef __CUDACC__
+						bufferRead = new char[numBufferElements*sourceTypeSize];
+						if(conversion)
+							bufferCast = new char[numBufferElements*sizeof(T)];
+						cudaDeviceSynchronize();
+					#else
+						throw NotSupported;
+					#endif
+				}
+				else
+				{
+					if(conversion)
+						bufferRead = new char[numBufferElements*sourceTypeSize];
+				}
+			}
+
+			__host__ ~FileInputToolBox(void)
+			{
+				delete[] bufferRead;
+				delete[] bufferCast;
+			}
+			
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
+			{	
+				if(destinationLocation==HostSide && !conversion)
+					file.read(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+				else
+				{
+					for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.getNumElements(); )
+					{
+						const index_t currentCopyNumElements = std::min(currentAccessLayout.getNumElements()-offsetCopied, static_cast<index_t>(numBufferElements));
+						file.read(bufferRead, currentCopyNumElements*sourceTypeSize);
+		
+						char* tmpSrc = bufferRead;
+						if(conversion)
+						{
+							char* castPtr = (destinationLocation==HostSide) ? reinterpret_cast<char*>(ptr + offset + offsetCopied) : bufferCast;
+							dynamicCopy(reinterpret_cast<T*>(castPtr), bufferRead, sourceTypeIndex, currentCopyNumElements);
+							tmpSrc = castPtr;
+						}
+
+						if(destinationLocation==DeviceSide)
+						{
+							#ifdef __CUDACC__
+								cudaError_t err = cudaMemcpy((ptr + offset + offsetCopied), tmpSrc, currentCopyNumElements*sizeof(T), cudaMemcpyHostToDevice);
+								if(err!=cudaSuccess)
+									throw static_cast<Exception>(CudaExceptionsOffset + err);
+							#else
+								throw NotSupported;
+							#endif
+						}
+
+						offsetCopied += currentCopyNumElements;
+					}
+				}
+			}
+		};
+
+	template<typename T, Location l>
+	__host__ void Accessor<T,l>::readFromFile(std::fstream& file, bool convert, const size_t maxBufferSize)
+	{
+		if(maxBufferSize<sizeof(T))
+			throw InvalidOperation;
+		
+		int sourceTypeIndex = -1;
+		const Layout layout = Layout::readFromFile(file, &sourceTypeIndex);
+
+		const bool conversion = (sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value);
+		if(!convert && conversion)
+			throw InvalidOperation;
+		
+		const size_t 	sourceTypeSize = sizeOfType(sourceTypeIndex),
+				maxSize = conversion ? (sourceTypeSize + sizeof(T)) : sizeof(T),
+				numBufferElements = std::min(static_cast<size_t>(layout.getNumElements())*maxSize, maxBufferSize)/maxSize;
+		
+		FileInputToolBox<T> toolbox(file, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
+		singleScan(toolbox);
+	}
+
+	template<typename T, Location l>
+	__host__ void Accessor<T,l>::readFromFile(const std::string& filename, bool convert, const size_t maxBufferSize)
+	{
+		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		readFromFile(file, convert, maxBufferSize);
+		file.close();
+	}
+
+	// Tools for the file output :
+		template<typename T>
+		struct FileOutputToolBox
+		{
+			std::fstream& 		file;
+			const Location		sourceLocation;
+			T			*buffer;
+			const size_t		numBufferElements;
+
+			__host__ FileOutputToolBox(std::fstream& _file, const Location _sourceLocation, const size_t _numBufferElements)
+			 :	file(_file),
+				sourceLocation(_sourceLocation),
+				buffer(NULL),
+				numBufferElements(_numBufferElements)
+			{
+				// Allocation of the write buffer :
+				if(sourceLocation==DeviceSide)
+				{
+					#ifdef __CUDACC__
+						
+						buffer = new T[numBufferElements];
+						cudaDeviceSynchronize();
+					#else
+						throw NotSupported;
+					#endif
+				}
+			}
+
+			__host__ ~FileOutputToolBox(void)
+			{
+				delete[] buffer;
+			}
+			
+			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
+			{	
+				if(sourceLocation==DeviceSide)
+				{
+					#ifdef __CUDACC__
+						// Copy to the buffer :
+						for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.getNumElements(); )
+						{
+							const index_t currentCopyNumElements = std::min(currentAccessLayout.getNumElements()-offsetCopied, static_cast<index_t>(numBufferElements));
+							cudaError_t err = cudaMemcpy(buffer, (ptr + offset + offsetCopied), currentCopyNumElements*sizeof(T), cudaMemcpyDeviceToHost);
+							if(err!=cudaSuccess)
+								throw static_cast<Exception>(CudaExceptionsOffset + err);
+							file.write(reinterpret_cast<char*>(buffer), currentCopyNumElements*sizeof(T));
+							offsetCopied += currentCopyNumElements;
+						}
+					#else
+						throw NotSupported;
+					#endif
+				}
+				else
+				{
+					// Write the full data directly :
+					file.write(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+				}
+			}
+		};
+
+	template<typename T, Location l>
+	__host__ void Accessor<T,l>::writeToFile(std::fstream& file, const size_t maxBufferSize)
+	{
+		if(maxBufferSize<sizeof(T))
+			throw InvalidOperation;
+
+		const size_t numBufferElements = std::min(static_cast<size_t>(getNumElements())*sizeof(T), maxBufferSize)/sizeof(T);
+
+		// Write the header :
+		Layout::writeToFile<T>(file);
+		FileOutputToolBox<T> toolbox(file, l, numBufferElements);
+		singleScan(toolbox);
+	}
+
+	template<typename T, Location l>
+	__host__ void Accessor<T,l>::writeToFile(const std::string& filename, const size_t maxBufferSize)
+	{
+		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
+
+		if(!file.is_open())
+		{
+			file.close();
+			throw InvalidFileStream;
+		}
+
+		writeToFile(file, maxBufferSize);
+		file.close();
 	}
 
 	template<typename T, Location l>
@@ -1028,9 +1270,9 @@ namespace Kartet
 
 	template<typename T, Location l>
 	template<class Op>
-	__host__ void Accessor<T,l>::hostScan(const Op& op) const
+	__host__ void Accessor<T,l>::singleScan(const Op& op) const
 	{
-		Layout::hostScan(ptr, op);
+		Layout::singleScan(ptr, op);
 	}
 
 	template<typename T, Location l>
@@ -1193,153 +1435,6 @@ namespace Kartet
 	__host__ const Accessor<T,l>& Array<T,l>::accessor(void) const
 	{
 		return (*this);
-	}
-
-	template<typename T, Location l>
-	__host__ void Array<T,l>::readFromFile(std::fstream& file, bool convert, size_t maxBufferSize)
-	{
-		throw NotSupported;
-		/*if(!isMonolithic())
-			throw InvalidOperation;
-
-		if(!file.is_open())
-			throw InvalidFileStream;
-
-		if(maxBufferSize==0)
-			maxBufferSize = static_cast<size_t>(getNumElements())*sizeof(T);
-
-		int typeIndex = -1;
-		const Layout layout = Layout::readFromFile(file, &typeIndex);
-
-		if(!layout.sameLayoutAs(*this))
-			throw InvalidOperation;
-
-		if(!convert && (typeIndex!=GetIndex<TypesSortedByAccuracy, T>::value))
-			throw InvalidOperation;
-
-		const size_t 	size = sizeOfType(typeIndex),
-				numBufferElements = std::min(static_cast<size_t>(layout.getNumElements())*size, maxBufferSize)/size,
-				numReads = static_cast<size_t>(static_cast<float>(layout.getNumElements())/static_cast<float>(numBufferElements) + 0.5f);
-		index_t offset = 0;
-		char	*bufferRead = new char[numBufferElements*size],
-			*bufferCast = NULL;
-
-		if(typeIndex!=GetIndex<TypesSortedByAccuracy, T>::value)
-			bufferCast = new char[numBufferElements*sizeof(T)];
-
-		try
-		{
-			for(size_t k=0; k<numReads; k++)
-			{
-				const size_t currentNumElements = std::min(numBufferElements, static_cast<size_t>(layout.getNumElements())-k*numBufferElements);
-				file.read(bufferRead, currentNumElements*size);
-
-				if(!file.good())
-					throw InvalidFileStream;
-			
-				if(bufferCast==NULL)
-				{
-					cudaError_t err = cudaMemcpy(getPtr() + offset, reinterpret_cast<void*>(bufferRead), currentNumElements*sizeof(T), cudaMemcpyHostToDevice);
-					if(err!=cudaSuccess)
-						throw static_cast<Exception>(CudaExceptionsOffset + err);
-				}
-				else
-				{
-					copy(reinterpret_cast<T*>(bufferCast), bufferRead, typeIndex, currentNumElements);
-					cudaError_t err = cudaMemcpy(getPtr() + offset, reinterpret_cast<void*>(bufferCast), currentNumElements*sizeof(T), cudaMemcpyHostToDevice);
-					if(err!=cudaSuccess)
-						throw static_cast<Exception>(CudaExceptionsOffset + err);
-				}
-				offset += currentNumElements;
-			}
-		}
-		catch(Exception& e)
-		{
-			delete bufferRead;
-			delete bufferCast;
-			throw e;
-		}
-		delete bufferRead;
-		delete bufferCast;*/
-	}
-
-	template<typename T, Location l>
-	__host__ void Array<T,l>::readFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
-	{
-		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
-
-		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
-
-		readFromFile(file, convert, maxBufferSize);
-
-		file.close();
-	}
-
-	template<typename T, Location l>
-	__host__ void Array<T,l>::writeToFile(std::fstream& file, size_t maxBufferSize)
-	{
-		throw NotSupported;
-
-		/*if(!isMonolithic())
-			throw InvalidOperation;
-
-		if(!file.is_open())
-			throw InvalidFileStream;
-
-		if(maxBufferSize==0)
-			maxBufferSize = static_cast<size_t>(getNumElements())*sizeof(T);
-
-		// Write the header :
-		Layout::writeToFile<T>(file);
-		const size_t 	numBufferElements = std::min(static_cast<size_t>(getNumElements())*sizeof(T), maxBufferSize)/sizeof(T),
-				numReads = static_cast<size_t>(static_cast<float>(getNumElements())/static_cast<float>(numBufferElements) + 0.5f);
-		index_t offset = 0;
-		char *buffer = new char[numBufferElements*sizeof(T)];
-
-		// Write the data :
-		try
-		{
-			for(size_t k=0; k<numReads; k++)
-			{
-				const size_t currentNumElements = std::min(numBufferElements, static_cast<size_t>(getNumElements())-k*numBufferElements);
-
-				// Copy :
-				cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(buffer), getPtr() + offset, currentNumElements*sizeof(T), cudaMemcpyDeviceToHost);
-				if(err!=cudaSuccess)
-					throw static_cast<Exception>(CudaExceptionsOffset + err);
-
-				// Write :
-				file.write(buffer, currentNumElements*sizeof(T));
-
-				offset += currentNumElements;
-			}
-		}
-		catch(Exception& e)
-		{
-			delete buffer;
-			throw e;
-		}
-		delete buffer;*/
-	}
-
-	template<typename T, Location l>
-	__host__ void Array<T,l>::writeToFile(const std::string& filename, size_t maxBufferSize)
-	{
-		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
-
-		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
-
-		writeToFile(file, maxBufferSize);
-
-		file.close();
 	}
 
 } // Namespace Kartet

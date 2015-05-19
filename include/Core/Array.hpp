@@ -68,6 +68,11 @@ namespace Kartet
 			DeviceToHost
 		};
 
+		inline Direction getDirection(const Location& from, const Location& to);
+		#ifdef __CUDACC__
+			inline cudaMemcpyKind getCudaDirection(const Direction& direction);
+		#endif
+
 	// Prototypes : 
 		template<typename, Location>
 		class Array;
@@ -224,7 +229,7 @@ namespace Kartet
 				__host__	    inline Layout getMonolithicLayout(void) const;
 
 				template<class Op, typename T>
-				__host__ void hostScan(T* ptr, const Op& op) const;
+				__host__ void singleScan(T* ptr, const Op& op) const;
 
 				template<class Op, typename T>
 				__host__ static void dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op);
@@ -281,8 +286,12 @@ namespace Kartet
 					 __device__ inline T& dataFFTInverseShift(void) const;
 				#endif
 				__host__                   T* getData(void) const;
-				__host__                   void getData(T* ptr) const;
-				__host__                   void setData(const T* ptr) const;
+				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
+				__host__                   void setData(const T* ptr, const Location lin=HostSide) const;
+				__host__                   void readFromFile(std::fstream& file, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void writeToFile(std::fstream& file, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=104857600); // 100 MB
 	
 			// Layout tools :
 				__host__	           const Layout& getLayout(void) const;
@@ -322,7 +331,7 @@ namespace Kartet
 				Accessor<T,l>& maskedAssignment(const TExprMask& exprMask, const TExpr& expr);
 
 				template<class Op>
-				__host__ void hostScan(const Op& op) const;
+				__host__ void singleScan(const Op& op) const;
 
 			// Other tools :
 				template<typename TBis, Location lBis>
@@ -392,6 +401,8 @@ namespace Kartet
 			using Accessor<T,l>::getSize;
 			using Accessor<T,l>::getData;
 			using Accessor<T,l>::setData;
+			using Accessor<T,l>::readFromFile;
+			using Accessor<T,l>::writeToFile;
 			using Accessor<T,l>::element;
 			using Accessor<T,l>::elements;
 			using Accessor<T,l>::vector;
@@ -406,14 +417,11 @@ namespace Kartet
 			using Accessor<T,l>::assign;
 			using Accessor<T,l>::operator=;
 			using Accessor<T,l>::maskedAssignment;
-			using Accessor<T,l>::hostScan;
-			
+			using Accessor<T,l>::singleScan;
+			using Accessor<T,l>::dualScan;
+
 			Accessor<T,l>& accessor(void);
 			const Accessor<T,l>& accessor(void) const;
-			void readFromFile(std::fstream& file, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
-			void readFromFile(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
-			void writeToFile(std::fstream& file, size_t maxBufferSize=104857600); // 100 MB
-			void writeToFile(const std::string& filename, size_t maxBufferSize=104857600); // 100 MB
 	};
 	
 } // namespace Kartet
