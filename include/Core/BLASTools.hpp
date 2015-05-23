@@ -31,7 +31,7 @@
 
 namespace Kartet
 {
-// Lists :
+// Type Lists :
 	typedef TypeList< float,
 		TypeList< double,
 		TypeList< cuFloatComplex,

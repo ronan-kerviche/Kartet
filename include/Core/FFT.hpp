@@ -33,161 +33,83 @@
 		#include <cufft.h>
 	#endif
 
+	#ifdef KARTET_USE_FFTW
+		#ifdef __cplusplus
+		extern "C"
+		{
+		#endif
+			#include <fftw3.h>
+		#ifdef __cplusplus
+		}
+		#endif
+	#endif
+	
+	#include "Core/LibTools.hpp"
 	#include "Core/Array.hpp"
 
-#ifdef __CUDACC__
 namespace Kartet
 {
-	template<typename TIn, typename TOut>
 	class FFTContext
 	{
-		private :
-			cufftHandle handle;
-			cufftType fftType;
-
-			__host__ FFTContext(const FFTContext&);
 		public :
+			enum Operation
+			{
+				R2C,
+				C2R,
+				C2C,
+				D2Z,
+				Z2D,
+				Z2Z
+			};
+
+			enum PlaneFlag
+			{
+				Single,
+				Many
+			};
+
+		private :
+			#ifdef __CUDACC__
+				cufftHandle handle;
+			#endif
+
+			#ifdef KARTET_USE_FFTW
+				fftwf_plan fftwHandleFloat;
+				fftw_plan fftwHandleDouble;				
+			#endif
+			
+			__host__ inline FFTContext(const FFTContext&);
+			__host__ inline void setup(void);
+		public :
+			const Operation operation;
+			const PlaneFlag planeFlag;
 			const Layout inputLayout, outputLayout;
 
-			__host__ FFTContext(const Layout& inputL, const Layout& outputL);
-			__host__ ~FFTContext(void);
+			__host__ inline FFTContext(const Operation& _operation, const Layout& inputL, const Layout& outputL, const PlaneFlag& _planeFlag=Single);
+			template<typename TIn, typename TOut, Location l>
+			__host__ FFTContext(const Accessor<TIn,l>& input, const Accessor<TOut,l>& output, const PlaneFlag& _planeFlag=Single);
+			__host__ inline ~FFTContext(void);
 
-			__host__ void fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward=true);
-			__host__ void ifft(const Accessor<TIn>& input, const Accessor<TOut>& output);
+			// Converter :
+			#ifdef __CUDACC__
+			__host__ static inline cufftType getCuFFTType(const Operation& op);
+			#endif
 
-		// static :
-			__host__ static bool isValid(const Layout& input, const Layout& output);
+			// Layout tools :
+			__host__ static inline bool isValid(const Operation& _operation, const Layout& input, const Layout& output, const PlaneFlag& _planeFlag);
+			template<typename TIn, typename TOut>
+			__host__ static Operation getOperation(void);
+			template<typename TIn, typename TOut>
+			__host__ static bool checkTypes(const Operation& _operation);
+
+			template<typename TIn, typename TOut, Location l>
+			__host__ void fft(const Accessor<TIn,l>& input, const Accessor<TOut,l>& output, const bool forward=true);
+			template<typename TIn, typename TOut, Location l>
+			__host__ void ifft(const Accessor<TIn,l>& input, const Accessor<TOut,l>& output);
 	};
-
-// Implementation :
-	template<typename TIn, typename TOut>
-	__host__ FFTContext<TIn, TOut>::FFTContext(const Layout& inputL, const Layout& outputL)
-	 :	inputLayout(inputL),
-		outputLayout(outputL),
-		fftType(static_cast<cufftType>(0))
-	{
-		cufftResult err = CUFFT_SUCCESS;
-
-		// Check the feasibility :
-		if(!isValid(inputLayout, outputLayout))
-			throw IncompatibleLayout;
-
-		// Find the type / Choose the computation mode :
-		if(SameTypes<TIn,float>::test && SameTypes<TOut,cuFloatComplex>::test)
-			fftType = CUFFT_R2C;
-		else if(SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,float>::test)
-			fftType = CUFFT_C2R;
-		else if(SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,cuFloatComplex>::test)
-			fftType = CUFFT_C2C;
-		else if(SameTypes<TIn,double>::test && SameTypes<TOut,cuDoubleComplex>::test)
-			fftType = CUFFT_D2Z;
-		else if(SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,double>::test)
-			fftType = CUFFT_Z2D;
-		else if(SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,cuDoubleComplex>::test)
-			fftType = CUFFT_Z2Z;
-		else
-			throw InvalidOperation;
-
-		if(inputLayout.getNumSlices()==1)
-		{
-			err = cufftPlan2d(&handle, inputLayout.getNumColumns(), inputLayout.getNumRows(), fftType);
-			if(err!=CUFFT_SUCCESS)
-				throw static_cast<Exception>(CuFFTExceptionOffset + err);
-		}
-		else if(inputLayout.getNumColumns()!=1 && inputLayout.getNumRows()!=1)
-		{
-			int nI[2] = {inputLayout.getNumColumns(), inputLayout.getNumRows()},
-			    nO[2] = {outputLayout.getNumColumns(), outputLayout.getNumRows()};
-			int idist = inputLayout.getLeadingSlices(),
-			    odist = outputLayout.getLeadingSlices();
-
-			err = cufftPlanMany(&handle, 2, nI, nI, 1, idist, nO, 1, odist, fftType, inputLayout.getNumSlices());
-			if(err!=CUFFT_SUCCESS)
-				throw static_cast<Exception>(CuFFTExceptionOffset + err);
-		}
-		else
-			throw NotSupported;
-
-		err = cufftSetCompatibilityMode(handle, CUFFT_COMPATIBILITY_NATIVE);
-		if(err!=CUFFT_SUCCESS)
-			throw static_cast<Exception>(CuFFTExceptionOffset + err);
-	}
-
-	template<typename TIn, typename TOut>
-	__host__ FFTContext<TIn, TOut>::~FFTContext(void)
-	{
-		// Destroy the handle :
-		cufftDestroy(handle);
-	}
-
-	template<typename TIn, typename TOut>
-	__host__ void FFTContext<TIn, TOut>::fft(const Accessor<TIn>& input, const Accessor<TOut>& output, bool forward)
-	{	
-		if(!input.sameLayoutAs(inputLayout) || !output.sameLayoutAs(outputLayout))	
-			throw IncompatibleLayout;
-		int direction = CUFFT_FORWARD;
-		if(!forward && !(fftType==CUFFT_C2C || fftType==CUFFT_Z2Z))
-			throw InvalidOperation;
-		if(!forward)
-			direction = CUFFT_INVERSE;
-
-		cufftResult err = CUFFT_SUCCESS;
-		switch(fftType)
-		{
-			case CUFFT_R2C : 
-				err = cufftExecR2C(handle, reinterpret_cast<float*>(input.getPtr()), reinterpret_cast<cuFloatComplex*>(output.getPtr()));
-				break;
-			case CUFFT_C2R : 
-				err = cufftExecC2R(handle, reinterpret_cast<cuFloatComplex*>(input.getPtr()), reinterpret_cast<float*>(output.getPtr()));
-				break;
-			case CUFFT_C2C :
-				err = cufftExecC2C(handle, reinterpret_cast<cuFloatComplex*>(input.getPtr()), reinterpret_cast<cuFloatComplex*>(output.getPtr()), direction);
-				break;
-			case CUFFT_D2Z : 
-				err = cufftExecD2Z(handle, reinterpret_cast<double*>(input.getPtr()), reinterpret_cast<cuDoubleComplex*>(output.getPtr()));
-				break;
-			case CUFFT_Z2D : 	
-				err = cufftExecZ2D(handle, reinterpret_cast<cuDoubleComplex*>(input.getPtr()), reinterpret_cast<double*>(output.getPtr()));
-				break;
-			case CUFFT_Z2Z : 
-				err = cufftExecZ2Z(handle, reinterpret_cast<cuDoubleComplex*>(input.getPtr()), reinterpret_cast<cuDoubleComplex*>(output.getPtr()), direction);
-				break;
-			default :
-				throw InvalidOperation;
-		}
-
-		if(err!=CUFFT_SUCCESS)
-			throw static_cast<Exception>(CuFFTExceptionOffset + err);
-	}
-
-	template<typename TIn, typename TOut>
-	__host__ void FFTContext<TIn, TOut>::ifft(const Accessor<TIn>& input, const Accessor<TOut>& output)
-	{
-		fft(input, output, false);
-	}
-
-	template<typename TIn, typename TOut>
-	__host__ bool FFTContext<TIn, TOut>::isValid(const Layout& input, const Layout& output)
-	{
-		
-		if( 	// Check for the dimensions :
-			(input.getNumSlices()!=output.getNumSlices()) ||
-			(input.getNumColumns()==1 || input.getNumRows()==1) ||
-			(output.getNumColumns()==1 || output.getNumRows()==1) ||
-			(!input.isSliceMonolithic() || !output.isSliceMonolithic()) ||
-			// Check for the types :
-			(!TypeInfo<TIn>::isComplex && !TypeInfo<TOut>::isComplex) ||
-			// Check for the sizes : 
-			(TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()==output.getNumRows())) ||
-			(TypeInfo<TIn>::isComplex && !TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()/2+1==output.getNumRows())) ||
-			(!TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()==output.getNumRows()/2+1)) )
-			return false;
-		else
-			return true;
-	}
-
 } // namespace Kartet
-#endif
+
+	#include "FFTTools.hpp"
 
 #endif
 

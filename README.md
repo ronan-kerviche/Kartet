@@ -6,3 +6,6 @@ A Simple C++ Array library for CUDA.
 * Expression Templates with operators and functions.
 * Transparent support for complex numbers.
 * CuBLAS, CuRAND and CuFFT interfaces.
+* Optional Host-Only binary generation.
+* Optional ATLAS interface.
+

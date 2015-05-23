@@ -263,14 +263,14 @@ namespace Kartet
 	template<Location l>
 	__host__ const Accessor<float,l>& UniformSource<l>::operator>>(const Accessor<float,l>& a) const
 	{
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
 	template<Location l>
 	__host__ const Accessor<double,l>& UniformSource<l>::operator>>(const Accessor<double,l>& a) const
 	{
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
@@ -349,7 +349,7 @@ namespace Kartet
 		if(l!=DeviceSide)
 			throw NotSupported;
 
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
@@ -359,7 +359,7 @@ namespace Kartet
 		if(l!=DeviceSide)
 			throw NotSupported;
 
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
@@ -438,7 +438,7 @@ namespace Kartet
 		if(l!=DeviceSide)
 			throw NotSupported;
 
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
@@ -448,7 +448,7 @@ namespace Kartet
 		if(l!=DeviceSide)
 			throw NotSupported;
 
-		a.hostScan(*this);
+		a.singleScan(*this);
 		return a;
 	}
 
