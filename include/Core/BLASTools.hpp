@@ -109,7 +109,7 @@ namespace Kartet
 	}
 	#endif
 
-	#ifdef KARTET_USE_ATLAS
+	#ifdef KARTET_ADD_CBLAS_INTERFACE
 	__host__ inline CBLAS_TRANSPOSE BLASContext::getCBLASOperation(const MatrixOperation& op)
 	{
 		return (op==OpTr) ? CblasTrans : ((op==OpHr) ? CblasConjTrans : CblasNoTrans);
@@ -240,7 +240,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					res = cblas_isamax(x.getNumElements(), FPTR(x.getPtr()), 1);
 				else IF_DOUBLE
@@ -309,7 +309,7 @@ namespace Kartet
 		}
 		else
 		{	
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					res = cblas_sasum(x.getNumElements(), FPTR(x.getPtr()), 1);
 				else IF_DOUBLE
@@ -362,7 +362,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					res = cblas_sdot(x.getNumElements(), FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1);
 				else IF_DOUBLE
@@ -403,7 +403,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					res = cblas_snrm2(x.getNumElements(), FPTR(x.getPtr()), 1);
 				else IF_DOUBLE
@@ -464,7 +464,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -557,7 +557,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -641,7 +641,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -709,7 +709,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -784,7 +784,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -837,7 +837,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					cblas_strmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
 				else IF_DOUBLE
@@ -879,7 +879,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 					cblas_strsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
 				else IF_DOUBLE
@@ -926,7 +926,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
@@ -983,7 +983,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
@@ -1038,7 +1038,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
@@ -1107,7 +1107,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1201,7 +1201,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1287,7 +1287,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1387,7 +1387,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1478,7 +1478,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1561,7 +1561,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
 				{
 					FCST(alpha)
@@ -1638,7 +1638,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
@@ -1701,7 +1701,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
@@ -1779,7 +1779,7 @@ namespace Kartet
 		}
 		else
 		{
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_CX_FLOAT
 				{
 					CCST(alpha)

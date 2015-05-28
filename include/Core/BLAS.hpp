@@ -38,7 +38,18 @@
 		extern "C"
 		{
 		#endif
+			#define KARTET_ADD_CBLAS_INTERFACE
 			#include <atlas/cblas.h>
+		#ifdef __cplusplus
+		}
+		#endif
+	#elif defined(KARTET_USE_CBLAS)
+		#ifdef __cplusplus
+		extern "C"
+		{
+		#endif
+			#define KARTET_ADD_CBLAS_INTERFACE
+			#include <cblas.h>
 		#ifdef __cplusplus
 		}
 		#endif
@@ -95,7 +106,7 @@ namespace Kartet
 			__host__ static inline cublasSideMode_t getCuBLASSideMode(const MatrixSideMode& s);
 			#endif
 
-			#ifdef KARTET_USE_ATLAS
+			#ifdef KARTET_ADD_CBLAS_INTERFACE
 			__host__ static inline CBLAS_TRANSPOSE getCBLASOperation(const MatrixOperation& op);
 			__host__ static inline CBLAS_UPLO getCBLASFillMode(const MatrixFillMode& m);
 			__host__ static inline CBLAS_DIAG getCBLASDiagType(const MatrixDiagType& t);
