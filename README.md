@@ -7,5 +7,5 @@ A Simple C++ Array library for CUDA.
 * Transparent support for complex numbers.
 * CuBLAS, CuRAND and CuFFT interfaces.
 * Optional Host-Only binary generation.
-* Optional ATLAS interface.
+* Optional CBLAS, ATLAS and FFTW(3) interfaces.
 

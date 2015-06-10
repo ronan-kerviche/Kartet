@@ -324,7 +324,6 @@ namespace Kartet
 				Accessor<T,l>& operator=(const Accessor<T,l>& a);
 				template<Location l2>
 				Accessor<T,l>& operator=(const Accessor<T,l2>& a);
-				
 
 			// Masked assignment : 
 				template<typename TExprMask, typename TExpr>
