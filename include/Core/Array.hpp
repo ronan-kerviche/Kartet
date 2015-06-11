@@ -44,9 +44,9 @@
 
 #ifndef KARTET_DEFAULT_LOCATION
 	#ifdef __CUDACC__
-		#define KARTET_DEFAULT_LOCATION DeviceSide
+		#define KARTET_DEFAULT_LOCATION (Kartet::DeviceSide)
 	#else
-		#define KARTET_DEFAULT_LOCATION HostSide
+		#define KARTET_DEFAULT_LOCATION (Kartet::HostSide)
 	#endif
 #endif
 

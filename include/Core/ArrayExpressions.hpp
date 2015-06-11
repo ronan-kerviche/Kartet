@@ -355,7 +355,7 @@ namespace Kartet
 #endif
 
 	template<typename T, Location l, typename TExpr>
-	__host__ void evaluateExpressionOverLayout(const Accessor<T,l> array, const TExpr& expr)
+	__host__ void evaluateExpressionOverLayout(const Accessor<T,l>& array, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		
@@ -402,7 +402,7 @@ namespace Kartet
 #endif
 
 	template<typename T, Location l, typename TExprMask, typename TExpr>
-	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
+	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T>& array, const TExprMask& exprMask, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;

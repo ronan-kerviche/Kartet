@@ -6,10 +6,14 @@
 # FILES			: Files to compile (*.cu, *.cpp)
 # DEVICE_CODE		: Target device platform code (20, 35, ...)
 # CC_EXTRA_FLAGS	: Extra flags for the compilers.
-# CC_EXTRA_LINK		: Extra flags for the linkers.
+# CC_EXTRA_LIB		: Extra linrary flags for the linkers.
 # HSCC			: Host side compiler.
 # NVCC			: Device side compiler.
 # DEFAULT_TARGET	: Default compilation target amon deviceBinary and hostBinary.
+# SOURCES_DIR		: Directory for the source files.
+# OBJ_DIR		: Directory for the object files.
+# CUDA_INCLUDE_PATH	: Path to CUDA headers directory.
+# CUDA_LIB_PATH		: Path to CUDA libraries.
 # KARTET_OPTIONS	: Options for the library
 #     -D KARTET_USE_ATLAS			Use ATLAS (requires -llapack -lf77blas -lcblas -latlas).
 #     -D KARTET_USE_CBLAS			Use CBLAS only (requires -lcblas, ignored if KARTET_USE_ATLAS).
@@ -26,7 +30,7 @@
 #export EXEC_HOST	= execNameTestHost
 #export FILES		= main.cu
 #export KARTET_OPTIONS	= -D KARTET_USE_ATLAS
-##export CC_EXTRA_LINK	= -shared # For a shared object/dynamic library
+##export CC_EXTRA_LIB	= -shared # For a shared object/dynamic library
 #all :
 #% :
 #	@$(MAKE) -s -f $(KARTET_PATH)/Tools/Makefile $@
@@ -68,60 +72,98 @@ ifeq ($(DEFAULT_TARGET),)
 	DEFAULT_TARGET = deviceBinary hostBinary
 endif
 
+ifeq ($(CUDA_INCLUDE_PATH),)
+	CUDA_INCLUDE_PATH = /usr/local/cuda/include
+endif
+
+ifeq ($(CUDA_LIB_PATH),)
+	CUDA_LIB_PATH = /usr/local/cuda/lib64
+endif
+
 # Generate :
-OBJECTS		= $(patsubst %.cu,%.o,$(filter %.cu,$(FILES))) $(patsubst %.cpp,%.o,$(filter %.cpp,$(FILES))) $(patsubst %.c,%.o,$(filter %.c,$(FILES)))
+FILES_LIST	= $(wildcard $(SOURCES_DIR)$(FILES))
+OBJECTS		= $(patsubst %.cu,%.o,$(filter %.cu,$(FILES_LIST))) $(patsubst %.cpp,%.o,$(filter %.cpp,$(FILES_LIST))) $(patsubst %.c,%.o,$(filter %.c,$(FILES_LIST)))
 DEVICE_OBJECTS	= $(patsubst %.o,%.device.o,$(OBJECTS))
 HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
 CC_INCLUDE	= -I$(KARTET_PATH)/include/
-NVCC_INCLUDE	= -I/usr/local/cuda/include $(CC_INCLUDE)
+NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -m64 -O3 -Wall -Wextra $(CC_EXTRA_FLAGS)
 NVCC_FLAGS 	= -arch=compute_$(DEVICE_CODE) -code=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "\"$(CC_FLAGS)\""
-CC_LINK		= -lm	$(subst KARTET_USE_ATLAS, -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
+CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_FFTW, -lfftw3 -lfftw3f, $(findstring KARTET_USE_FFTW,$(KARTET_OPTIONS))) \
-		  $(CC_EXTRA_LINK)	
-NVCC_LINK	= -L/usr/local/cuda/lib64 -lcufft -lcublas -lcurand $(CC_LINK)
+		  $(CC_EXTRA_LIB)	
+NVCC_LIB	= -L$(CUDA_LIB_PATH) -lcufft -lcublas -lcurand $(CC_LIB)
 
 all : $(DEFAULT_TARGET)
 	@echo '[ ALL  ] Done.'
 
-deviceBinary : $(SOURCES) $(DEVICE_OBJECTS)
+deviceBinary : $(DEVICE_OBJECTS)
 	@echo '[DEVICE] Linking (Platform code $(DEVICE_CODE))...'
-	@$(NVCC) -o $(EXEC_DEVICE) $^ $(NVCC_FLAGS) $(NVCC_LINK)
+	@$(NVCC) -o $(EXEC_DEVICE) $(OBJ_DIR)$(notdir $^) $(NVCC_FLAGS) $(NVCC_LIB)
 
-hostBinary : $(SOURCES) $(HOST_OBJECTS)
+hostBinary : $(HOST_OBJECTS)
 	@echo '[ HOST ] Linking...'
-	@$(HSCC) -o $(EXEC_HOST) $^ $(CC_FLAGS) $(CC_LINK)
+	@$(HSCC) -o $(EXEC_HOST) $(OBJ_DIR)$(notdir $^) $(CC_FLAGS) $(CC_LIB)
 
-%.device.o : %.cu
+%.device.o : $(SOURCES_DIR)%.cu
 	@echo '[DEVICE] Compiling $^ ...'	
-	@$(NVCC) -o $@ -c $^ $(NVCC_INCLUDE) $(KARTET_OPTIONS) $(NVCC_FLAGS)
+	@$(NVCC) -o $(OBJ_DIR)$(notdir $@) -c $^ $(NVCC_INCLUDE) $(KARTET_OPTIONS) $(NVCC_FLAGS)
 
-%.device.o : %.cpp
+%.device.o : $(SOURCES_DIR)%.cpp
 	@echo '[DEVICE] Compiling $^ ...'	
-	@$(HSCC) -o $@ -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
 
-%.device.o : %.c
+%.device.o : $(SOURCES_DIR)%.c
 	@echo '[DEVICE] Compiling $^ ...'	
-	@$(HSCC) -o $@ -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
 
-%.host.o : %.cu
+%.host.o : $(SOURCES_DIR)%.cu
 	@echo '[ HOST ] Compiling $^ ...'
 	@ln -si $^ $(patsubst %.cu,%.cpp,$^)
-	@$(HSCC) -o $@ -c $(patsubst %.cu,%.cpp,$^) $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $(patsubst %.cu,%.cpp,$^) $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
 	@rm $(patsubst %.cu,%.cpp,$^)
 
-%.host.o : %.cpp
+%.host.o : $(SOURCES_DIR)%.cpp
 	@echo '[ HOST ] Compiling $^ ...'
-	@$(HSCC) -o $@ -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
 
-%.host.o : %.c
+%.host.o : $(SOURCES_DIR)%.c
 	@echo '[ HOST ] Compiling $^ ...'
-	@$(HSCC) -o $@ -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $^ $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
 
 clean:
-	@rm -f $(DEVICE_OBJECTS) $(HOST_OBJECTS)
+	@rm -f $(OBJ_DIR)$(notdir $(DEVICE_OBJECTS)) $(OBJ_DIR)$(notdir $(HOST_OBJECTS))
 
 mrproper: clean
 	@rm -f $(EXEC_DEVICE) $(EXEC_HOST)
+
+test:
+	@echo "Options : "
+	@echo "  KARTET_PATH       : $(KARTET_PATH)"
+	@echo "  EXEC_DEVICE       : $(EXEC_DEVICE)"
+	@echo "  EXEC_HOST         : $(EXEC_HOST)"
+	@echo "  FILES             : $(FILES)"
+	@echo "  DEVICE_CODE       : $(DEVICE_CODE)"
+	@echo "  CC_EXTRA_FLAGS    : $(CC_EXTRA_FLAGS)"
+	@echo "  CC_EXTRA_LIB      : $(CC_EXTRA_LIB)"
+	@echo "  HSCC              : $(HSCC)"
+	@echo "  NVCC              : $(NVCC)"
+	@echo "  DEFAULT_TARGET    : $(DEFAULT_TARGET)"
+	@echo "  KARTET_OPTIONS    : $(KARTET_OPTIONS)"
+	@echo "  SOURCES_DIR       : $(SOURCES_DIR)"
+	@echo "  OBJ_DIR           : $(OBJ_DIR)"
+	@echo "  CUDA_INCLUDE_PATH : $(CUDA_INCLUDE_PATH)"
+	@echo "  CUDA_LIB_PATH     : $(CUDA_LIB_PATH)"
+	@echo "Variables : "
+	@echo "  FILES_LIST        : $(FILES_LIST)"
+	@echo "  OBJECTS           : $(OBJECTS)"
+	@echo "  DEVICE_OBJECTS    : $(DEVICE_OBJECTS)"
+	@echo "  HOST_OBJECTS      : $(HOST_OBJECTS)"
+	@echo "  CC_INCLUDE        : $(CC_INCLUDE)"
+	@echo "  NVCC_INCLUDE      : $(NVCC_INCLUDE)"
+	@echo "  CC_FLAGS          : $(CC_FLAGS)"
+	@echo "  NVCC_FLAGS        : $(NVCC_FLAGS)"
+	@echo "  CC_LIB            : $(CC_LIB)"
+	@echo "  NVCC_LIB          : $(NVCC_LIB)"
 
