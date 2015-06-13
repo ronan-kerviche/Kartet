@@ -218,7 +218,9 @@ namespace Kartet
 			const index_t	iBP = blockIdx.x * numSubReductionBlocks.x + threadIdx.x,
 					jBP = blockIdx.y * numSubReductionBlocks.y + threadIdx.y/reductionBlockLayout.getNumColumns(),
 					kBP = blockIdx.z * numSubReductionBlocks.z + threadIdx.z/reductionBlockLayout.getNumSlices();
-			output.data(iBP, jBP, kBP) = complexCopy<TOut>(v);	
+			
+			if(output.isInside(iBP, jBP, kBP))
+				output.data(iBP, jBP, kBP) = complexCopy<TOut>(v);	
 		}
 	}
 #endif
@@ -293,8 +295,12 @@ namespace Kartet
 			// Do the single-pass reduction :
 			reduceKernel<Op><<<reducedNumBlocks, blockSize, sharedMemorySize>>>(layout, blockSteps, expr, defaultValue, castDevicePtr,  totalNumThreads, maxPow2Half);
 
+			cudaError_t err = cudaGetLastError();
+			if(err!=cudaSuccess)
+				throw static_cast<Exception>(CudaExceptionsOffset + err);
+
 			// Copy back to the Host side and complete :
-			cudaError_t err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), totalNumBlocks*sizeof(TOut), cudaMemcpyDeviceToHost);
+			err = cudaMemcpy(reinterpret_cast<void*>(castHostPtr), reinterpret_cast<void*>(castDevicePtr), totalNumBlocks*sizeof(TOut), cudaMemcpyDeviceToHost);
 			if(err!=cudaSuccess)
 				throw static_cast<Exception>(CudaExceptionsOffset + err);
 
@@ -437,11 +443,11 @@ namespace Kartet
 			/* The approach here is to split the code in two different methods depending on the size of the block to be reduced.
 			   The chosen limit is still somewhat arbitrary and needs to be refined.
 			*/
-			//std::cout << "[WARNING] Forcing small reduction mode." << std::endl;
+			//std::cout << "Reduction from layout " << layout << " to " << output.getLayout() << std::endl;
 			bool largeReductionMode = (reductionBlockLayout.getNumElements()>=(Layout::StaticContainer<void>::numThreads/2)); // Ad-hoc coefficient decision.
 			if(largeReductionMode)
 			{
-				//std::cout << "Large reduction mode : " << reductionBlockLayout << std::endl;
+				//std::cout << "Large reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut to the block size layout :
 				blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.getNumRows());
@@ -465,7 +471,7 @@ namespace Kartet
 			}
 			else
 			{
-				//std::cout << "Small reduction mode : " << reductionBlockLayout << std::endl;
+				//std::cout << "Small reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut the block size to fit an integer number of blocks :
 				blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.getNumRows(), reductionBlockLayout.getNumRows() % blockSize.x), static_cast<index_t>(1));
@@ -498,11 +504,19 @@ namespace Kartet
 						maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
 			const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
 
+			/*std::cout << "totalNumThreads       : " << totalNumThreads << std::endl;
+			std::cout << "totalNumBlocks        : " << (numBlocks.x * numBlocks.y * numBlocks.z) << std::endl;
+			std::cout << "sharedMemorySize      : " << sharedMemorySize << " bytes" << std::endl;*/
+
 			// Do the single-pass reduction :
 			if(largeReductionMode)
 				reduceToLayoutKernel_LargeReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, expr, defaultValue, output, totalNumThreads, maxPow2Half);
 			else
 				reduceToLayoutKernel_SmallReductionMode<Op><<<numBlocks, blockSize, sharedMemorySize>>>(layout, reductionBlockLayout, blockSteps, numSubReductionBlocks, expr, defaultValue, output);
+
+			cudaError_t err = cudaGetLastError();
+			if(err!=cudaSuccess)
+				throw static_cast<Exception>(CudaExceptionsOffset + err);
 		#else
 		if(ExpressionEvaluation<TExpr>::location==DeviceSide)
 		{

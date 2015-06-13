@@ -530,7 +530,7 @@ namespace Kartet
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
 		d.x = min(StaticContainer<void>::numThreads, numRows);
 		d.y = min(StaticContainer<void>::numThreads/d.x, numColumns);
-		d.z = min(StaticContainer<void>::numThreads/(d.x*d.y), numSlices);
+		d.z = min(min(StaticContainer<void>::numThreads/(d.x*d.y), numSlices), StaticContainer<void>::maxZThreads);
 		//std::cout << "Layout::getBlockSize : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}

@@ -43,6 +43,10 @@ namespace Kartet
 		{
 			#ifdef __CUDACC__
 				evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+
+				cudaError_t err = cudaGetLastError();
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			#else
 				throw NotSupported;
 			#endif
@@ -60,6 +64,10 @@ namespace Kartet
 		{
 			#ifdef __CUDACC__
 				evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+	
+				cudaError_t err = cudaGetLastError();
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			#else
 				throw NotSupported;
 			#endif
@@ -154,6 +162,10 @@ namespace Kartet
 		{
 			#ifdef __CUDACC__
 				evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
+
+				cudaError_t err = cudaGetLastError();
+				if(err!=cudaSuccess)
+					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			#else
 				throw NotSupported;
 			#endif

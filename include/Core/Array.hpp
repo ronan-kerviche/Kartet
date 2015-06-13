@@ -117,6 +117,7 @@ namespace Kartet
 			{
 				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
 				static index_t numThreads;
+				static index_t maxZThreads;
 				static const char fileHeader[];
 			};
 
@@ -248,6 +249,9 @@ namespace Kartet
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
 	template<typename T>
 	index_t Layout::StaticContainer<T>::numThreads = 512;
+
+	template<typename T>
+	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
 
 	template<typename T>
 	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";
