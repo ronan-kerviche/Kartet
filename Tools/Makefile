@@ -35,6 +35,11 @@
 #% :
 #	@$(MAKE) -s -f $(KARTET_PATH)/Tools/Makefile $@
 
+# Note on NVidia Architecture :
+# -arch=sm_XX is equivalent to -gencode=arch=compute_XX,code=sm_XX -gencode=arch=compute_XX,code=compute_XX
+# NVCC generates intermediate PTX (VM specified by -arch) and closer SASS (-code) from the sources. 
+# PTX can be transformed into SASS by the driver without having the CUDA SDK installed.
+
 # First, test :
 ifeq ($(KARTET_PATH),)
 #$(error Undefined variable KARTET_PATH)
@@ -88,7 +93,7 @@ HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
 CC_INCLUDE	= -I$(KARTET_PATH)/include/
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -m64 -O3 -Wall -Wextra $(CC_EXTRA_FLAGS)
-NVCC_FLAGS 	= -arch=compute_$(DEVICE_CODE) -code=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "\"$(CC_FLAGS)\""
+NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "\"$(CC_FLAGS)\"" 
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_FFTW, -lfftw3 -lfftw3f, $(findstring KARTET_USE_FFTW,$(KARTET_OPTIONS))) \
