@@ -43,26 +43,18 @@ namespace Kartet
 
 		__host__ __device__ inline static ReturnType evaluate(const T& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			UNUSED_PARAMETER(expr)
+			UNUSED_PARAMETER(layout)
+			UNUSED_PARAMETER(p)
+			UNUSED_PARAMETER(i)
+			UNUSED_PARAMETER(j)
+			UNUSED_PARAMETER(k)
 			return expr;
 		}
 	};
 
 	template<typename T>
 	struct ExpressionEvaluation<T*>;
-
-	/*template<typename T>
-	struct ExpressionEvaluation<T*>
-	{
-		// Mechanism over a pointer.
-		typedef T ReturnType;
-		static const Location location = AnySide;
-		
-		// Const reference to const pointer :
-		__host__ __device__ inline static ReturnType evaluate(const T* const& expr, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k) 
-		{
-			return expr[p];
-		}
-	};*/
 
 	template<typename T>
 	struct ExpressionEvaluation< ExpressionContainer<T> >
@@ -73,6 +65,12 @@ namespace Kartet
 
 		__host__ __device__ inline static ReturnType evaluate(const ExpressionContainer<T>& container, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			UNUSED_PARAMETER(container)
+			UNUSED_PARAMETER(layout)
+			UNUSED_PARAMETER(p)
+			UNUSED_PARAMETER(i)
+			UNUSED_PARAMETER(j)
+			UNUSED_PARAMETER(k)
 			return ExpressionEvaluation<T>::evaluate(container.expr, layout, p, i, j, k);
 		}
 	};
@@ -86,6 +84,12 @@ namespace Kartet
 		
 		__host__ __device__ inline static ReturnType evaluate(const Accessor<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			UNUSED_PARAMETER(accessor)
+			UNUSED_PARAMETER(layout)
+			UNUSED_PARAMETER(p)
+			UNUSED_PARAMETER(i)
+			UNUSED_PARAMETER(j)
+			UNUSED_PARAMETER(k)
 			return accessor.data(p);
 		}
 	};
@@ -99,6 +103,10 @@ namespace Kartet
 		
 		__host__ __device__ inline static ReturnType evaluate(const Array<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			UNUSED_PARAMETER(layout)
+			UNUSED_PARAMETER(i)
+			UNUSED_PARAMETER(j)
+			UNUSED_PARAMETER(k)
 			return accessor.data(p);
 		}
 	};
@@ -113,6 +121,7 @@ namespace Kartet
 		
 		__host__ __device__ inline static ReturnType evaluate(const NullaryExpression<Op>& nullaryExpression, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
+			UNUSED_PARAMETER(nullaryExpression)
 			return Operator::apply(layout, p, i, j, k);
 		}
 	};

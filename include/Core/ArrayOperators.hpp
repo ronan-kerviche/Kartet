@@ -241,6 +241,11 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) \
 			{ \
+				UNUSED_PARAMETER(l) \
+				UNUSED_PARAMETER(p) \
+				UNUSED_PARAMETER(i) \
+				UNUSED_PARAMETER(j) \
+				UNUSED_PARAMETER(k) \
 				return operation ; \
 			} \
 		};
@@ -371,6 +376,11 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const Layout& l, index_t& p, index_t& i, index_t& j, index_t& k) \
 			{ \
+				UNUSED_PARAMETER(l) \
+				UNUSED_PARAMETER(p) \
+				UNUSED_PARAMETER(i) \
+				UNUSED_PARAMETER(j) \
+				UNUSED_PARAMETER(k) \
 				operations \
 			} \
 		};
@@ -406,6 +416,12 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const Layout& l, const Layout& lnew, index_t& p, index_t& i, index_t& j, index_t& k) \
 			{ \
+				UNUSED_PARAMETER(l) \
+				UNUSED_PARAMETER(lnew) \
+				UNUSED_PARAMETER(p) \
+				UNUSED_PARAMETER(i) \
+				UNUSED_PARAMETER(j) \
+				UNUSED_PARAMETER(k) \
 				operations \
 			} \
 		};

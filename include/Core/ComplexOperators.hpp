@@ -216,7 +216,7 @@ namespace Kartet
 			return tmp; \
 		}
 
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
+	/*BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
@@ -227,7 +227,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )*/
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
@@ -339,7 +339,7 @@ namespace Kartet
 		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType angle<TypeName>(const TypeName& a) \
 		{ \
 			UNUSED_PARAMETER(a) \
-			return static_cast<__cuda_typename TypeInfo<TypeName>::BaseType>(0); \
+			return ((a>=0) ? 0 : static_cast<__cuda_typename TypeInfo<TypeName>::BaseType>(K_PI)); \
 		} \
 		\
 		template<> \
@@ -360,7 +360,7 @@ namespace Kartet
 			return tmp; \
 		}
 
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
+	/*BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
@@ -371,7 +371,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )*/
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
