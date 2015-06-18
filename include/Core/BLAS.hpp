@@ -39,7 +39,7 @@
 		{
 		#endif
 			#define KARTET_ADD_CBLAS_INTERFACE
-			#include <atlas/cblas.h>
+			#include <cblas.h>
 		#ifdef __cplusplus
 		}
 		#endif

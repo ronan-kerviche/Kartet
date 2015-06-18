@@ -90,11 +90,11 @@ FILES_LIST	= $(wildcard $(SOURCES_DIR)$(FILES))
 OBJECTS		= $(patsubst %.cu,%.o,$(filter %.cu,$(FILES_LIST))) $(patsubst %.cpp,%.o,$(filter %.cpp,$(FILES_LIST))) $(patsubst %.c,%.o,$(filter %.c,$(FILES_LIST)))
 DEVICE_OBJECTS	= $(patsubst %.o,%.device.o,$(OBJECTS))
 HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
-CC_INCLUDE	= -I$(KARTET_PATH)/include/
+CC_INCLUDE	= -I$(KARTET_PATH)/include/ $(subst KARTET_USE_ATLAS, -L/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS)))
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -m64 -O3 -Wall -Wextra $(CC_EXTRA_FLAGS)
 NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "\"$(CC_FLAGS)\"" 
-CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
+CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_FFTW, -lfftw3 -lfftw3f, $(findstring KARTET_USE_FFTW,$(KARTET_OPTIONS))) \
 		  $(CC_EXTRA_LIB)	

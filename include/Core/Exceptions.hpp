@@ -118,7 +118,7 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorLaunchPendingCountExceeded ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotPermitted ), 
 		DEFINE_CUDA_EXCEPTION( udaErrorNotSupported ),
-		#if CUDA_VERSION > 5000
+		#if CUDA_VERSION > 5500
 		DEFINE_CUDA_EXCEPTION( udaErrorHardwareStackError ),
 		DEFINE_CUDA_EXCEPTION( udaErrorIllegalInstruction ),
 		DEFINE_CUDA_EXCEPTION( udaErrorMisalignedAddress ),
@@ -272,7 +272,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( CudaErrorLaunchPendingCountExceeded ) 
 			EXCEPTION_MESSAGE( CudaErrorNotPermitted ) 
 			EXCEPTION_MESSAGE( CudaErrorNotSupported )
-			#if CUDA_VERSION > 5000
+			#if CUDA_VERSION > 5500
 			EXCEPTION_MESSAGE( CudaErrorHardwareStackError )
 			EXCEPTION_MESSAGE( CudaErrorIllegalInstruction )
 			EXCEPTION_MESSAGE( CudaErrorMisalignedAddress )
