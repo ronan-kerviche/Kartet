@@ -36,13 +36,17 @@ namespace Kartet
 	template<typename TExpr>
 	Accessor<T,l>& Accessor<T,l>::assign(const TExpr& expr, cudaStream_t stream)
 	{
+		#ifndef __CUDACC__
+			UNUSED_PARAMETER(stream)
+		#endif
+
 		// Make sure we are not computing complex numbers to store in a real array :
 		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
 
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpression COMPUTE_LAYOUT(*this) (*this, expr);
+				evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, expr);
 
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)
@@ -60,10 +64,14 @@ namespace Kartet
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l>& a, cudaStream_t stream)
 	{
+		#ifndef __CUDACC__
+			UNUSED_PARAMETER(stream)
+		#endif
+
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpression COMPUTE_LAYOUT(*this) (*this, a);
+				evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, a);
 	
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)
@@ -83,18 +91,26 @@ namespace Kartet
 		struct MemCpyDualToolBox
 		{			
 			const cudaMemcpyKind direction;
+			cudaStream_t stream;
 
-			__host__ MemCpyDualToolBox(const cudaMemcpyKind _d)
-			 :	direction(_d)
+			__host__ MemCpyDualToolBox(const cudaMemcpyKind _d, cudaStream_t _stream)
+			 :	direction(_d),
+				stream(_stream)
 			{ }
 
 			__host__ MemCpyDualToolBox(const MemCpyDualToolBox& m)
-			 :	direction(m.direction)
+			 :	direction(m.direction),
+				stream(m.stream)
 			{ }
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* dst, T* src, size_t offsetDst, size_t offsetSrc, index_t i, index_t j, index_t k) const
 			{
-				cudaError_t err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
+				cudaError_t err = cudaSuccess;
+				if(stream!=NULL)
+					err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
+				else
+					err = cudaMemcpyAsync((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction, stream);
+
 				if(err!=cudaSuccess)
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			}
@@ -150,10 +166,61 @@ namespace Kartet
 		return assign(a);
 	}
 
+	template<typename T, Location l>
+	Accessor<T,l>& Accessor<T,l>::operator=(const Array<T,l>& a)
+	{
+		return assign(a);
+	}
+
+	template<typename T, Location l>
+	template<Location l2>
+	Accessor<T,l>& Accessor<T,l>::operator=(const Array<T,l2>& a)
+	{
+		return assign(a);
+	}
+
+	template<typename T, Location l>
+	template<typename TExpr>
+	Array<T,l>& Array<T,l>::operator=(const TExpr& expr)
+	{
+		assign(expr);
+		return (*this);
+	}
+
+	template<typename T, Location l>
+	Array<T,l>& Array<T,l>::operator=(const Accessor<T,l>& a)
+	{
+		assign(a);
+		return (*this);
+	}
+
+	template<typename T, Location l>
+	template<Location l2>
+	Array<T,l>& Array<T,l>::operator=(const Accessor<T,l2>& a)
+	{
+		assign(a);
+		return (*this);
+	}
+
+	template<typename T, Location l>
+	Array<T,l>& Array<T,l>::operator=(const Array<T,l>& a)
+	{
+		assign(a);
+		return (*this);
+	}
+
+	template<typename T, Location l>
+	template<Location l2>
+	Array<T,l>& Array<T,l>::operator=(const Array<T,l2>& a)
+	{
+		assign(a);
+		return (*this);
+	}
+
 // Masked assignements : 
 	template<typename T, Location l>
 	template<typename TExprMask, typename TExpr>
-	Accessor<T,l>& Accessor<T,l>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr)
+	Accessor<T,l>& Accessor<T,l>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr, cudaStream_t stream)
 	{
 		// Make sure we are not computing complex numbers to store in a real array :
 		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
@@ -161,7 +228,7 @@ namespace Kartet
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpressionWithMask COMPUTE_LAYOUT(*this) (*this, exprMask, expr);
+				evaluateExpressionWithMask COMPUTE_LAYOUT_STREAM(*this, stream) (*this, exprMask, expr);
 
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)

@@ -117,8 +117,9 @@ namespace Kartet
 			{
 				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
 				static index_t numThreads;
-				static index_t maxZThreads;
-				static const char fileHeader[];
+				static index_t maxZThreads;				
+				static const char streamHeader[];
+				static const size_t streamHeaderLength;
 			};
 
 			// Constructors :
@@ -235,12 +236,12 @@ namespace Kartet
 				template<class Op, typename T>
 				__host__ static void dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op);
 
-				__host__ static inline Layout readFromFile(std::fstream& file, int* typeIndex=NULL);
+				__host__ static inline Layout readFromStream(std::istream& stream, int* typeIndex=NULL);
 				__host__ static inline Layout readFromFile(const std::string& filename, int* typeIndex=NULL);
-				__host__ inline void writeToFile(std::fstream& file, int typeIndex);
+				__host__ inline void writeToStream(std::ostream& stream, int typeIndex);
 				__host__ inline void writeToFile(const std::string& filename, int typeIndex);
 				template<typename T>
-				__host__ inline void writeToFile(std::fstream& file);
+				__host__ inline void writeToStream(std::ostream& stream);
 				template<typename T>
 				__host__ inline void writeToFile(const std::string& file);
 				__host__ friend inline std::ostream& operator<<(std::ostream& os, const Layout& layout);
@@ -254,11 +255,15 @@ namespace Kartet
 	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
 
 	template<typename T>
-	const char Layout::StaticContainer<T>::fileHeader[] = "KARTET01";
+	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET01";
+
+	template<typename T>
+	const size_t Layout::StaticContainer<T>::streamHeaderLength = sizeof(Layout::StaticContainer<void>::streamHeader);
 
 	// To compute on a specific layout : 
 	#ifdef __CUDACC__
 		#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
+		#define COMPUTE_LAYOUT_STREAM(x, s) <<<(x).getNumBlock(), (x).getBlockSize(), 0, (s)>>>
 	#endif 	
 
 	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
@@ -292,9 +297,9 @@ namespace Kartet
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
 				__host__                   void setData(const T* ptr, const Location lin=HostSide) const;
-				__host__                   void readFromFile(std::fstream& file, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=104857600, const bool skipHeader=false); // 100 MB
 				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
-				__host__                   void writeToFile(std::fstream& file, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void writeToStream(std::ostream& stream, const size_t maxBufferSize=104857600); // 100 MB
 				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=104857600); // 100 MB
 	
 			// Layout tools :
@@ -328,10 +333,13 @@ namespace Kartet
 				Accessor<T,l>& operator=(const Accessor<T,l>& a);
 				template<Location l2>
 				Accessor<T,l>& operator=(const Accessor<T,l2>& a);
+				Accessor<T,l>& operator=(const Array<T,l>& a);
+				template<Location l2>
+				Accessor<T,l>& operator=(const Array<T,l2>& a);
 
 			// Masked assignment : 
 				template<typename TExprMask, typename TExpr>
-				Accessor<T,l>& maskedAssignment(const TExprMask& exprMask, const TExpr& expr);
+				Accessor<T,l>& maskedAssignment(const TExprMask& exprMask, const TExpr& expr, cudaStream_t stream=NULL);
 
 				template<class Op>
 				__host__ void singleScan(const Op& op) const;
@@ -355,6 +363,7 @@ namespace Kartet
 			__host__ Array(const Array<T,l>& a);
 			template<typename TIn, Location lin>
 			__host__ Array(const Accessor<TIn,lin>& a);
+			__host__ Array(std::istream& stream, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			__host__ Array(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			__host__ ~Array(void);
 
@@ -404,7 +413,9 @@ namespace Kartet
 			using Accessor<T,l>::getSize;
 			using Accessor<T,l>::getData;
 			using Accessor<T,l>::setData;
+			using Accessor<T,l>::readFromStream;
 			using Accessor<T,l>::readFromFile;
+			using Accessor<T,l>::writeToStream;
 			using Accessor<T,l>::writeToFile;
 			using Accessor<T,l>::element;
 			using Accessor<T,l>::elements;
@@ -418,13 +429,22 @@ namespace Kartet
 			using Accessor<T,l>::splitColumns;
 			using Accessor<T,l>::splitSlices;
 			using Accessor<T,l>::assign;
-			using Accessor<T,l>::operator=;
 			using Accessor<T,l>::maskedAssignment;
 			using Accessor<T,l>::singleScan;
 			using Accessor<T,l>::dualScan;
 
+			// Specifics :
 			Accessor<T,l>& accessor(void);
 			const Accessor<T,l>& accessor(void) const;
+
+			template<typename TExpr>
+			Array<T,l>& operator=(const TExpr& expr);
+			Array<T,l>& operator=(const Accessor<T,l>& a);
+			template<Location l2>
+			Array<T,l>& operator=(const Accessor<T,l2>& a);
+			Array<T,l>& operator=(const Array<T,l>& a);
+			template<Location l2>
+			Array<T,l>& operator=(const Array<T,l2>& a);
 	};
 	
 } // namespace Kartet

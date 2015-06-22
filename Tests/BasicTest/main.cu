@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 					B(layout),
 					C(layout);
 
-		/*Kartet::Array<cuDoubleComplex, Kartet::HostSide> Cx(layout);
+		Kartet::Array<cuDoubleComplex, Kartet::HostSide> Cx(layout);
 
 		// Initialization, fill with ones :
 		A = 1.0;
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 		blas.gemm(M1,M2,M3);
 		std::cout << "M1 = " << M1 << std::endl;
 		std::cout << "M2 = " << M2 << std::endl;
-		std::cout << "M3 = " << M3 << std::endl;*/
+		std::cout << "M3 = " << M3 << std::endl;
 	}
 	catch(Kartet::Exception& e)
 	{

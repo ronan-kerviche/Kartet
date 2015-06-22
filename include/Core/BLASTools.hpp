@@ -72,7 +72,9 @@ namespace Kartet
 		}
 	}
 	#else
-	{ }
+	{
+		UNUSED_PARAMETER(initDevice)
+	}
 	#endif
 
 	__host__ inline BLASContext::~BLASContext(void)

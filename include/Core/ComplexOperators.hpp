@@ -216,7 +216,7 @@ namespace Kartet
 			return tmp; \
 		}
 
-	/*BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
@@ -227,7 +227,7 @@ namespace Kartet
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )*/
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
 	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
@@ -316,7 +316,68 @@ namespace Kartet
 	template<typename T>
 	__host__ __device__ inline typename TypeInfo<T>::ComplexType piAngleToComplex(const T& a);
 
-	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE(TypeName) \
+	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_COMMON(TypeName) \
+		template<> \
+		__host__ __device__ inline TypeName conj<TypeName>(const TypeName& a) \
+		{ \
+			return a; \
+		} \
+		\
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType absSq<TypeName>(const TypeName& a) \
+		{ \
+			return a*a; \
+		} \
+		\
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::ComplexType angleToComplex<TypeName>(const TypeName& a) \
+		{ \
+			TypeInfo<__cuda_typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
+			sincos(a, &s, &c); \
+			TypeInfo<TypeName>::ComplexType tmp = {c, s}; \
+			return tmp; \
+		} \
+		\
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::ComplexType piAngleToComplex<TypeName>(const TypeName& a) \
+		{ \
+			TypeInfo<__cuda_typename TypeInfo<TypeName>::ComplexType>::BaseType c, s; \
+			sincospi(a, &s, &c); \
+			TypeInfo<TypeName>::ComplexType tmp = {c, s}; \
+			return tmp; \
+		}
+
+	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED(TypeName) \
+		BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_COMMON(TypeName) \
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
+		{ \
+			return (a<static_cast<TypeName>(0)) ? (-a) : a; \
+		} \
+		\
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType angle<TypeName>(const TypeName& a) \
+		{ \
+			UNUSED_PARAMETER(a) \
+			return ((a>=0) ? static_cast<TypeInfo<TypeName>::BaseType>(0) : static_cast<__cuda_typename TypeInfo<TypeName>::BaseType>(K_PI)); \
+		} \
+
+	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED(TypeName) \
+		BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_COMMON(TypeName) \
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType abs<TypeName>(const TypeName& a) \
+		{ \
+			return a; \
+		} \
+		\
+		template<> \
+		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::BaseType angle<TypeName>(const TypeName& a) \
+		{ \
+			UNUSED_PARAMETER(a) \
+			return static_cast<TypeInfo<TypeName>::BaseType>(0); \
+		} \
+
+	#define BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_REAL(TypeName) \
 		template<> \
 		__host__ __device__ inline TypeName conj<TypeName>(const TypeName& a) \
 		{ \
@@ -360,21 +421,21 @@ namespace Kartet
 			return tmp; \
 		}
 
-	/*BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( bool )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( char )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( signed char )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned char )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( short )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned short )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( int )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned int )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long long )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( unsigned long long )*/
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( float )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( double )
-	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE( long double )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( bool )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( char )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( signed char )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( unsigned char )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( short )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( unsigned short )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( int )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( unsigned int )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( unsigned long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_SIGNED( long long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_INTEGER_UNSIGNED( unsigned long long )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_REAL( float )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_REAL( double )
+	BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE_REAL( long double )
 
 	#undef BUILD_SPECIALIZATION_FROM_REAL_BASE_TYPE
 
@@ -509,7 +570,7 @@ namespace Kartet
 	{
 		#define SPECIAL_COPY( TypeName ) \
 			case GetIndex<TypesSortedByAccuracy, TypeName>::value :	\
-				for(int k=0; k<count; k++) \
+				for(size_t k=0; k<count; k++) \
 					unprotectedComplexCopy<T>(dst[k], reinterpret_cast<const TypeName *>(src)[k]); \
 				break;
 

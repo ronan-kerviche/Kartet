@@ -632,30 +632,30 @@ namespace Kartet
 		}
 	}
 
-	__host__ inline Layout Layout::readFromFile(std::fstream& file, int* typeIndex)
+	__host__ inline Layout Layout::readFromStream(std::istream& stream, int* typeIndex)
 	{
-		if(!file.is_open())
-			throw InvalidFileStream;
+		if(!stream.good())
+			throw InvalidInputStream;
 		
-		char headerBuffer[sizeof(StaticContainer<void>::fileHeader)];
+		char headerBuffer[StaticContainer<void>::streamHeaderLength];
 		std::memset(headerBuffer, 0, sizeof(headerBuffer));
-		file.read(headerBuffer, sizeof(headerBuffer)-1);
-		if(strncmp(StaticContainer<void>::fileHeader, headerBuffer, sizeof(headerBuffer)-1)!=0)
-			throw InvalidFileHeader;
+		stream.read(headerBuffer, sizeof(headerBuffer)-1);
+		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, sizeof(headerBuffer)-1)!=0)
+			throw InvalidStreamHeader;
 	
 		// Read the type :
 		int dummyType;
 		if(typeIndex==NULL)
 			typeIndex = &dummyType;
-		file.read(reinterpret_cast<char*>(typeIndex), sizeof(int)); if(!file.good()) throw InvalidFileStream;
+		stream.read(reinterpret_cast<char*>(typeIndex), sizeof(int)); if(!stream.good()) throw InvalidInputStream;
 
 		// Read the sizes :
 		index_t	r = 0,
 			c = 0,
 			s = 0;
-		file.read(reinterpret_cast<char*>(&r), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
-		file.read(reinterpret_cast<char*>(&c), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
-		file.read(reinterpret_cast<char*>(&s), sizeof(index_t)); if(!file.good()) throw InvalidFileStream;
+		stream.read(reinterpret_cast<char*>(&r), sizeof(index_t)); if(!stream.good()) throw InvalidInputStream;
+		stream.read(reinterpret_cast<char*>(&c), sizeof(index_t)); if(!stream.good()) throw InvalidInputStream;
+		stream.read(reinterpret_cast<char*>(&s), sizeof(index_t)); if(stream.fail()) throw InvalidInputStream; // Do not test for EOF after this read.
 
 		// Return :
 		return Layout(r, c, s);
@@ -663,57 +663,49 @@ namespace Kartet
 
 	__host__ inline Layout Layout::readFromFile(const std::string& filename, int* typeIndex)
 	{
-		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
+		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 
 		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
+			throw InvalidInputStream;
 
-		Layout layout = readFromFile(file, typeIndex);
-
+		Layout layout = readFromStream(file, typeIndex);
 		file.close();
 
 		return layout;
 	}
 
-	__host__ inline void Layout::writeToFile(std::fstream& file, int typeIndex)
+	__host__ inline void Layout::writeToStream(std::ostream& stream, int typeIndex)
 	{
-		if(!file.is_open())
-			throw InvalidFileStream;
+		if(!stream.good())
+			throw InvalidOutputStream;
 
 		// Write the header :
-		file.write(StaticContainer<void>::fileHeader, sizeof(StaticContainer<void>::fileHeader)-1);
+		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::streamHeaderLength-1);
 		
 		// Write the type :	
-		file.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
+		stream.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
 	
 		// Write the size :
-		file.write(reinterpret_cast<char*>(&numRows), sizeof(index_t));
-		file.write(reinterpret_cast<char*>(&numColumns), sizeof(index_t));
-		file.write(reinterpret_cast<char*>(&numSlices), sizeof(index_t));	
+		stream.write(reinterpret_cast<char*>(&numRows), sizeof(index_t));
+		stream.write(reinterpret_cast<char*>(&numColumns), sizeof(index_t));
+		stream.write(reinterpret_cast<char*>(&numSlices), sizeof(index_t));	
 	}
 
 	__host__ inline void Layout::writeToFile(const std::string& filename, int typeIndex)
 	{
-		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
+		std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
 
 		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
+			throw InvalidOutputStream;
 
-		writeToFile(file, typeIndex);
-
+		writeToStream(file, typeIndex);
 		file.close();
 	}
 
 	template<typename T>
-	__host__ inline void Layout::writeToFile(std::fstream& file)
+	__host__ inline void Layout::writeToStream(std::ostream& stream)
 	{
-		writeToFile(file, GetIndex<TypesSortedByAccuracy, T>::value);
+		writeToStream(stream, GetIndex<TypesSortedByAccuracy, T>::value);
 	}
 
 	template<typename T>
@@ -878,6 +870,10 @@ namespace Kartet
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
 			{
+				UNUSED_PARAMETER(mainLayout)
+				UNUSED_PARAMETER(ptr)
+				UNUSED_PARAMETER(offset)
+
 				size_t	toOffset = 0,
 					fromOffset = 0;
 				if(direction==DeviceToHost)
@@ -926,9 +922,9 @@ namespace Kartet
 
 	// Tool for the file input : 
 		template<typename T>
-		struct FileInputToolBox
+		struct StreamInputToolBox
 		{
-			std::fstream& 		file;
+			std::istream& 		stream;
 			const Location		destinationLocation;
 			const int		sourceTypeIndex;
 			const bool		conversion;
@@ -937,11 +933,11 @@ namespace Kartet
 			char			*bufferRead,
 						*bufferCast;
 
-			__host__ FileInputToolBox(std::fstream& _file, const Location _destinationLocation, const int _sourceTypeIndex, const size_t _sourceTypeSize, const size_t _numBufferElements)
-			 :	file(_file),
+			__host__ StreamInputToolBox(std::istream& _stream, const Location _destinationLocation, const int _sourceTypeIndex, const size_t _sourceTypeSize, const size_t _numBufferElements)
+			 :	stream(_stream),
 				destinationLocation(_destinationLocation),
-				conversion(_sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value),
 				sourceTypeIndex(_sourceTypeIndex),
+				conversion(_sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value),				
 				sourceTypeSize(_sourceTypeSize),
 				numBufferElements(_numBufferElements),
 				bufferRead(NULL),
@@ -966,22 +962,33 @@ namespace Kartet
 				}
 			}
 
-			__host__ ~FileInputToolBox(void)
+			__host__ ~StreamInputToolBox(void)
 			{
 				delete[] bufferRead;
 				delete[] bufferCast;
 			}
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
-			{	
+			{
+				UNUSED_PARAMETER(mainLayout)
+				UNUSED_PARAMETER(i)
+				UNUSED_PARAMETER(j)
+				UNUSED_PARAMETER(k)
+
 				if(destinationLocation==HostSide && !conversion)
-					file.read(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+				{
+					stream.read(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+					if(stream.fail())
+						throw InvalidInputStream;
+				}
 				else
 				{
 					for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.getNumElements(); )
 					{
 						const index_t currentCopyNumElements = std::min(currentAccessLayout.getNumElements()-offsetCopied, static_cast<index_t>(numBufferElements));
-						file.read(bufferRead, currentCopyNumElements*sourceTypeSize);
+						stream.read(bufferRead, currentCopyNumElements*sourceTypeSize);
+						if(stream.fail())
+							throw InvalidInputStream;
 		
 						char* tmpSrc = bufferRead;
 						if(conversion)
@@ -1009,14 +1016,21 @@ namespace Kartet
 		};
 
 	template<typename T, Location l>
-	__host__ void Accessor<T,l>::readFromFile(std::fstream& file, bool convert, const size_t maxBufferSize)
+	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader)
 	{
 		if(maxBufferSize<sizeof(T))
 			throw InvalidOperation;
+		if(!stream.good())
+			throw InvalidInputStream;
 		
-		int sourceTypeIndex = -1;
-		const Layout layout = Layout::readFromFile(file, &sourceTypeIndex);
+		int sourceTypeIndex = GetIndex<TypesSortedByAccuracy, T>::value;
+		Layout layout = getLayout();
+		if(!skipHeader)
+			layout = Layout::readFromStream(stream, &sourceTypeIndex);
 
+		if(!layout.sameLayoutAs(*this))
+			throw IncompatibleLayout;
+	
 		const bool conversion = (sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value);
 		if(!convert && conversion)
 			throw InvalidOperation;
@@ -1025,36 +1039,32 @@ namespace Kartet
 				maxSize = conversion ? (sourceTypeSize + sizeof(T)) : sizeof(T),
 				numBufferElements = std::min(static_cast<size_t>(layout.getNumElements())*maxSize, maxBufferSize)/maxSize;
 		
-		FileInputToolBox<T> toolbox(file, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
+		StreamInputToolBox<T> toolbox(stream, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
 		singleScan(toolbox);
 	}
 
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::readFromFile(const std::string& filename, bool convert, const size_t maxBufferSize)
 	{
-		std::fstream file(filename.c_str(), std::fstream::in | std::fstream::binary);
+		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
+		if(!file.is_open() || file.fail())
+			throw InvalidInputStream;
 
-		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
-
-		readFromFile(file, convert, maxBufferSize);
+		readFromStream(file, convert, maxBufferSize);
 		file.close();
 	}
 
 	// Tools for the file output :
 		template<typename T>
-		struct FileOutputToolBox
+		struct StreamOutputToolBox
 		{
-			std::fstream& 		file;
+			std::ostream& 		stream;
 			const Location		sourceLocation;
 			T			*buffer;
 			const size_t		numBufferElements;
 
-			__host__ FileOutputToolBox(std::fstream& _file, const Location _sourceLocation, const size_t _numBufferElements)
-			 :	file(_file),
+			__host__ StreamOutputToolBox(std::ostream& _stream, const Location _sourceLocation, const size_t _numBufferElements)
+			 :	stream(_stream),
 				sourceLocation(_sourceLocation),
 				buffer(NULL),
 				numBufferElements(_numBufferElements)
@@ -1072,13 +1082,18 @@ namespace Kartet
 				}
 			}
 
-			__host__ ~FileOutputToolBox(void)
+			__host__ ~StreamOutputToolBox(void)
 			{
 				delete[] buffer;
 			}
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const
-			{	
+			{
+				UNUSED_PARAMETER(mainLayout)
+				UNUSED_PARAMETER(i)
+				UNUSED_PARAMETER(j)
+				UNUSED_PARAMETER(k)
+
 				if(sourceLocation==DeviceSide)
 				{
 					#ifdef __CUDACC__
@@ -1089,7 +1104,9 @@ namespace Kartet
 							cudaError_t err = cudaMemcpy(buffer, (ptr + offset + offsetCopied), currentCopyNumElements*sizeof(T), cudaMemcpyDeviceToHost);
 							if(err!=cudaSuccess)
 								throw static_cast<Exception>(CudaExceptionsOffset + err);
-							file.write(reinterpret_cast<char*>(buffer), currentCopyNumElements*sizeof(T));
+							stream.write(reinterpret_cast<char*>(buffer), currentCopyNumElements*sizeof(T));
+							if(stream.fail())
+								throw InvalidOutputStream;
 							offsetCopied += currentCopyNumElements;
 						}
 					#else
@@ -1099,13 +1116,15 @@ namespace Kartet
 				else
 				{
 					// Write the full data directly :
-					file.write(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+					stream.write(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+					if(stream.fail())
+						throw InvalidOutputStream;
 				}
 			}
 		};
 
 	template<typename T, Location l>
-	__host__ void Accessor<T,l>::writeToFile(std::fstream& file, const size_t maxBufferSize)
+	__host__ void Accessor<T,l>::writeToStream(std::ostream& stream, const size_t maxBufferSize)
 	{
 		if(maxBufferSize<sizeof(T))
 			throw InvalidOperation;
@@ -1113,23 +1132,19 @@ namespace Kartet
 		const size_t numBufferElements = std::min(static_cast<size_t>(getNumElements())*sizeof(T), maxBufferSize)/sizeof(T);
 
 		// Write the header :
-		Layout::writeToFile<T>(file);
-		FileOutputToolBox<T> toolbox(file, l, numBufferElements);
+		Layout::writeToStream<T>(stream);
+		StreamOutputToolBox<T> toolbox(stream, l, numBufferElements);
 		singleScan(toolbox);
 	}
 
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::writeToFile(const std::string& filename, const size_t maxBufferSize)
 	{
-		std::fstream file(filename.c_str(), std::fstream::out | std::fstream::binary);
+		std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
+		if(!file.is_open() || file.fail())
+			throw InvalidOutputStream;
 
-		if(!file.is_open())
-		{
-			file.close();
-			throw InvalidFileStream;
-		}
-
-		writeToFile(file, maxBufferSize);
+		writeToStream(file, maxBufferSize);
 		file.close();
 	}
 
@@ -1375,6 +1390,14 @@ namespace Kartet
 		(*this) = A;
 	}
 	
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(std::istream& stream, bool convert, size_t maxBufferSize)
+	 :	Accessor<T,l>(Layout::readFromStream(stream))
+	{
+		allocateMemory();
+		readFromStream(stream, convert, maxBufferSize, true);
+	}
+
 	template<typename T, Location l>
 	__host__ Array<T,l>::Array(const std::string& filename, bool convert, size_t maxBufferSize)
 	 :	Accessor<T,l>(Layout::readFromFile(filename))

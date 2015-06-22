@@ -1,34 +1,22 @@
-function A = readArrayFromFile(arg)
-% function A = readArrayFromFile(arg)
+function writeArrayToFile(A, arg)
+% function A = writeArrayToFile(arg)
 %
 % ARGUMENTS : 
+% A	: The original array.
 % arg	: Either the filename (as a string) or a file ID (otherwise).
-% RETURNS :
-% A	: The array loaded, in its original type.
 
-	if(isstr(arg))
-		fileId = fopen(arg,'rb');
-	else
-		fileId = arg;
+	assert(~isempty(A),'Array is empty.');
+	assert(ndims(A)<=3,'Array has more than three dimensions.');
+
+	% Get the type data first :
+	cName = class(A);
+	isComplex = ~isreal(A);
+
+	if(isComplex)
+		% Force :
+		A = double(A);
 	end
 
-	assert(fileId>=0, 'Bad File ID.');
-
-	% Read the header :
-	header = fread(fileId, 8, 'char*1');
-	
-	% This header should match the header in Array.hpp :
-	if(strcmp(char(header.'), 'KARTET01')==0)
-		fclose(fileId);
-		error('Bad header : %s', header);
-	end
-
-	% Read the sizes :
-	T = fread(fileId, 1, '*int32');
-	R = fread(fileId, 1, '*int64');
-	C = fread(fileId, 1, '*int64');
-	S = fread(fileId, 1, '*int64');
-	
 	% This list should match the list in TypeTools.hpp (note that void is at index 0 and is omitted)
 	types = {	struct('typename', 'uint8', 'isComplex', false), ...		% bool
 			struct('typename', 'uint8', 'isComplex', false), ...		% unsigned char
@@ -52,21 +40,31 @@ function A = readArrayFromFile(arg)
 			struct('typename', 'float', 'isComplex', true), ...		% float
 			struct('typename', 'double', 'isComplex', true), ...		% double
 			};
-
-	assert(T>=1 && T<=numel(types), sprintf('Unknown type code : %d.', T));
-
-	% Get the data :
-	nElements = R*C*S;
-	if(types{T}.isComplex)
-		nElements = nElements * 2;
+	for typeId=1:numel(types)
+		if(strcmpi(types{typeId}.typename,cName) && types{typeId}.isComplex==isComplex)
+			break;
+		end
 	end
 	
-	A = fread(fileId, nElements, sprintf('*%s', types{T}.typename));
-	if(types{T}.isComplex)
-		A = A(1:2:end) + 1i* A(2:2:end);
+	% Open the file, if needed :
+	if(isstr(arg))
+		fileId = fopen(arg,'wb');
+	else
+		fileId = arg;
 	end
-	A = reshape(A, [R, C, S]);
-	
+
+	assert(fileId>=0, 'Bad File ID.');
+
+	% This header should match the header in Array.hpp :
+	fwrite(fileId, 'KARTET01', 'char*1');
+
+	% Write the remaining header parts :
+	fwrite(fileId, typeId, '*int32');
+	fwrite(fileId, size(A,1), '*int64');
+	fwrite(fileId, size(A,2), '*int64');
+	fwrite(fileId, size(A,3), '*int64');
+	fwrite(fileId, A(:), sprintf('*%s', types{typeId}.typename));
+
 	% Close, if needed :
 	if(isstr(arg))
 		fclose(fileId);

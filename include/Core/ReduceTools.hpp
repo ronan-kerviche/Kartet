@@ -304,7 +304,7 @@ namespace Kartet
 			if(err!=cudaSuccess)
 				throw static_cast<Exception>(CudaExceptionsOffset + err);
 
-			for(int k=1; k<totalNumBlocks; k++)
+			for(unsigned int k=1; k<totalNumBlocks; k++)
 				castHostPtr[0] = Op<TOut, TOut>::apply(castHostPtr[0], castHostPtr[k]);
 
 			// Return :
