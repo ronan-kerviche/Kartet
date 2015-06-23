@@ -637,10 +637,13 @@ namespace Kartet
 		if(!stream.good())
 			throw InvalidInputStream;
 		
-		char headerBuffer[StaticContainer<void>::streamHeaderLength];
-		std::memset(headerBuffer, 0, sizeof(headerBuffer));
-		stream.read(headerBuffer, sizeof(headerBuffer)-1);
-		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, sizeof(headerBuffer)-1)!=0)
+		const size_t bufferLength = 32;
+		if(bufferLength<StaticContainer<void>::streamHeaderLength)
+			throw InvalidOperation;
+		char headerBuffer[bufferLength];
+		std::memset(headerBuffer, 0, bufferLength);
+		stream.read(headerBuffer, StaticContainer<void>::streamHeaderLength-1);
+		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, StaticContainer<void>::streamHeaderLength-1)!=0)
 			throw InvalidStreamHeader;
 	
 		// Read the type :
@@ -1016,18 +1019,16 @@ namespace Kartet
 		};
 
 	template<typename T, Location l>
-	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader)
+	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader, int sourceTypeIndex)
 	{
 		if(maxBufferSize<sizeof(T))
 			throw InvalidOperation;
 		if(!stream.good())
 			throw InvalidInputStream;
 		
-		int sourceTypeIndex = GetIndex<TypesSortedByAccuracy, T>::value;
 		Layout layout = getLayout();
 		if(!skipHeader)
 			layout = Layout::readFromStream(stream, &sourceTypeIndex);
-
 		if(!layout.sameLayoutAs(*this))
 			throw IncompatibleLayout;
 	
@@ -1389,22 +1390,6 @@ namespace Kartet
 		allocateMemory();
 		(*this) = A;
 	}
-	
-	template<typename T, Location l>
-	__host__ Array<T,l>::Array(std::istream& stream, bool convert, size_t maxBufferSize)
-	 :	Accessor<T,l>(Layout::readFromStream(stream))
-	{
-		allocateMemory();
-		readFromStream(stream, convert, maxBufferSize, true);
-	}
-
-	template<typename T, Location l>
-	__host__ Array<T,l>::Array(const std::string& filename, bool convert, size_t maxBufferSize)
-	 :	Accessor<T,l>(Layout::readFromFile(filename))
-	{
-		allocateMemory();
-		readFromFile(filename, convert, maxBufferSize);
-	}
 
 	template<typename T, Location l>
 	__host__ Array<T,l>::~Array(void)
@@ -1470,6 +1455,37 @@ namespace Kartet
 	__host__ const Accessor<T,l>& Array<T,l>::accessor(void) const
 	{
 		return (*this);
+	}
+
+	template<typename T, Location l>
+	__host__ Array<T,l>* Array<T,l>::buildFromStream(std::istream& stream, bool convert, size_t maxBufferSize)
+	{
+		int sourceTypeIndex = 0; // void;
+		const Layout layout = Layout::readFromStream(stream, &sourceTypeIndex);
+		Array<T,l>* result = new Array<T,l>(layout);
+		
+		try
+		{
+			result->readFromStream(stream, convert, maxBufferSize, true, sourceTypeIndex);
+		}
+		catch(Kartet::Exception& e)
+		{
+			delete result;
+			throw e;
+		}
+		return result;
+	}
+
+	template<typename T, Location l>
+	__host__ Array<T,l>* Array<T,l>::buildFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
+	{
+		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
+		if(!file.is_open() || file.fail())
+			throw InvalidInputStream;
+
+		Array<T,l>* result = buildFromStream(file, convert, maxBufferSize);
+		file.close();
+		return result;
 	}
 
 } // Namespace Kartet

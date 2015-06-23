@@ -38,8 +38,21 @@
 #ifndef __CUDACC__
 	inline void sincos(float a, float* s, float* c)
 	{
-		sincosf(a,s,c);
+		#ifdef _WIN32
+			if(s!=NULL) (*s) = sinf(a);
+			if(c!=NULL) (*c) = cosf(a);
+		#else
+			sincosf(a,s,c);
+		#endif
 	}
+
+	#ifdef _WIN32
+	inline void sincos(double a, double* s, double* c)
+	{
+			if(s!=NULL) (*s) = sin(a);
+			if(c!=NULL) (*c) = cos(a);		
+	}
+	#endif
 
 	inline void sincospi(float a, float* s, float* c)
 	{

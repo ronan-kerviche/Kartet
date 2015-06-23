@@ -37,8 +37,8 @@ function writeArrayToFile(A, arg)
 			struct('typename', 'float', 'isComplex', false), ...		% float
 			struct('typename', 'double', 'isComplex', false), ...		% double
 			struct('typename', 'NOTSUPPORTED', 'isComplex', false), ...	% (long double)
-			struct('typename', 'float', 'isComplex', true), ...		% float
-			struct('typename', 'double', 'isComplex', true), ...		% double
+			struct('typename', 'float', 'isComplex', true), ...		% complex<float>
+			struct('typename', 'double', 'isComplex', true), ...		% complex<double>
 			};
 	for typeId=1:numel(types)
 		if(strcmpi(types{typeId}.typename,cName) && types{typeId}.isComplex==isComplex)

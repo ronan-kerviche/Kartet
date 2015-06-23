@@ -297,7 +297,7 @@ namespace Kartet
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
 				__host__                   void setData(const T* ptr, const Location lin=HostSide) const;
-				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=104857600, const bool skipHeader=false); // 100 MB
+				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=104857600, const bool skipHeader=false, int sourceTypeIndex=GetIndex<TypesSortedByAccuracy, T>::value); // 100 MB
 				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
 				__host__                   void writeToStream(std::ostream& stream, const size_t maxBufferSize=104857600); // 100 MB
 				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=104857600); // 100 MB
@@ -363,8 +363,6 @@ namespace Kartet
 			__host__ Array(const Array<T,l>& a);
 			template<typename TIn, Location lin>
 			__host__ Array(const Accessor<TIn,lin>& a);
-			__host__ Array(std::istream& stream, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
-			__host__ Array(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 			__host__ ~Array(void);
 
 			// From Accessor<T,l>::Layout
@@ -445,6 +443,9 @@ namespace Kartet
 			Array<T,l>& operator=(const Array<T,l>& a);
 			template<Location l2>
 			Array<T,l>& operator=(const Array<T,l2>& a);
+
+			__host__ static Array<T,l>* buildFromStream(std::istream& stream, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
+			__host__ static Array<T,l>* buildFromFile(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
 	};
 	
 } // namespace Kartet

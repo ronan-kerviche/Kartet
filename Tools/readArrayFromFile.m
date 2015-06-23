@@ -49,8 +49,8 @@ function A = readArrayFromFile(arg)
 			struct('typename', 'float', 'isComplex', false), ...		% float
 			struct('typename', 'double', 'isComplex', false), ...		% double
 			struct('typename', 'NOTSUPPORTED', 'isComplex', false), ...	% (long double)
-			struct('typename', 'float', 'isComplex', true), ...		% float
-			struct('typename', 'double', 'isComplex', true), ...		% double
+			struct('typename', 'float', 'isComplex', true), ...		% complex<float>
+			struct('typename', 'double', 'isComplex', true), ...		% complex<double>
 			};
 
 	assert(T>=1 && T<=numel(types), sprintf('Unknown type code : %d.', T));
