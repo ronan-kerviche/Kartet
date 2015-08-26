@@ -119,7 +119,7 @@ namespace Kartet
 				static index_t numThreads;
 				static index_t maxZThreads;				
 				static const char streamHeader[];
-				static const size_t streamHeaderLength;
+				static size_t getStreamHeaderLength();
 			};
 
 			// Constructors :
@@ -256,9 +256,6 @@ namespace Kartet
 
 	template<typename T>
 	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET01";
-
-	template<typename T>
-	const size_t Layout::StaticContainer<T>::streamHeaderLength = sizeof(Layout::StaticContainer<void>::streamHeader);
 
 	// To compute on a specific layout : 
 	#ifdef __CUDACC__

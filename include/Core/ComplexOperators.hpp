@@ -190,14 +190,16 @@ namespace Kartet
 		template<> \
 		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a) \
 		{ \
-			TypeInfo<TypeName>::ComplexType tmp = {a, static_cast<TypeName>(0)}; \
+			typedef TypeInfo<TypeInfo<TypeName>::ComplexType>::BaseType TCast; \
+			TypeInfo<TypeName>::ComplexType tmp = {static_cast<TCast>(a), static_cast<TCast>(0)}; \
 			return tmp; \
 		} \
 		\
 		template<> \
 		__host__ __device__ inline __cuda_typename TypeInfo<TypeName>::ComplexType toComplex(const TypeName& a, const TypeName& b) \
 		{ \
-			TypeInfo<TypeName>::ComplexType tmp = {a, b}; \
+			typedef TypeInfo<TypeInfo<TypeName>::ComplexType>::BaseType TCast; \
+			TypeInfo<TypeName>::ComplexType tmp = {static_cast<TCast>(a), static_cast<TCast>(b)}; \
 			return tmp; \
 		} \
 		\

@@ -55,6 +55,13 @@ namespace Kartet
 		}
 	#endif
 
+// Layout::StaticContainer :
+	template<typename T>
+	inline size_t Layout::StaticContainer<T>::getStreamHeaderLength(void)
+	{
+		return sizeof(Layout::StaticContainer<T>::streamHeader);
+	}
+
 // Layout :
 	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 : 	numRows(r),
@@ -638,12 +645,12 @@ namespace Kartet
 			throw InvalidInputStream;
 		
 		const size_t bufferLength = 32;
-		if(bufferLength<StaticContainer<void>::streamHeaderLength)
+		if(bufferLength<StaticContainer<void>::getStreamHeaderLength())
 			throw InvalidOperation;
 		char headerBuffer[bufferLength];
 		std::memset(headerBuffer, 0, bufferLength);
-		stream.read(headerBuffer, StaticContainer<void>::streamHeaderLength-1);
-		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, StaticContainer<void>::streamHeaderLength-1)!=0)
+		stream.read(headerBuffer, StaticContainer<void>::getStreamHeaderLength()-1);
+		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, StaticContainer<void>::getStreamHeaderLength()-1)!=0)
 			throw InvalidStreamHeader;
 	
 		// Read the type :
@@ -683,7 +690,7 @@ namespace Kartet
 			throw InvalidOutputStream;
 
 		// Write the header :
-		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::streamHeaderLength-1);
+		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::getStreamHeaderLength()-1);
 		
 		// Write the type :	
 		stream.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
