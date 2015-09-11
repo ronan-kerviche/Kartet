@@ -93,7 +93,7 @@ namespace Kartet
 			const cudaMemcpyKind direction;
 			cudaStream_t stream;
 
-			__host__ MemCpyDualToolBox(const cudaMemcpyKind _d, cudaStream_t _stream)
+			__host__ MemCpyDualToolBox(const cudaMemcpyKind _d, cudaStream_t _stream = NULL)
 			 :	direction(_d),
 				stream(_stream)
 			{ }
@@ -105,6 +105,11 @@ namespace Kartet
 			
 			__host__ void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* dst, T* src, size_t offsetDst, size_t offsetSrc, index_t i, index_t j, index_t k) const
 			{
+				UNUSED_PARAMETER(mainLayout)
+				UNUSED_PARAMETER(i)
+				UNUSED_PARAMETER(j)
+				UNUSED_PARAMETER(k)
+
 				cudaError_t err = cudaSuccess;
 				if(stream!=NULL)
 					err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
@@ -124,7 +129,7 @@ namespace Kartet
 		StaticAssert<l!=l2>(); // The two accessors are on different sides.
 
 		#ifdef __CUDACC__
-			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost);
+			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, stream);
 			dualScan(*this, getPtr(), a, a.getPtr(), op);
 			
 			return *this;
