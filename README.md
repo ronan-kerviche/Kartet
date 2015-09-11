@@ -12,7 +12,10 @@ A Simple C++ Array library for CUDA.
 ## Installation :
   Set the environment variable KARTET_PATH
 to the path of the library.
+  (Optional) Set the environment variable
+KARTET_DEFAULT_TARGET to either 'deviceBinary'
+or 'hostBinary' to generate only one binary.
 
 ## Examples :
-  See Tests/BasicTest for operations.
+  See Tests/BasicTest for simple operations.
 

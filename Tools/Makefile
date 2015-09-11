@@ -9,7 +9,7 @@
 # CC_EXTRA_LIB		: Extra linrary flags for the linkers.
 # HSCC			: Host side compiler.
 # NVCC			: Device side compiler.
-# DEFAULT_TARGET	: Default compilation target amon deviceBinary and hostBinary.
+# KARTET_DEFAULT_TARGET	: Default compilation target amon deviceBinary and hostBinary.
 # SOURCES_DIR		: Directory for the source files.
 # OBJ_DIR		: Directory for the object files.
 # CUDA_INCLUDE_PATH	: Path to CUDA headers directory.
@@ -73,8 +73,8 @@ ifeq ($(NVCC),)
 #$(info Using $(NVCC) as default device compiler.)
 endif
 
-ifeq ($(DEFAULT_TARGET),)
-	DEFAULT_TARGET = deviceBinary hostBinary
+ifeq ($(KARTET_DEFAULT_TARGET),)
+	KARTET_DEFAULT_TARGET = deviceBinary hostBinary
 endif
 
 ifeq ($(CUDA_INCLUDE_PATH),)
@@ -100,7 +100,7 @@ CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -
 		  $(CC_EXTRA_LIB)	
 NVCC_LIB	= -L$(CUDA_LIB_PATH) -lcufft -lcublas -lcurand $(CC_LIB)
 
-all : $(DEFAULT_TARGET)
+all : $(KARTET_DEFAULT_TARGET)
 	@echo '[ ALL  ] Done.'
 
 deviceBinary : $(DEVICE_OBJECTS)
@@ -145,30 +145,30 @@ mrproper: clean
 
 test:
 	@echo "Options : "
-	@echo "  KARTET_PATH       : $(KARTET_PATH)"
-	@echo "  EXEC_DEVICE       : $(EXEC_DEVICE)"
-	@echo "  EXEC_HOST         : $(EXEC_HOST)"
-	@echo "  FILES             : $(FILES)"
-	@echo "  DEVICE_CODE       : $(DEVICE_CODE)"
-	@echo "  CC_EXTRA_FLAGS    : $(CC_EXTRA_FLAGS)"
-	@echo "  CC_EXTRA_LIB      : $(CC_EXTRA_LIB)"
-	@echo "  HSCC              : $(HSCC)"
-	@echo "  NVCC              : $(NVCC)"
-	@echo "  DEFAULT_TARGET    : $(DEFAULT_TARGET)"
-	@echo "  KARTET_OPTIONS    : $(KARTET_OPTIONS)"
-	@echo "  SOURCES_DIR       : $(SOURCES_DIR)"
-	@echo "  OBJ_DIR           : $(OBJ_DIR)"
-	@echo "  CUDA_INCLUDE_PATH : $(CUDA_INCLUDE_PATH)"
-	@echo "  CUDA_LIB_PATH     : $(CUDA_LIB_PATH)"
+	@echo "  KARTET_PATH           : $(KARTET_PATH)"
+	@echo "  EXEC_DEVICE           : $(EXEC_DEVICE)"
+	@echo "  EXEC_HOST             : $(EXEC_HOST)"
+	@echo "  FILES                 : $(FILES)"
+	@echo "  DEVICE_CODE           : $(DEVICE_CODE)"
+	@echo "  CC_EXTRA_FLAGS        : $(CC_EXTRA_FLAGS)"
+	@echo "  CC_EXTRA_LIB          : $(CC_EXTRA_LIB)"
+	@echo "  HSCC                  : $(HSCC)"
+	@echo "  NVCC                  : $(NVCC)"
+	@echo "  KARTET_DEFAULT_TARGET : $(DEFAULT_TARGET)"
+	@echo "  KARTET_OPTIONS        : $(KARTET_OPTIONS)"
+	@echo "  SOURCES_DIR           : $(SOURCES_DIR)"
+	@echo "  OBJ_DIR               : $(OBJ_DIR)"
+	@echo "  CUDA_INCLUDE_PATH     : $(CUDA_INCLUDE_PATH)"
+	@echo "  CUDA_LIB_PATH         : $(CUDA_LIB_PATH)"
 	@echo "Variables : "
-	@echo "  FILES_LIST        : $(FILES_LIST)"
-	@echo "  OBJECTS           : $(OBJECTS)"
-	@echo "  DEVICE_OBJECTS    : $(DEVICE_OBJECTS)"
-	@echo "  HOST_OBJECTS      : $(HOST_OBJECTS)"
-	@echo "  CC_INCLUDE        : $(CC_INCLUDE)"
-	@echo "  NVCC_INCLUDE      : $(NVCC_INCLUDE)"
-	@echo "  CC_FLAGS          : $(CC_FLAGS)"
-	@echo "  NVCC_FLAGS        : $(NVCC_FLAGS)"
-	@echo "  CC_LIB            : $(CC_LIB)"
-	@echo "  NVCC_LIB          : $(NVCC_LIB)"
+	@echo "  FILES_LIST            : $(FILES_LIST)"
+	@echo "  OBJECTS               : $(OBJECTS)"
+	@echo "  DEVICE_OBJECTS        : $(DEVICE_OBJECTS)"
+	@echo "  HOST_OBJECTS          : $(HOST_OBJECTS)"
+	@echo "  CC_INCLUDE            : $(CC_INCLUDE)"
+	@echo "  NVCC_INCLUDE          : $(NVCC_INCLUDE)"
+	@echo "  CC_FLAGS              : $(CC_FLAGS)"
+	@echo "  NVCC_FLAGS            : $(NVCC_FLAGS)"
+	@echo "  CC_LIB                : $(CC_LIB)"
+	@echo "  NVCC_LIB              : $(NVCC_LIB)"
 
