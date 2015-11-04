@@ -303,7 +303,7 @@ namespace Kartet
 		{ }
 
 		__host__ __device__ LayoutReinterpretationExpression(const LayoutReinterpretationExpression<T, Op>& e)
-		 : a(e.a), layout(e.layout)
+		 : layout(e.layout), a(e.a) 
 		{ }
 	};
 
@@ -411,7 +411,7 @@ namespace Kartet
 #endif
 
 	template<typename T, Location l, typename TExprMask, typename TExpr>
-	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T>& array, const TExprMask& exprMask, const TExpr& expr)
+	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T,l>& array, const TExprMask& exprMask, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;

@@ -227,6 +227,10 @@ namespace Kartet
 	template<typename TExprMask, typename TExpr>
 	Accessor<T,l>& Accessor<T,l>::maskedAssignment(const TExprMask& exprMask, const TExpr& expr, cudaStream_t stream)
 	{
+		#ifndef __CUDACC__
+			UNUSED_PARAMETER(stream)
+		#endif
+
 		// Make sure we are not computing complex numbers to store in a real array :
 		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
 
