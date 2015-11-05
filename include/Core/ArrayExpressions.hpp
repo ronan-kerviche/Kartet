@@ -421,7 +421,7 @@ namespace Kartet
 			index_t p = array.getIndex(i, j, k);
 			
 			MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, p, i, j, k);
-	
+
 			if(test)
 			{
 				ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, p, i, j, k);
@@ -429,9 +429,9 @@ namespace Kartet
 				T buffer;
 				complexCopy(buffer, t);
 				array.data(i, j, k) = buffer;
-
-				array.moveToNextIndex(i, j, k);
 			}
+
+			array.moveToNextIndex(i, j, k);
 		}
 	}
 
