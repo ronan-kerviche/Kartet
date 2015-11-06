@@ -152,8 +152,10 @@ namespace Kartet
 				__host__            inline void flatten(void);
 				__host__	    inline void stretch(void);
 				__host__            inline void vectorize(void);
-				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t numVectors) const;
-				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t numSlices) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t nColumns) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t nSlices) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
 
@@ -311,8 +313,10 @@ namespace Kartet
 				__host__ 	           Accessor<T,l> endSlice(void) const;
 				__host__ 	           Accessor<T,l> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
 				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t numVectors) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t numSlices) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t nColumns) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t nSlices) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 
 			// Assignment :
 				template<typename TExpr>
@@ -423,6 +427,7 @@ namespace Kartet
 			using Accessor<T,l>::subArray;
 			using Accessor<T,l>::splitColumns;
 			using Accessor<T,l>::splitSlices;
+			using Accessor<T,l>::splitSubArrays;
 			using Accessor<T,l>::assign;
 			using Accessor<T,l>::maskedAssignment;
 			using Accessor<T,l>::singleScan;

@@ -573,7 +573,7 @@ namespace Kartet
 		}
 
 		template<typename T, typename TOut, Location l>
-		__host__ T ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ void ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			maxBlock(accessor.getLayout(), accessor, output);
 		}

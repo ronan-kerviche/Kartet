@@ -89,7 +89,7 @@ namespace Kartet
 			template<typename TExpr, typename TOut, Location l>
 			__host__ void maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ T maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ void maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
 			__host__ void sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
