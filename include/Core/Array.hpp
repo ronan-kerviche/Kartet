@@ -154,7 +154,7 @@ namespace Kartet
 				__host__            inline void vectorize(void);
 				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t nColumns) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t nSlices) const;
-				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const;
+				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
@@ -315,7 +315,7 @@ namespace Kartet
 				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t nColumns) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t nSlices) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 
 			// Assignment :

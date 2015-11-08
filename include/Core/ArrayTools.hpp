@@ -274,6 +274,14 @@ namespace Kartet
 	{
 		std::vector<Layout> pages;
 
+		// Fill missing arguments
+		if(nRows==0)	
+			nRows = getNumRows();
+		if(nColumns==0)
+			nColumns = getNumColumns();
+		if(nSlices==0)
+			nSlices = getNumSlices();
+
 		if(!validRowIndex(iBegin) || nRows<1 || !validColumnIndex(jBegin) || nColumns<1 || !validSliceIndex(kBegin) || nSlices<1)
 			throw OutOfRange;
 		
