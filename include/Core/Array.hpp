@@ -313,6 +313,9 @@ namespace Kartet
 				__host__ 	           Accessor<T,l> endSlice(void) const;
 				__host__ 	           Accessor<T,l> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
 				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
+				__host__  	           Accessor<T,l> flattened(void) const;
+				__host__  	           Accessor<T,l> stretched(void) const;
+				__host__  	           Accessor<T,l> vectorized(void) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t nColumns) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t nSlices) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
@@ -425,6 +428,9 @@ namespace Kartet
 			using Accessor<T,l>::endSlice;
 			using Accessor<T,l>::slices;
 			using Accessor<T,l>::subArray;
+			using Accessor<T,l>::flattened;
+			using Accessor<T,l>::stretched;
+			using Accessor<T,l>::vectorized;
 			using Accessor<T,l>::splitColumns;
 			using Accessor<T,l>::splitSlices;
 			using Accessor<T,l>::splitSubArrays;

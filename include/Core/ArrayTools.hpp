@@ -1298,6 +1298,30 @@ namespace Kartet
 	}
 
 	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::flattened(void) const
+	{
+		Accessor<T, l> result = (*this);
+		result.flatten();
+		return result;
+	}
+
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::stretched(void) const
+	{
+		Accessor<T, l> result = (*this);
+		result.stretch();
+		return result;
+	}
+
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::vectorized(void) const
+	{
+		Accessor<T, l> result = (*this);
+		result.vectorize();
+		return result;
+	}
+
+	template<typename T, Location l>
 	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitColumns(index_t jBegin, index_t nColumns) const
 	{
 		std::vector< Accessor<T,l> > pages;
