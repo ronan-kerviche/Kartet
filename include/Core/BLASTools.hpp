@@ -483,13 +483,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, _beta, CPTR(y.getPtr()), 1);
+					cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_sgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, _beta, ZPTR(y.getPtr()), 1);
+					cblas_zgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
 				}
 			#else
 				throw NotSupported;
@@ -574,17 +574,17 @@ namespace Kartet
 				{
 					CCST(alpha)
 					if(!conjugate)
-						cblas_cgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_cgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
 					else
-						cblas_cgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_cgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					if(!conjugate)
-						cblas_zgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_zgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
 					else
-						cblas_zgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_zgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
 				}
 			#else
 				throw NotSupported;
