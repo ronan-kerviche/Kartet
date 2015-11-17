@@ -195,17 +195,23 @@ namespace Kartet
 
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
-// Transform functions : 
+// Transform functions :
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			p = l.getIndicesFFTShift(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ifftshift,				ifftshift,			p = l.getIndicesFFTInverseShift(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XMirror,				xmirror,			j = l.getNumColumns()-(j+1); p = l.getIndex(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YMirror,				ymirror,			i = l.getNumRows()-(i+1); p = l.getIndex(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeSlice, 			distributeSlice,		p = l.getIndex(i, j, 0); k=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeVector,			distributeVector,		p = l.getIndex(i, 0, k); j=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_DistributeElement,			distributeElement,		p = l.getIndex(0, 0, 0); i=j=k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		p = l.getIndex(i, j, 0); k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeVector,			distributeVector,		p = l.getIndex(i, 0, k); j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		p = l.getIndex(0, 0, 0); i=j=k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonalVector,			diagonalVector,			p = l.getIndex(i, i, k); j=i; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	p = l.getIndex(j, 0, k); i=j; j=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	p = l.getIndex(k, 0, 0); i=k; k=0; k=0; )
+	// Following can be extremly slow on GPU :
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_transpose,				transpose,			p = l.getIndex(j, i, k); const index_t _s = i; i = j; j = _s; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_forceUpSymmetry,			forceUpSymmetry,
+											const index_t _i=i; const index_t _j=j; i=::max(_i,_j); j=::min(_i,_j); p = l.getIndex(j, i, k); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_forceDownSymmetry,			forceDownSymmetry,
+											const index_t _i=i; const index_t _j=j; i=::min(_i,_j); j=::max(_i,_j); p = l.getIndex(j, i, k); )
 
 // Layout reinterpretation functions :
 	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_clamp, 		clamp, 				i = lnew.getIClamped(i);

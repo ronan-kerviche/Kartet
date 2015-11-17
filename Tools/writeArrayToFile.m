@@ -1,5 +1,5 @@
 function writeArrayToFile(A, arg)
-% function A = writeArrayToFile(arg)
+% function writeArrayToFile(A, arg)
 %
 % ARGUMENTS : 
 % A	: The original array.
