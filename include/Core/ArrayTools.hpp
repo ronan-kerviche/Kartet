@@ -1280,7 +1280,7 @@ namespace Kartet
 	{
 		if(kStep<0 || numSlices<=0)
 			throw InvalidNegativeStep;
-		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep-1))
+		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep))
 			throw OutOfRange;
 
 		return Accessor<T,l>(ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices(), getOffset()+getIndex(0,0,kBegin));
