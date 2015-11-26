@@ -34,10 +34,10 @@ function writeArrayToFile(A, arg)
 			struct('typename', 'uint64', 'isComplex', false), ...		% unsigned long long
 			struct('typename', 'int64', 'isComplex', false), ...		% long long
 			struct('typename', 'int64', 'isComplex', false), ...		% signed long long
-			struct('typename', 'float', 'isComplex', false), ...		% float
+			struct('typename', 'single', 'isComplex', false), ...		% float
 			struct('typename', 'double', 'isComplex', false), ...		% double
 			struct('typename', 'NOTSUPPORTED', 'isComplex', false), ...	% (long double)
-			struct('typename', 'float', 'isComplex', true), ...		% complex<float>
+			struct('typename', 'single', 'isComplex', true), ...		% complex<float>
 			struct('typename', 'double', 'isComplex', true), ...		% complex<double>
 			};
 	for typeId=1:numel(types)
