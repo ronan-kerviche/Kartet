@@ -96,6 +96,7 @@ CC_FLAGS	= -fPIC -m64 -O3 -Wall -Wextra $(CC_EXTRA_FLAGS)
 NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "$(CC_FLAGS)" 
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
+			$(subst KARTET_USE_LAPACK, -llapack, $(findstring KARTET_USE_LAPACK,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_FFTW, -lfftw3 -lfftw3f, $(findstring KARTET_USE_FFTW,$(KARTET_OPTIONS))) \
 		  $(CC_EXTRA_LIB)	
 NVCC_LIB	= -L$(CUDA_LIB_PATH) -lcufft -lcublas -lcurand $(CC_LIB)
