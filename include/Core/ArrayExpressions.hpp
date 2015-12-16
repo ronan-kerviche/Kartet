@@ -84,9 +84,7 @@ namespace Kartet
 		
 		__host__ __device__ inline static ReturnType evaluate(const Accessor<T,l>& accessor, const Layout& layout, const index_t& p, const index_t& i, const index_t& j, const index_t& k)
 		{
-			UNUSED_PARAMETER(accessor)
 			UNUSED_PARAMETER(layout)
-			UNUSED_PARAMETER(p)
 			UNUSED_PARAMETER(i)
 			UNUSED_PARAMETER(j)
 			UNUSED_PARAMETER(k)
@@ -194,6 +192,21 @@ namespace Kartet
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, layout, p, i, j, k), 	
 							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, layout, p, i, j, k)
 						);
+		}
+	};
+
+	template< typename TIndex, typename TData, template<typename> class Op >
+	struct ExpressionEvaluation< ShuffleExpression<TIndex, TData, Op> >
+	{
+		// Mechanism for a ShuffleExpression :
+		typedef Op<TIndex> Operator;
+		typedef typename ExpressionEvaluation<TData>::ReturnType ReturnType;
+		static const Location location = ExpressionEvaluation<TData>::location;
+		
+		__host__ __device__ inline static ReturnType evaluate(const ShuffleExpression<TIndex, TData, Op>& shuffleExpression, const Layout& layout, index_t p, index_t i, index_t j, index_t k)
+		{
+			Operator::apply(shuffleExpression.index, layout, p, i, j, k); // Change in shape from data
+			return ExpressionEvaluation<TData>::evaluate(shuffleExpression.data, layout, p, i, j, k); // Use sub type with new coordinates
 		}
 	};
 
@@ -320,6 +333,22 @@ namespace Kartet
 
 		__host__ __device__ BinaryExpression(const BinaryExpression<T1,T2,Op>& e)
 		 : a(e.a), b(e.b)
+		{ }
+	};
+
+// Shuffle Expression
+	template<typename TIndex, typename TData, template<typename> class Op >
+	struct ShuffleExpression
+	{
+		TIndex index;
+		TData data;
+
+		__host__ ShuffleExpression(const TIndex& _index, const TData& _data)
+		 : index(_index), data(_data)
+		{ }
+
+		__host__ __device__ ShuffleExpression(const ShuffleExpression<TIndex, TData, Op>& e)
+		 : index(e.index), data(e.data)
 		{ }
 	};
 

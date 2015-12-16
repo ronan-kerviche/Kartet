@@ -35,6 +35,9 @@ namespace Kartet
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexI, 		IndexI, 		index_t, 	i )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexJ, 		IndexJ, 		index_t, 	j )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexK, 		IndexK, 		index_t,	k )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndI, 	IndexEndI, 		index_t, 	l.getNumRows()-i-1 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndJ, 	IndexEndJ, 		index_t, 	l.getNumColumns()-i-1 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndK, 	IndexEndK, 		index_t,	l.getNumSlices()-i-1 )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormExclf, 	INormExclf, 		float, 		static_cast<float>(i)/static_cast<float>(l.getNumRows()) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormExclf, 	JNormExclf, 		float, 		static_cast<float>(j)/static_cast<float>(l.getNumColumns()) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_KNormExclf, 	KNormExclf, 		float, 		static_cast<float>(k)/static_cast<float>(l.getNumSlices()) )
@@ -198,8 +201,8 @@ namespace Kartet
 // Transform functions :
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			p = l.getIndicesFFTShift(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ifftshift,				ifftshift,			p = l.getIndicesFFTInverseShift(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XMirror,				xmirror,			j = l.getNumColumns()-(j+1); p = l.getIndex(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YMirror,				ymirror,			i = l.getNumRows()-(i+1); p = l.getIndex(i, j, k); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XFlip,				xFlip,				j = l.getNumColumns()-(j+1); p = l.getIndex(i, j, k); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YFlip,				yFlip,				i = l.getNumRows()-(i+1); p = l.getIndex(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		p = l.getIndex(i, j, 0); k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeVector,			distributeVector,		p = l.getIndex(i, 0, k); j=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		p = l.getIndex(0, 0, 0); i=j=k=0; )
@@ -265,6 +268,12 @@ namespace Kartet
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToComplex, 		toComplex,		toComplex(a, b) )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToFloatComplex, 		toFloatComplex,		toFloatComplex(a, b) )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToDoubleComplex, 		toDoubleComplex,	toDoubleComplex(a, b) )
+
+// Shuffle functions :
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleIndex, 		shuffleIndex,		p = v; l.unpackIndex(v, i, j, k); )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleRows, 		shuffleRows,		i = v; p = l.getIndex(i, j, k); )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleColumns, 		shuffleColumns,		j = v; p = l.getIndex(i, j, k); )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleSlices, 		shuffleSlices,		k = v; p = l.getIndex(i, j, k); )
 
 } // Namespace Kartet
 

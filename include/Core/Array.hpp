@@ -95,6 +95,9 @@ namespace Kartet
 		template<typename T1, typename T2, template<typename,typename> class Op>
 		struct BinaryExpression;
 
+		template<typename T1, typename T2, template<typename> class Op>
+		struct ShuffleExpression;
+
 		template<typename T1, typename T2, typename T3, template<typename,typename,typename> class Op>
 		struct TernaryExpression;
 

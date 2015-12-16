@@ -75,12 +75,25 @@ int main(int argc, char** argv)
 		C.vector(0) = C.vector(2) - C.vector(1);
 		std::cout << "C = " << C << std::endl;
 		
+		// Explicit manipulations :
+		Kartet::Array<int> block(3, 3);
+		block = Kartet::cast<double>(Kartet::IndexI()!=1 && Kartet::IndexJ()!=1);
+		Kartet::Array<int> large(3*block.getNumRows(), 3*block.getNumColumns());
+		large = repeat(block);
+		std::cout << "Block = " << block << std::endl;
+		std::cout << "Large (repeat block) = " << large << std::endl;
+		large = expand(block);
+		std::cout << "Large (expand block) = " << large << std::endl;
+
+		// Random sources :
 		Kartet::UniformSource<> uniformSource;
 		uniformSource.setSeed();
 		uniformSource >> A;
 		uniformSource >> B;
 		std::cout << "A = " << A << std::endl;
 		std::cout << "B = " << B << std::endl;
+		B = yFlip(xFlip(A)); // We cannot use in place flip here, these operations will be slow when performed on device for large arrays (naive/non-coalesced memory access).
+		std::cout << "A (flipped) = " << B << std::endl;
 
 		// Reduction example :
 		Kartet::ReduceContext reduceContext;
