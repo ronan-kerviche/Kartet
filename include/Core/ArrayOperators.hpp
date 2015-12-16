@@ -716,7 +716,7 @@ namespace Kartet
 			return ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, Array<TData,lData>, opName > >( ShuffleExpression< ExpressionContainer<TIndex>, Array<TData,lData>, opName >(index, data) ); \
 		} \
 		\
-		template<typename TIndex, Location lIndex, typename TData, Location lData> \
+		template<typename TIndex, Location lIndex, typename TData> \
 		ExpressionContainer< ShuffleExpression< Array<TIndex,lIndex>, ExpressionContainer<TData>, opName > > funcName (const Array<TIndex,lIndex>& index, const ExpressionContainer<TData>& data) \
 		{ \
 			return ExpressionContainer< ShuffleExpression< Array<TIndex,lIndex>, ExpressionContainer<TData>, opName > >( ShuffleExpression< Array<TIndex,lIndex>, ExpressionContainer<TData>, opName >(index, data) ); \
@@ -728,13 +728,13 @@ namespace Kartet
 			return ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, Accessor<TData,lData>, opName > >( ShuffleExpression< ExpressionContainer<TIndex>, Accessor<TData,lData>, opName >(index, data) ); \
 		} \
 		\
-		template<typename TIndex, Location lIndex, typename TData, Location lData> \
+		template<typename TIndex, Location lIndex, typename TData> \
 		ExpressionContainer< ShuffleExpression< Accessor<TIndex,lIndex>, ExpressionContainer<TData>, opName > > funcName (const Accessor<TIndex,lIndex>& index, const ExpressionContainer<TData>& data) \
 		{ \
 			return ExpressionContainer< ShuffleExpression< Accessor<TIndex,lIndex>, ExpressionContainer<TData>, opName > >( ShuffleExpression< Accessor<TIndex,lIndex>, ExpressionContainer<TData>, opName >(index, data) ); \
 		} \
 		\
-		template<typename TIndex, Location lIndex, typename TData, Location lData> \
+		template<typename TIndex, typename TData> \
 		ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName > > funcName (const ExpressionContainer<TIndex>& index, const ExpressionContainer<TData>& data) \
 		{ \
 			return ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName > >( ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName >(index, data) ); \
