@@ -1,0 +1,19 @@
+/**
+	\file    ArrayFunctions.dox
+	\brief   Documentation of the arrays functions.
+	\author  R. Kerviche
+	\date    December 1st 201
+**/
+
+/*
+	This file is not needed for the library to work. It mirrors the definitions in $KARTET_PATH/include/Core/ArrayFunctions.hpp.
+*/
+
+namespace Kartet
+{
+	/**
+	\return The current row index.
+	**/
+	index_t IndexI(void) { }
+	
+}

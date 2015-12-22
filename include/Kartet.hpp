@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */ 
 
+/**
+	\file    Kartet.hpp
+	\brief   Kartet Main Interface
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_MAIN__
 #define __KARTET_MAIN__
 

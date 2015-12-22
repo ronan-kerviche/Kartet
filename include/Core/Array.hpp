@@ -26,6 +26,14 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    Array.hpp
+	\brief   Array classes definitions.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
+
 #ifndef __KARTET_MAIN_ARRAY__
 #define __KARTET_MAIN_ARRAY__
 
@@ -42,6 +50,10 @@
 	#include "Core/MetaAlgorithm.hpp"
 	#include "Core/TypeTools.hpp"
 
+/**
+\def KARTET_DEFAULT_LOCATION
+\brief Default location when unspecified for an array (see Kartet::Location).
+**/
 #ifndef KARTET_DEFAULT_LOCATION
 	#ifdef __CUDACC__
 		#define KARTET_DEFAULT_LOCATION (Kartet::DeviceSide)
@@ -50,21 +62,31 @@
 	#endif
 #endif
 
+/// Kartet main namespace.
 namespace Kartet
 {
 	// Flags :
+		/// Describe the location of an object.
 		enum Location
 		{
+			/// Host side (typically CPU/RAM).
 			HostSide,
+			/// Device side (typically GPU/VRAM).
 			DeviceSide,
+			/// Either Host or Device side (typically and analytical expression not tied to hardware).
 			AnySide
 		};
 
+		/// Data transfer directions.
 		enum Direction
 		{
+			/// Host to host.
 			HostToHost,
+			/// Host to device.
 			HostToDevice,
+			/// Device to device.
 			DeviceToDevice,
+			/// Device to host.
 			DeviceToHost
 		};
 
@@ -101,8 +123,14 @@ namespace Kartet
 		template<typename T1, typename T2, typename T3, template<typename,typename,typename> class Op>
 		struct TernaryExpression;
 
+	/// Prefered indexing type.
 	typedef signed long long index_t;	
 
+	/**
+	\brief Array layout description.
+
+	Contains all the information about the dimensions of an array.
+	**/
 	class Layout
 	{
 		private :
@@ -266,8 +294,16 @@ namespace Kartet
 	#ifdef __CUDACC__
 		#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
 		#define COMPUTE_LAYOUT_STREAM(x, s) <<<(x).getNumBlock(), (x).getBlockSize(), 0, (s)>>>
-	#endif 	
+	#endif
 
+	/**
+	\brief Accessor to array data.
+	\param T Type of the array (either a primitive type or a complex type).
+	\param l Location of the data (see Kartet::Location).
+
+	Defines a virtual array tied to some portion memory. Can be used to modify temporarily the layout of an array or access parts of it (R/W).
+	Can also be used as a proxy to memory space not managed by the library (no release will be performed).
+	**/
 	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Accessor : public Layout
 	{
@@ -356,6 +392,13 @@ namespace Kartet
 				__host__ friend std::ostream& operator<<(std::ostream& os, const Accessor<TBis, lBis>& A); // For debug, not for performance.
 	};
 
+	/**
+	\brief Array class.
+	\param T Type of the array (either a primitive type or a complex type).
+	\param l Location of the data (see Kartet::Location).
+
+	Main array class.
+	**/
 	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Array : public Accessor<T, l>
 	{

@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    ArrayFunctions.hpp
+	\brief   Functions definitions for the arrays.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_ARRAY_FUNCTIONS__
 #define __KARTET_ARRAY_FUNCTIONS__
 
