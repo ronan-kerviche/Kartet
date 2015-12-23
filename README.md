@@ -1,6 +1,6 @@
 # Kartet
 
-A Simple C++ Array library for CUDA.
+A minimal C++ array library for CPU & GPU (CUDA) computing.
 
 * Header-only code.
 * Expression Templates with operators and functions.

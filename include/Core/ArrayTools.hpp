@@ -1043,12 +1043,14 @@ namespace Kartet
 	\param op Operator object.
 	
 	Operator must have the following member function : 
+	\code{.unparsed}
 	void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptr, size_t offset, index_t i, index_t j, index_t k) const;
 			mainLayout          : the original layout.
 			currentAccessLayout : the layout where access is currently granted.
 			ptr                 : the original pointer. DOES NOT CONTAIN THE OFFSET.
 			offset              : the offset leading to the right portion of the memory.
 			i, j, k             : the corresponding coordinates.
+	\endcode
 	**/
 	template<class Op, typename T>
 	__host__ void Layout::singleScan(T* ptr, const Op& op) const
@@ -1080,13 +1082,15 @@ namespace Kartet
 	\param ptrB Second data pointer.
 	\param op Operator object.
 	
-	Operator must have the following member function : 
+	Operator must have the following member function :
+	\code{.unparsed}
 	void apply(const Layout& mainLayout, const Layout& currentAccessLayout, T* ptrA, T* ptrB, size_t offsetA, size_t offsetB, index_t i, index_t j, index_t k) const;
 			mainLayout          : the original layout.
 			currentAccessLayout : the layout where access is currently granted.
 			ptrA, ptrB          : the original pointers. DOES NOT CONTAIN THE OFFSET.
 			offsetA, offsetB    : the offset leading to the right portion of the memory.
 			i, j, k             : the corresponding coordinates.
+	\endcode
 	**/
 	template<class Op, typename T>
 	__host__ void Layout::dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op)
