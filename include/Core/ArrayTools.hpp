@@ -734,7 +734,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getKWrapped(index_t k) const
 	{
-		return (k % numSlices);	
+		return (k % numSlices);
 	}
 
 	/**
@@ -960,16 +960,14 @@ namespace Kartet
 	**/
 	__host__ __device__ inline void Layout::moveToNextIndex(index_t& i, index_t& j, index_t& k) const
 	{
-		/*
 		// This version is the "protected version" 
 		// It will safely warp bad coordinates.
-		i = ((i+1) % numRows);
-		j = (((i==0) ? (j+1) : j) % numColumns);
-		k = ((i==0 && j==0) ? (k+1) : k);
-		*/
+		//i = ((i+1) % numRows);
+		//j = (((i==0) ? (j+1) : j) % numColumns);
+		//k = ((i==0 && j==0) ? (k+1) : k);
 
 		// This version is the "unprotected version"
-		// It is also faster. 
+		// It is also much faster by avoiding index_t modulos. 
 		i = (i+1);
 		i = (i>=numRows) ? 0 : i;
 		j = (i==0) ? (j+1) : j;

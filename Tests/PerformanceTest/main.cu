@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[BLAS] (1) Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "[BLAS] (1) Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*1.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[BLAS] (2) Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "[BLAS] (2) Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[THRUST] Expression Reduction multi-sum : " << v << std::endl;
+		std::cout << "[THRUST] Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.getSize())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
