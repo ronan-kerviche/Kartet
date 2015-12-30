@@ -36,28 +36,26 @@
 #ifndef __KARTET_ARRAY_FUNCTIONS__
 #define __KARTET_ARRAY_FUNCTIONS__
 
-namespace Kartet
-{
 // Nullary functions : 
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexI, 		IndexI, 		index_t, 	i )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexJ, 		IndexJ, 		index_t, 	j )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexK, 		IndexK, 		index_t,	k )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndI, 	IndexEndI, 		index_t, 	l.getNumRows()-i-1 )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndJ, 	IndexEndJ, 		index_t, 	l.getNumColumns()-i-1 )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndK, 	IndexEndK, 		index_t,	l.getNumSlices()-i-1 )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormExclf, 	INormExclf, 		float, 		static_cast<float>(i)/static_cast<float>(l.getNumRows()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormExclf, 	JNormExclf, 		float, 		static_cast<float>(j)/static_cast<float>(l.getNumColumns()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_KNormExclf, 	KNormExclf, 		float, 		static_cast<float>(k)/static_cast<float>(l.getNumSlices()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormInclf, 	INormInclf, 		float, 		static_cast<float>(i)/static_cast<float>(l.getNumRows()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormInclf, 	JNormInclf, 		float, 		static_cast<float>(j)/static_cast<float>(l.getNumColumns()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormInclf, 	KNormInclf, 		float, 		static_cast<float>(k)/static_cast<float>(l.getNumSlices()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormExcl, 	INormExcl, 		double, 	static_cast<double>(i)/static_cast<double>(l.getNumRows()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormExcl, 	JNormExcl, 		double, 	static_cast<double>(j)/static_cast<double>(l.getNumColumns()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormExcl,		KNormExcl,		double, 	static_cast<double>(k)/static_cast<double>(l.getNumSlices()) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormIncl,		INormIncl, 		double, 	static_cast<double>(i)/static_cast<double>(l.getNumRows()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormIncl, 	JNormIncl, 		double, 	static_cast<double>(j)/static_cast<double>(l.getNumColumns()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormIncl, 	KNormIncl, 		double, 	static_cast<double>(k)/static_cast<double>(l.getNumSlices()-1) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Index, 		Index, 			index_t, 	p )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndI, 	IndexEndI, 		index_t, 	l.numRows()-i-1 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndJ, 	IndexEndJ, 		index_t, 	l.numColumns()-i-1 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexEndK, 	IndexEndK, 		index_t,	l.numSlices()-i-1 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormExclf, 	INormExclf, 		float, 		static_cast<float>(i)/static_cast<float>(l.numRows()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormExclf, 	JNormExclf, 		float, 		static_cast<float>(j)/static_cast<float>(l.numColumns()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_KNormExclf, 	KNormExclf, 		float, 		static_cast<float>(k)/static_cast<float>(l.numSlices()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormInclf, 	INormInclf, 		float, 		static_cast<float>(i)/static_cast<float>(l.numRows()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormInclf, 	JNormInclf, 		float, 		static_cast<float>(j)/static_cast<float>(l.numColumns()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormInclf, 	KNormInclf, 		float, 		static_cast<float>(k)/static_cast<float>(l.numSlices()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormExcl, 	INormExcl, 		double, 	static_cast<double>(i)/static_cast<double>(l.numRows()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormExcl, 	JNormExcl, 		double, 	static_cast<double>(j)/static_cast<double>(l.numColumns()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormExcl,		KNormExcl,		double, 	static_cast<double>(k)/static_cast<double>(l.numSlices()) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_INormIncl,		INormIncl, 		double, 	static_cast<double>(i)/static_cast<double>(l.numRows()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormIncl, 	JNormIncl, 		double, 	static_cast<double>(j)/static_cast<double>(l.numColumns()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormIncl, 	KNormIncl, 		double, 	static_cast<double>(k)/static_cast<double>(l.numSlices()-1) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Index, 		Index, 			index_t, 	l.getIndex(i, j, k) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Identityb, 	Identityb, 		bool, 		((i==j)?(true):(false)) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Identityf, 	Identityf, 		float, 		((i==j)?(1.0f):(0.0f)) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Identity, 		Identity,		double, 	((i==j)?(1.0):(0.0)) )
@@ -67,10 +65,10 @@ namespace Kartet
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_LowerTriangleb, 	LowerTriangleb, 	bool, 		((i>=j)?(true):(false)) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_LowerTrianglef, 	LowerTrianglef, 	float, 		((i>=j)?(1.0f):(0.0f)) )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_LowerTriangle, 	LowerTriangle,		double, 	((i>=j)?(1.0):(0.0)) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radiusf,		Radiusf,		float,		sqrtf((2.0f*i-l.getNumRows())*(2.0f*i-l.getNumRows()) + (2.0f*j-l.getNumColumns())*(2.0f*j-l.getNumColumns()))/2.0f )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radius,		Radius,			double,		sqrt((2.0*i-l.getNumRows())*(2.0*i-l.getNumRows()) + (2.0*j-l.getNumColumns())*(2.0*j-l.getNumColumns()))/2.0 )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalizedf,	RadiusNormalizedf,	float,		sqrtf((2.0f*i-(l.getNumRows()-1))*(2.0f*i-(l.getNumRows()-1))/((l.getNumRows()-1)*(l.getNumRows()-1)) + (2.0f*j-(l.getNumColumns()-1))*(2.0f*j-(l.getNumColumns()-1))/((l.getNumColumns()-1)*(l.getNumColumns()-1))) )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalized,	RadiusNormalized,	double,		sqrt((2.0*i-(l.getNumRows()-1))*(2.0*i-(l.getNumRows()-1))/((l.getNumRows()-1)*(l.getNumRows()-1)) + (2.0*j-(l.getNumColumns()-1))*(2.0*j-(l.getNumColumns()-1))/((l.getNumColumns()-1)*(l.getNumColumns()-1))) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radiusf,		Radiusf,		float,		sqrtf((2.0f*i-l.numRows())*(2.0f*i-l.numRows()) + (2.0f*j-l.numColumns())*(2.0f*j-l.numColumns()))/2.0f )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radius,		Radius,			double,		sqrt((2.0*i-l.numRows())*(2.0*i-l.numRows()) + (2.0*j-l.numColumns())*(2.0*j-l.numColumns()))/2.0 )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalizedf,	RadiusNormalizedf,	float,		sqrtf((2.0f*i-(l.numRows()-1))*(2.0f*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0f*j-(l.numColumns()-1))*(2.0f*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))) )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalized,	RadiusNormalized,	double,		sqrt((2.0*i-(l.numRows()-1))*(2.0*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0*j-(l.numColumns()-1))*(2.0*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))) )
 
 // Unary functions : 
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_conj, 			conj,			conj(a) )
@@ -206,40 +204,36 @@ namespace Kartet
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
 // Transform functions :
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			p = l.getIndicesFFTShift(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ifftshift,				ifftshift,			p = l.getIndicesFFTInverseShift(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XFlip,				xFlip,				j = l.getNumColumns()-(j+1); p = l.getIndex(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YFlip,				yFlip,				i = l.getNumRows()-(i+1); p = l.getIndex(i, j, k); )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		p = l.getIndex(i, j, 0); k=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeVector,			distributeVector,		p = l.getIndex(i, 0, k); j=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		p = l.getIndex(0, 0, 0); i=j=k=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonalVector,			diagonalVector,			p = l.getIndex(i, i, k); j=i; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	p = l.getIndex(j, 0, k); i=j; j=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	p = l.getIndex(k, 0, 0); i=k; k=0; k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			l.getPositionFFTShift(i, j, k); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ifftshift,				ifftshift,			l.getPositionFFTInverseShift(i, j, k); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XFlip,				xFlip,				j = l.numColumns()-(j+1); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YFlip,				yFlip,				i = l.numRows()-(i+1); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeVector,			distributeVector,		j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		i=j=k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonalVector,			diagonalVector,			j=i; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	i=j; j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	i=k; k=0; k=0; )
 	// Following can be extremly slow on GPU :
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_transpose,				transpose,			p = l.getIndex(j, i, k); const index_t _s = i; i = j; j = _s; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_transpose,				transpose,			const index_t _s = i; i = j; j = _s; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_forceUpSymmetry,			forceUpSymmetry,
-											const index_t _i=i; const index_t _j=j; i=::max(_i,_j); j=::min(_i,_j); p = l.getIndex(j, i, k); )
+											const index_t _i=i; const index_t _j=j; i=::max(_i,_j); j=::min(_i,_j); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_forceDownSymmetry,			forceDownSymmetry,
-											const index_t _i=i; const index_t _j=j; i=::min(_i,_j); j=::max(_i,_j); p = l.getIndex(j, i, k); )
+											const index_t _i=i; const index_t _j=j; i=::min(_i,_j); j=::max(_i,_j); )
 
 // Layout reinterpretation functions :
 	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_clamp, 		clamp, 				i = lnew.getIClamped(i);
 															j = lnew.getJClamped(j);
-															k = lnew.getKClamped(k);
-															p = lnew.getIndex(i, j, k); )
+															k = lnew.getKClamped(k); )
 	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_repeat, 		repeat, 			i = lnew.getIWrapped(i);
 															j = lnew.getJWrapped(j);
-															k = lnew.getKWrapped(k);
-															p = lnew.getIndex(i, j, k); )
-	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expandf,		expandf,			i = l.getINorm<float>(i)*lnew.getNumRows();
-															j = l.getJNorm<float>(j)*lnew.getNumColumns();
-															k = l.getKNorm<float>(k)*lnew.getNumSlices();
-															p = lnew.getIndex(i, j, k); )
-	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expand,		expand,				i = l.getINorm<double>(i)*lnew.getNumRows();
-															j = l.getJNorm<double>(j)*lnew.getNumColumns();
-															k = l.getKNorm<double>(k)*lnew.getNumSlices();
-															p = lnew.getIndex(i, j, k); )
+															k = lnew.getKWrapped(k); )
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expandf,		expandf,			i = l.getINorm<float>(i)*lnew.numRows();
+															j = l.getJNorm<float>(j)*lnew.numColumns();
+															k = l.getKNorm<float>(k)*lnew.numSlices(); )
+	STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( UnOp_expand,		expand,				i = l.getINorm<double>(i)*lnew.numRows();
+															j = l.getJNorm<double>(j)*lnew.numColumns();
+															k = l.getKNorm<double>(k)*lnew.numSlices(); )
 
 // Binary functions : 
 	/* Note that if the input arguments are not of the type specified by the Cuda library, the call might fail.
@@ -277,11 +271,9 @@ namespace Kartet
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToDoubleComplex, 		toDoubleComplex,	toDoubleComplex(a, b) )
 
 // Shuffle functions :
-	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleIndex, 		shuffleIndex,		p = v; l.unpackIndex(v, i, j, k); )
-	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleRows, 		shuffleRows,		i = v; p = l.getIndex(i, j, k); )
-	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleColumns, 		shuffleColumns,		j = v; p = l.getIndex(i, j, k); )
-	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleSlices, 		shuffleSlices,		k = v; p = l.getIndex(i, j, k); )
-
-} // Namespace Kartet
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleIndex, 		shuffleIndex,		l.unpackIndex(v, i, j, k); )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleRows, 		shuffleRows,		i = v; )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleColumns, 		shuffleColumns,		j = v; )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleSlices, 		shuffleSlices,		k = v; )
 
 #endif

@@ -43,7 +43,7 @@ namespace Kartet
 	#define ALLOWED_TYPES_VERIFICATION		StaticAssert<Belongs<BLASKnownTypes, T>::value>();
 	#define TYPE_MUST_BE_COMPLEX			StaticAssert<TypeInfo<T>::isComplex>();
 	#define TEST_MONOLITHIC(x)			{if(!(x).isMonolithic()) throw IncompatibleLayout;}
-	#define TEST_SINGLE_SLICE(x)			{if((x).getNumSlices()>1) throw IncompatibleLayout;} 
+	#define TEST_SINGLE_SLICE(x)			{if((x).numSlices()>1) throw IncompatibleLayout;} 
 	#define TEST_PRODUCT(A, opa, B, opb, C)		{if(!isProductValid(A, opa, B, opb, C)) throw InvalidOperation;}
 	#define IF_FLOAT				if(SameTypes<T, float>::test)
 	#define IF_DOUBLE				if(SameTypes<T, double>::test)
@@ -139,29 +139,29 @@ namespace Kartet
 			aC = 0,
 			bR = 0,
 			bC = 0,
-			cR = C.getNumRows(),
-			cC = C.getNumColumns();
+			cR = C.numRows(),
+			cC = C.numColumns();
 
 		if(opa==OpTr || opa==OpHr)
 		{
-			aR = A.getNumColumns();
-			aC = A.getNumRows();
+			aR = A.numColumns();
+			aC = A.numRows();
 		}
 		else
 		{
-			aR = A.getNumRows();
-			aC = A.getNumColumns();
+			aR = A.numRows();
+			aC = A.numColumns();
 		}
 
 		if(opb==OpTr || opb==OpHr)
 		{
-			bR = B.getNumColumns();
-			bC = B.getNumRows();
+			bR = B.numColumns();
+			bC = B.numRows();
 		}
 		else
 		{
-			bR = B.getNumRows();
-			bC = B.getNumColumns();
+			bR = B.numRows();
+			bC = B.numColumns();
 		}
 
 		return (aR==cR) && (aC==bR) && (bC==cC);
@@ -179,29 +179,29 @@ namespace Kartet
 			bR = 0,
 			bC = 0;
 
-		if(A.getNumSlices()!=1 || B.getNumSlices()!=1)
+		if(A.numSlices()!=1 || B.numSlices()!=1)
 			throw InvalidOperation;
 
 		if(opa==OpTr || opa==OpHr)
 		{
-			aR = A.getNumColumns();
-			aC = A.getNumRows();
+			aR = A.numColumns();
+			aC = A.numRows();
 		}
 		else
 		{
-			aR = A.getNumRows();
-			aC = A.getNumColumns();
+			aR = A.numRows();
+			aC = A.numColumns();
 		}
 
 		if(opb==OpTr || opb==OpHr)
 		{
-			bR = B.getNumColumns();
-			bC = B.getNumRows();
+			bR = B.numColumns();
+			bC = B.numRows();
 		}
 		else
 		{
-			bR = B.getNumRows();
-			bC = B.getNumColumns();
+			bR = B.numRows();
+			bC = B.numColumns();
 		}
 
 		if(aC!=bR)
@@ -228,13 +228,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasIsamax(handle, x.getNumElements(), FPTR(x.getPtr()), 1, &res);
+					err = cublasIsamax(handle, x.numElements(), FPTR(x.dataPtr()), 1, &res);
 				else IF_DOUBLE
-					err = cublasIdamax(handle, x.getNumElements(), DPTR(x.getPtr()), 1, &res);
+					err = cublasIdamax(handle, x.numElements(), DPTR(x.dataPtr()), 1, &res);
 				else IF_CX_FLOAT
-					err = cublasIcamax(handle, x.getNumElements(), CPTR(x.getPtr()), 1, &res);
+					err = cublasIcamax(handle, x.numElements(), CPTR(x.dataPtr()), 1, &res);
 				else IF_CX_DOUBLE
-					err = cublasIzamax(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, &res);
+					err = cublasIzamax(handle, x.numElements(), ZPTR(x.dataPtr()), 1, &res);
 				TEST_EXCEPTION(err)
 			#else
 				throw NotSupported;
@@ -244,13 +244,13 @@ namespace Kartet
 		{
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					res = cblas_isamax(x.getNumElements(), FPTR(x.getPtr()), 1);
+					res = cblas_isamax(x.numElements(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					res = cblas_idamax(x.getNumElements(), DPTR(x.getPtr()), 1);
+					res = cblas_idamax(x.numElements(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					res = cblas_icamax(x.getNumElements(), CPTR(x.getPtr()), 1);
+					res = cblas_icamax(x.numElements(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					res = cblas_izamax(x.getNumElements(), ZPTR(x.getPtr()), 1);
+					res = cblas_izamax(x.numElements(), ZPTR(x.dataPtr()), 1);
 			#else
 				throw NotSupported;
 			#endif
@@ -270,13 +270,13 @@ namespace Kartet
 		#ifdef __CUDACC__
 			cublasStatus_t err;
 			IF_FLOAT
-				err = cublasIsamin(handle, x.getNumElements(), FPTR(x.getPtr()), 1, &res);
+				err = cublasIsamin(handle, x.numElements(), FPTR(x.dataPtr()), 1, &res);
 			else IF_DOUBLE
-				err = cublasIdamin(handle, x.getNumElements(), DPTR(x.getPtr()), 1, &res);
+				err = cublasIdamin(handle, x.numElements(), DPTR(x.dataPtr()), 1, &res);
 			else IF_CX_FLOAT
-				err = cublasIcamin(handle, x.getNumElements(), CPTR(x.getPtr()), 1, &res);
+				err = cublasIcamin(handle, x.numElements(), CPTR(x.dataPtr()), 1, &res);
 			else IF_CX_DOUBLE
-				err = cublasIzamin(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, &res);
+				err = cublasIzamin(handle, x.numElements(), ZPTR(x.dataPtr()), 1, &res);
 			TEST_EXCEPTION(err)
 		#else
 			throw NotSupported;
@@ -297,13 +297,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasSasum(handle, x.getNumElements(), FPTR(x.getPtr()), 1, FPTR(&res));
+					err = cublasSasum(handle, x.numElements(), FPTR(x.dataPtr()), 1, FPTR(&res));
 				else IF_DOUBLE
-					err = cublasDasum(handle, x.getNumElements(), DPTR(x.getPtr()), 1, DPTR(&res));
+					err = cublasDasum(handle, x.numElements(), DPTR(x.dataPtr()), 1, DPTR(&res));
 				else IF_CX_FLOAT
-					err = cublasScasum(handle, x.getNumElements(), CPTR(x.getPtr()), 1, FPTR(&res));
+					err = cublasScasum(handle, x.numElements(), CPTR(x.dataPtr()), 1, FPTR(&res));
 				else IF_CX_DOUBLE
-					err = cublasDzasum(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, DPTR(&res));
+					err = cublasDzasum(handle, x.numElements(), ZPTR(x.dataPtr()), 1, DPTR(&res));
 				TEST_EXCEPTION(err)
 			#else
 				throw NotSupported;
@@ -313,13 +313,13 @@ namespace Kartet
 		{	
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					res = cblas_sasum(x.getNumElements(), FPTR(x.getPtr()), 1);
+					res = cblas_sasum(x.numElements(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					res = cblas_dasum(x.getNumElements(), DPTR(x.getPtr()), 1);
+					res = cblas_dasum(x.numElements(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					res = cblas_scasum(x.getNumElements(), CPTR(x.getPtr()), 1);
+					res = cblas_scasum(x.numElements(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					res = cblas_dzasum(x.getNumElements(), ZPTR(x.getPtr()), 1);
+					res = cblas_dzasum(x.numElements(), ZPTR(x.dataPtr()), 1);
 			#else
 				throw NotSupported;
 			#endif
@@ -340,22 +340,22 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasSdot(handle, x.getNumElements(), FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(&res));
+					err = cublasSdot(handle, x.numElements(), FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1, FPTR(&res));
 				else IF_DOUBLE
-					err = cublasDdot(handle, x.getNumElements(), DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(&res));
+					err = cublasDdot(handle, x.numElements(), DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1, DPTR(&res));
 				else IF_CX_FLOAT
 				{
 					if(!conjugate)
-						err = cublasCdotu(handle, x.getNumElements(), CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(&res));
+						err = cublasCdotu(handle, x.numElements(), CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(&res));
 					else
-						err = cublasCdotc(handle, x.getNumElements(), CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(&res));
+						err = cublasCdotc(handle, x.numElements(), CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(&res));
 				}
 				else IF_CX_DOUBLE
 				{
 					if(!conjugate)
-						err = cublasZdotu(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(&res));
+						err = cublasZdotu(handle, x.numElements(), ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(&res));
 					else
-						err = cublasZdotc(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(&res));
+						err = cublasZdotc(handle, x.numElements(), ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(&res));
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -366,9 +366,9 @@ namespace Kartet
 		{
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					res = cblas_sdot(x.getNumElements(), FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1);
+					res = cblas_sdot(x.numElements(), FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1);
 				else IF_DOUBLE
-					res = cblas_ddot(x.getNumElements(), DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1);
+					res = cblas_ddot(x.numElements(), DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1);
 				else
 					throw NotSupported;
 			#else
@@ -391,13 +391,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasSnrm2(handle, x.getNumElements(), FPTR(x.getPtr()), 1, FPTR(&res));
+					err = cublasSnrm2(handle, x.numElements(), FPTR(x.dataPtr()), 1, FPTR(&res));
 				else IF_DOUBLE
-					err = cublasDnrm2(handle, x.getNumElements(), DPTR(x.getPtr()), 1, DPTR(&res));
+					err = cublasDnrm2(handle, x.numElements(), DPTR(x.dataPtr()), 1, DPTR(&res));
 				else IF_CX_FLOAT
-					err = cublasScnrm2(handle, x.getNumElements(), CPTR(x.getPtr()), 1, FPTR(&res));
+					err = cublasScnrm2(handle, x.numElements(), CPTR(x.dataPtr()), 1, FPTR(&res));
 				else IF_CX_DOUBLE
-					err = cublasDznrm2(handle, x.getNumElements(), ZPTR(x.getPtr()), 1, DPTR(&res));
+					err = cublasDznrm2(handle, x.numElements(), ZPTR(x.dataPtr()), 1, DPTR(&res));
 				TEST_EXCEPTION(err)
 			#else
 				throw NotSupported;
@@ -407,13 +407,13 @@ namespace Kartet
 		{
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					res = cblas_snrm2(x.getNumElements(), FPTR(x.getPtr()), 1);
+					res = cblas_snrm2(x.numElements(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					res = cblas_dnrm2(x.getNumElements(), DPTR(x.getPtr()), 1);
+					res = cblas_dnrm2(x.numElements(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					res = cblas_scnrm2(x.getNumElements(), CPTR(x.getPtr()), 1);
+					res = cblas_scnrm2(x.numElements(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					res = cblas_dznrm2(x.getNumElements(), ZPTR(x.getPtr()), 1);
+					res = cblas_dznrm2(x.numElements(), ZPTR(x.dataPtr()), 1);
 			#else
 				throw NotSupported;
 			#endif
@@ -439,25 +439,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSgemv(handle, getCuBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1, &_beta, FPTR(y.getPtr()), 1);
+					err = cublasSgemv(handle, getCuBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(x.dataPtr()), 1, &_beta, FPTR(y.dataPtr()), 1);
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDgemv(handle, getCuBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1, &_beta, DPTR(y.getPtr()), 1);
+					err = cublasDgemv(handle, getCuBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(x.dataPtr()), 1, &_beta, DPTR(y.dataPtr()), 1);
 				}		
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCgemv(handle, getCuBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+					err = cublasCgemv(handle, getCuBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, &_beta, CPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZgemv(handle, getCuBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+					err = cublasZgemv(handle, getCuBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, &_beta, ZPTR(y.dataPtr()), 1);
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -471,25 +471,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_sgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1, _beta, FPTR(y.getPtr()), 1);
+					cblas_sgemv(CblasColMajor, getCBLASOperation(op), A.numRows(), A.numColumns(), _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(x.dataPtr()), 1, _beta, FPTR(y.dataPtr()), 1);
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1, _beta, DPTR(y.getPtr()), 1);
+					cblas_dgemv(CblasColMajor, getCBLASOperation(op), A.numRows(), A.numColumns(), _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(x.dataPtr()), 1, _beta, DPTR(y.dataPtr()), 1);
 				}		
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+					cblas_cgemv(CblasColMajor, getCBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, &_beta, CPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zgemv(CblasColMajor, getCBLASOperation(op), A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+					cblas_zgemv(CblasColMajor, getCBLASOperation(op), A.numRows(), A.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, &_beta, ZPTR(y.dataPtr()), 1);
 				}
 			#else
 				throw NotSupported;
@@ -529,28 +529,28 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					err = cublasSger(handle, A.getNumRows(), A.getNumColumns(), &_alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.getPtr()), A.getLeadingColumns());
+					err = cublasSger(handle, A.numRows(), A.numColumns(), &_alpha, FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1, FPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					err = cublasDger(handle, A.getNumRows(), A.getNumColumns(), &_alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.getPtr()), A.getLeadingColumns());
+					err = cublasDger(handle, A.numRows(), A.numColumns(), &_alpha, DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1, DPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					if(!conjugate)
-						err = cublasCgeru(handle, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						err = cublasCgeru(handle, A.numRows(), A.numColumns(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.dataPtr()), A.columnsStride());
 					else
-						err = cublasCgerc(handle, A.getNumRows(), A.getNumColumns(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						err = cublasCgerc(handle, A.numRows(), A.numColumns(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					if(!conjugate)
-						err = cublasZgeru(handle, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						err = cublasZgeru(handle, A.numRows(), A.numColumns(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.dataPtr()), A.columnsStride());
 					else
-						err = cublasZgerc(handle, A.getNumRows(), A.getNumColumns(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						err = cublasZgerc(handle, A.numRows(), A.numColumns(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.dataPtr()), A.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -563,28 +563,28 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					cblas_sger(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_sger(CblasColMajor, A.numRows(), A.numColumns(), _alpha, FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1, FPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					cblas_dger(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.getPtr()), A.getLeadingColumns());
+					cblas_dger(CblasColMajor, A.numRows(), A.numColumns(), _alpha, DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1, DPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					if(!conjugate)
-						cblas_cgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_cgeru(CblasColMajor, A.numRows(), A.numColumns(), _alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.dataPtr()), A.columnsStride());
 					else
-						cblas_cgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_cgerc(CblasColMajor, A.numRows(), A.numColumns(), _alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.dataPtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					if(!conjugate)
-						cblas_zgeru(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_zgeru(CblasColMajor, A.numRows(), A.numColumns(), _alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.dataPtr()), A.columnsStride());
 					else
-						cblas_zgerc(CblasColMajor, A.getNumRows(), A.getNumColumns(), _alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.getPtr()), A.getLeadingColumns());
+						cblas_zgerc(CblasColMajor, A.numRows(), A.numColumns(), _alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.dataPtr()), A.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -616,25 +616,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSsymv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1, &_beta, FPTR(y.getPtr()), 1);
+					err = cublasSsymv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(x.dataPtr()), 1, &_beta, FPTR(y.dataPtr()), 1);
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDsymv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1, &_beta, DPTR(y.getPtr()), 1);
+					err = cublasDsymv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(x.dataPtr()), 1, &_beta, DPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCsymv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+					err = cublasCsymv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, &_beta, CPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZsymv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+					err = cublasZsymv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, &_beta, ZPTR(y.dataPtr()), 1);
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -648,13 +648,13 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_ssymv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1, _beta, FPTR(y.getPtr()), 1);
+					cblas_ssymv(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(x.dataPtr()), 1, _beta, FPTR(y.dataPtr()), 1);
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dsymv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1, _beta, DPTR(y.getPtr()), 1);
+					cblas_dsymv(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(x.dataPtr()), 1, _beta, DPTR(y.dataPtr()), 1);
 				}
 				else
 					throw NotSupported;
@@ -687,22 +687,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					err = cublasSsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasSsyr(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, FPTR(x.dataPtr()), 1, FPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					err = cublasDsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasDsyr(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, DPTR(x.dataPtr()), 1, DPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasCsyr(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasZsyr(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasZsyr(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -715,22 +715,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					cblas_ssyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, FPTR(x.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_ssyr(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, FPTR(x.dataPtr()), 1, FPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					cblas_dsyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, DPTR(x.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_dsyr(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, DPTR(x.dataPtr()), 1, DPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					cblas_csyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_csyr(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					cblas_zsyr(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_zsyr(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -762,22 +762,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasSsyr2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1, FPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					err = cublasDsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasDsyr2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1, DPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasCsyr2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasZsyr2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasZsyr2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -790,12 +790,12 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, FPTR(x.getPtr()), 1, FPTR(y.getPtr()), 1, FPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1, FPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					FCST(alpha)
-					cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), _alpha, DPTR(x.getPtr()), 1, DPTR(y.getPtr()), 1, DPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_ssyr2(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), _alpha, DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1, DPTR(A.gePtr()), A.columnsStride());
 				}
 				else
 					throw NotSupported;
@@ -825,13 +825,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), FPTR(A.gePtr()), A.columnsStride(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), DPTR(A.gePtr()), A.columnsStride(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+					err = cublasStrmv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1);
 				TEST_EXCEPTION(err)
 			#else
 				throw NotSupported;
@@ -841,13 +841,13 @@ namespace Kartet
 		{
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					cblas_strmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+					cblas_strmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), FPTR(A.gePtr()), A.columnsStride(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					cblas_dtrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+					cblas_dtrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), DPTR(A.gePtr()), A.columnsStride(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					cblas_ctrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+					cblas_ctrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					cblas_ztrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+					cblas_ztrmv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1);
 			#else
 				throw NotSupported;
 			#endif
@@ -867,13 +867,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 				cublasStatus_t err;
 				IF_FLOAT
-					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), FPTR(A.gePtr()), A.columnsStride(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), DPTR(A.gePtr()), A.columnsStride(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+					err = cublasStrsv(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), getCuBLASDiagType(diag), A.numRows(), ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1);
 				TEST_EXCEPTION(err)
 			#else
 				throw NotSupported;
@@ -883,13 +883,13 @@ namespace Kartet
 		{
 			#ifdef KARTET_ADD_CBLAS_INTERFACE
 				IF_FLOAT
-					cblas_strsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), FPTR(A.gePtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1);
+					cblas_strsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), FPTR(A.gePtr()), A.columnsStride(), FPTR(x.dataPtr()), 1);
 				else IF_DOUBLE
-					cblas_dtrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), DPTR(A.gePtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1);
+					cblas_dtrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), DPTR(A.gePtr()), A.columnsStride(), DPTR(x.dataPtr()), 1);
 				else IF_CX_FLOAT
-					cblas_ctrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1);
+					cblas_ctrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1);
 				else IF_CX_DOUBLE
-					cblas_ztrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.getNumRows(), ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1);
+					cblas_ztrsv(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), getCBLASDiagType(diag), A.numRows(), ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1);
 			#else
 				throw NotSupported;
 			#endif
@@ -913,13 +913,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasChemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+					err = cublasChemv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, &_beta, CPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZhemv(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+					err = cublasZhemv(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, &_beta, ZPTR(y.dataPtr()), 1);
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -933,13 +933,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_chemv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(A.gePtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, &_beta, CPTR(y.getPtr()), 1);
+					cblas_chemv(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(A.gePtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, &_beta, CPTR(y.dataPtr()), 1);
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zhemv(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(A.gePtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, &_beta, ZPTR(y.getPtr()), 1);
+					cblas_zhemv(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(A.gePtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, &_beta, ZPTR(y.dataPtr()), 1);
 				}
 			#else
 				throw NotSupported;
@@ -971,12 +971,12 @@ namespace Kartet
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCher(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasCher(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}                
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasZher(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasZher(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -989,12 +989,12 @@ namespace Kartet
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
-					cblas_cher(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_cher(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}                
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					cblas_zher(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_zher(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1026,12 +1026,12 @@ namespace Kartet
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasCher2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasCher2(handle, getCuBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					err = cublasCher2(handle, getCuBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1044,12 +1044,12 @@ namespace Kartet
 				IF_CX_FLOAT
 				{
 					CCST(alpha)
-					cblas_cher2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, CPTR(x.getPtr()), 1, CPTR(y.getPtr()), 1, CPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_cher2(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(A.gePtr()), A.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					cblas_zher2(CblasColMajor, getCBLASFillMode(uplo), A.getNumRows(), &_alpha, ZPTR(x.getPtr()), 1, ZPTR(y.getPtr()), 1, ZPTR(A.gePtr()), A.getLeadingColumns());
+					cblas_zher2(CblasColMajor, getCBLASFillMode(uplo), A.numRows(), &_alpha, ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(A.gePtr()), A.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1072,7 +1072,7 @@ namespace Kartet
 		TEST_SINGLE_SLICE(B)
 		TEST_SINGLE_SLICE(C)
 		TEST_PRODUCT(A, opa, B, opb, C)
-		const int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
+		const int k = (opa==OpTr || opa==OpHr) ? A.numRows() : A.numColumns();
 
 		if(l==DeviceSide)
 		{
@@ -1082,25 +1082,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasSgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), &_beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasDgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), &_beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}		
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZgemm(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1114,25 +1114,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_sgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_sgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), _beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_dgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), _beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_cgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}		
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.getNumRows(), C.getNumColumns(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1176,25 +1176,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasSsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), &_beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasDsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), &_beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZsymm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1208,25 +1208,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_ssymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_ssymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.numRows(), C.numColumns(), _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), _beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_dsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.numRows(), C.numColumns(), _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), _beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_csymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_csymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zsymm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), B.numRows(), C.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1252,7 +1252,7 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, A, OpTr, C)
 		else
 			TEST_PRODUCT(A, OpTr, A, OpNo, C)
-		const int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
+		const int k = (opa==OpTr || opa==OpHr) ? A.numRows() : A.numColumns();
 
 		if(l==DeviceSide)
 		{
@@ -1262,25 +1262,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasSsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, FPTR(A.dataPtr()), A.columnsStride(), &_beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasDsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, DPTR(A.dataPtr()), A.columnsStride(), &_beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZsyrk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1294,25 +1294,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_ssyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_ssyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, _alpha, FPTR(A.dataPtr()), A.columnsStride(), _beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_dsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, _alpha, DPTR(A.dataPtr()), A.columnsStride(), _beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_csyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_csyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zsyrk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1352,7 +1352,7 @@ namespace Kartet
 			TEST_PRODUCT(A, OpTr, B, OpNo, C)
 			TEST_PRODUCT(B, OpTr, A, OpNo, C)
 		}
-		const int k = (op==OpTr || op==OpHr) ? A.getNumRows() : A.getNumColumns();
+		const int k = (op==OpTr || op==OpHr) ? A.numRows() : A.numColumns();
 
 		if(l==DeviceSide)
 		{
@@ -1362,25 +1362,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					err = cublasSsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), &_beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasSsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), &_beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					err = cublasDsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), &_beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasDsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), &_beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZsyr2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1394,25 +1394,25 @@ namespace Kartet
 				{
 					FCST(alpha)
 					FCST(beta)
-					cblas_ssyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), _beta, FPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_ssyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), _beta, FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
 					DCST(beta)
-					cblas_dsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), _beta, DPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_dsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), _beta, DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_csyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_csyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zsyr2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1456,22 +1456,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					err = cublasStrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasStrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					err = cublasDtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasDtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasZtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZtrmm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1484,22 +1484,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					cblas_strmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_strmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride(), FPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					cblas_dtrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_dtrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride(), DPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					cblas_ctrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_ctrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					cblas_ztrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_ztrmm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1539,22 +1539,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					err = cublasStrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns());
+					err = cublasStrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					err = cublasDtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns());
+					err = cublasDtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					err = cublasCtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns());
+					err = cublasCtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					err = cublasZtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns());
+					err = cublasZtrsm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), getCuBLASOperation(opa), getCuBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1567,22 +1567,22 @@ namespace Kartet
 				IF_FLOAT
 				{
 					FCST(alpha)
-					cblas_strsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(B.getPtr()), B.getLeadingColumns());
+					cblas_strsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), _alpha, FPTR(A.dataPtr()), A.columnsStride(), FPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_DOUBLE
 				{
 					DCST(alpha)
-					cblas_dtrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), _alpha, DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(B.getPtr()), B.getLeadingColumns());
+					cblas_dtrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), _alpha, DPTR(A.dataPtr()), A.columnsStride(), DPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_CX_FLOAT
 				{
 					CCST(alpha)
-					cblas_ctrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns());
+					cblas_ctrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
-					cblas_ztrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.getNumRows(), B.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns());
+					cblas_ztrsm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), getCBLASOperation(opa), getCBLASDiagType(diag), B.numRows(), B.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1625,13 +1625,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasChemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasChemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.numRows(), C.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZhemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZhemm(handle, getCuBLASSideMode(side), getCuBLASFillMode(uplo), C.numRows(), C.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1645,13 +1645,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_chemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_chemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.numRows(), C.numColumns(), &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zhemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.getNumRows(), C.getNumColumns(), &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zhemm(CblasColMajor, getCBLASSideMode(side), getCBLASFillMode(uplo), C.numRows(), C.numColumns(), &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1678,7 +1678,7 @@ namespace Kartet
 			TEST_PRODUCT(A, OpNo, A, OpHr, C)
 		else
 			TEST_PRODUCT(A, OpHr, A, OpNo, C)
-		int k = (opa==OpTr || opa==OpHr) ? A.getNumRows() : A.getNumColumns();
+		int k = (opa==OpTr || opa==OpHr) ? A.numRows() : A.numColumns();
 
 		if(l==DeviceSide)
 		{
@@ -1688,13 +1688,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZherk(handle, getCuBLASFillMode(uplo), getCuBLASOperation(opa), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1708,13 +1708,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cherk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_cherk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zherk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zherk(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(opa), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1756,7 +1756,7 @@ namespace Kartet
 			TEST_PRODUCT(A, OpHr, B, OpNo, C)
 			TEST_PRODUCT(B, OpHr, A, OpNo, C)
 		}	
-		const int k = (op==OpTr || op==OpHr) ? A.getNumRows() : A.getNumColumns();
+		const int k = (op==OpTr || op==OpHr) ? A.numRows() : A.numColumns();
 
 		if(l==DeviceSide)
 		{
@@ -1766,13 +1766,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					err = cublasCher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasCher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					err = cublasZher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					err = cublasZher2k(handle, getCuBLASFillMode(uplo), getCuBLASOperation(op), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 				TEST_EXCEPTION(err)
 			#else
@@ -1786,13 +1786,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cher2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(B.getPtr()), B.getLeadingColumns(), &_beta, CPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_cher2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
 				}
 				IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zher2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.getNumRows(), k, &_alpha, ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(B.getPtr()), B.getLeadingColumns(), &_beta, ZPTR(C.getPtr()), C.getLeadingColumns());
+					cblas_zher2k(CblasColMajor, getCBLASFillMode(uplo), getCBLASOperation(op), C.numRows(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;
@@ -1831,25 +1831,25 @@ namespace Kartet
 			{
 				FCST(alpha)
 				FCST(beta)
-				err = cublasSgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), FPTR(&alpha), FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(&beta), FPTR(B.getPtr()), B.getLeadingColumns(), FPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasSgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), FPTR(&alpha), FPTR(A.dataPtr()), A.columnsStride(), FPTR(&beta), FPTR(B.dataPtr()), B.columnsStride(), FPTR(C.dataPtr()), C.columnsStride());
 			}
 			else IF_DOUBLE
 			{
 				DCST(alpha)
 				DCST(beta)
-				err = cublasDgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), DPTR(&alpha), DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(&beta), DPTR(B.getPtr()), B.getLeadingColumns(), DPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasDgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), DPTR(&alpha), DPTR(A.dataPtr()), A.columnsStride(), DPTR(&beta), DPTR(B.dataPtr()), B.columnsStride(), DPTR(C.dataPtr()), C.columnsStride());
 			}
 			else IF_CX_FLOAT
 			{
 				CCST(alpha)
 				CCST(beta)
-				err = cublasCgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), CPTR(&alpha), CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(&beta), CPTR(B.getPtr()), B.getLeadingColumns(), CPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasCgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), CPTR(&alpha), CPTR(A.dataPtr()), A.columnsStride(), CPTR(&beta), CPTR(B.dataPtr()), B.columnsStride(), CPTR(C.dataPtr()), C.columnsStride());
 			}
 			else IF_CX_DOUBLE
 			{
 				ZCST(alpha)
 				ZCST(beta)
-				err = cublasZgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.getNumRows(), C.getNumColumns(), ZPTR(&alpha), ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(&beta), ZPTR(B.getPtr()), B.getLeadingColumns(), ZPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasZgeam(handle, getCuBLASOperation(opa), getCuBLASOperation(opb), C.numRows(), C.numColumns(), ZPTR(&alpha), ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(&beta), ZPTR(B.dataPtr()), B.columnsStride(), ZPTR(C.dataPtr()), C.columnsStride());
 			}
 			TEST_EXCEPTION(err)
 		#else
@@ -1884,13 +1884,13 @@ namespace Kartet
 		#ifdef __CUDACC__
 			cublasStatus_t err;
 			IF_FLOAT
-				err = cublasSdgmm(handle, getCuBLASSideMode(side), C.getNumRows(), C.getNumColumns(), FPTR(A.getPtr()), A.getLeadingColumns(), FPTR(x.getPtr()), 1, FPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasSdgmm(handle, getCuBLASSideMode(side), C.numRows(), C.numColumns(), FPTR(A.dataPtr()), A.columnsStride(), FPTR(x.dataPtr()), 1, FPTR(C.dataPtr()), C.columnsStride());
 			else IF_DOUBLE
-				err = cublasDdgmm(handle, getCuBLASSideMode(side), C.getNumRows(), C.getNumColumns(), DPTR(A.getPtr()), A.getLeadingColumns(), DPTR(x.getPtr()), 1, DPTR(C.getPtr()), C.getLeadingColumns()); 
+				err = cublasDdgmm(handle, getCuBLASSideMode(side), C.numRows(), C.numColumns(), DPTR(A.dataPtr()), A.columnsStride(), DPTR(x.dataPtr()), 1, DPTR(C.dataPtr()), C.columnsStride()); 
 			else IF_CX_FLOAT
-				err = cublasCdgmm(handle, getCuBLASSideMode(side), C.getNumRows(), C.getNumColumns(), CPTR(A.getPtr()), A.getLeadingColumns(), CPTR(x.getPtr()), 1, CPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasCdgmm(handle, getCuBLASSideMode(side), C.numRows(), C.numColumns(), CPTR(A.dataPtr()), A.columnsStride(), CPTR(x.dataPtr()), 1, CPTR(C.dataPtr()), C.columnsStride());
 			else IF_CX_DOUBLE
-				err = cublasZdgmm(handle, getCuBLASSideMode(side), C.getNumRows(), C.getNumColumns(), ZPTR(A.getPtr()), A.getLeadingColumns(), ZPTR(x.getPtr()), 1, ZPTR(C.getPtr()), C.getLeadingColumns());
+				err = cublasZdgmm(handle, getCuBLASSideMode(side), C.numRows(), C.numColumns(), ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, ZPTR(C.dataPtr()), C.columnsStride());
 			TEST_EXCEPTION(err)
 		#else
 			throw NotSupported;

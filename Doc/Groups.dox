@@ -1,0 +1,18 @@
+/**
+	\file    Groups.dox
+	\brief   Groups Documentation.
+	\author  R. Kerviche
+	\date    December 1st 201
+**/
+
+/**
+	\defgroup OperatorsGroup Operators
+
+	This page groups all the operators on accessors/arrays. 
+**/
+
+/**
+	\defgroup FunctionsGroup Functions
+
+	This page groups all the functions on accessors/arrays. 
+**/

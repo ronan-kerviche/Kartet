@@ -60,10 +60,9 @@ namespace Kartet
 					{
 						index_t	iL = i + il * gridDim.x * blockDim.x,
 							jL = j + jl * gridDim.y * blockDim.y,
-							kL = k + kl * gridDim.z * blockDim.z,
-							pL = layout.getIndex(iL, jL, kL);
+							kL = k + kl * gridDim.z * blockDim.z;
 						if(layout.isInside(iL, jL, kL))
-							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
+							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 					}
 
 			// THIS ONE IS SLOWER (???) :
@@ -80,7 +79,7 @@ namespace Kartet
 				{				
 					for(int ic=0; ic<blockSteps.x; ic++)
 					{
-						pL = layout.getIndex(iL, jL, kL);
+						pL = layout.getPosition(iL, jL, kL);
 						if(layout.isInside(iL, jL, kL))
 							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
 						iL += stepX;
@@ -114,9 +113,9 @@ namespace Kartet
 		ReturnType *sharedData = SharedMemory<ReturnType>();
 
 		const unsigned int threadId = (threadIdx.z*blockDim.y + threadIdx.y)*blockDim.x + threadIdx.x;
-		const index_t 	i = blockIdx.x * reductionBlockLayout.getNumRows() + threadIdx.x,
-				j = blockIdx.y * reductionBlockLayout.getNumColumns() + threadIdx.y,
-				k = blockIdx.z * reductionBlockLayout.getNumSlices() + threadIdx.z;
+		const index_t 	i = blockIdx.x * reductionBlockLayout.numRows() + threadIdx.x,
+				j = blockIdx.y * reductionBlockLayout.numColumns() + threadIdx.y,
+				k = blockIdx.z * reductionBlockLayout.numSlices() + threadIdx.z;
 
 		// Initialization :
 		sharedData[threadId] = defaultValue;
@@ -132,10 +131,9 @@ namespace Kartet
 						kB = threadIdx.z + kl * blockDim.z,
 						iL = i + il * blockDim.x,
 						jL = j + jl * blockDim.y,
-						kL = k + kl * blockDim.z,
-						pL = layout.getIndex(iL, jL, kL);
+						kL = k + kl * blockDim.z;
 					if(layout.isInside(iL, jL, kL) && reductionBlockLayout.isInside(iB, jB, kB))
-						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
+						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 				}
 		sharedData[threadId] = v;
 
@@ -160,12 +158,12 @@ namespace Kartet
 
 		const unsigned int subThreadId = (threadIdx.z*blockDim.y + threadIdx.y)*blockDim.x,
 				   threadId = subThreadId + threadIdx.x;
-		const index_t 	i = blockIdx.x * numSubReductionBlocks.x * reductionBlockLayout.getNumRows() + threadIdx.x,
-				j = blockIdx.y * numSubReductionBlocks.y * reductionBlockLayout.getNumColumns() + threadIdx.y,
-				k = blockIdx.z * numSubReductionBlocks.z * reductionBlockLayout.getNumSlices() + threadIdx.z,
-				iB = threadIdx.x % reductionBlockLayout.getNumRows(),
-				jB = threadIdx.y % reductionBlockLayout.getNumColumns(),
-				kB = threadIdx.z % reductionBlockLayout.getNumSlices();
+		const index_t 	i = blockIdx.x * numSubReductionBlocks.x * reductionBlockLayout.numRows() + threadIdx.x,
+				j = blockIdx.y * numSubReductionBlocks.y * reductionBlockLayout.numColumns() + threadIdx.y,
+				k = blockIdx.z * numSubReductionBlocks.z * reductionBlockLayout.numSlices() + threadIdx.z,
+				iB = threadIdx.x % reductionBlockLayout.numRows(),
+				jB = threadIdx.y % reductionBlockLayout.numColumns(),
+				kB = threadIdx.z % reductionBlockLayout.numSlices();
 		const bool 	mainThread = (jB==0 && kB==0);
 
 		// Initialization :
@@ -182,10 +180,9 @@ namespace Kartet
 						kBL = kB + kl * blockDim.z,
 						iL = i + il * blockDim.x,
 						jL = j + jl * blockDim.y,
-						kL = k + kl * blockDim.z,
-						pL = layout.getIndex(iL, jL, kL);
+						kL = k + kl * blockDim.z;
 					if(layout.isInside(iL, jL, kL) && reductionBlockLayout.isInside(iBL, jBL, kBL))
-						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
+						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 				}
 		sharedData[threadId] = v;
 		v = defaultValue; // Reset, important for what is next.
@@ -194,8 +191,8 @@ namespace Kartet
 		// Second pass, within the shared memory :
 		if(mainThread)
 		{
-			for(unsigned int kl=0; kl<reductionBlockLayout.getNumSlices()/blockSteps.z; kl++)
-				for(unsigned int jl=0; jl<reductionBlockLayout.getNumColumns()/blockSteps.y; jl++)
+			for(unsigned int kl=0; kl<reductionBlockLayout.numSlices()/blockSteps.z; kl++)
+				for(unsigned int jl=0; jl<reductionBlockLayout.numColumns()/blockSteps.y; jl++)
 				{
 					const unsigned int	jCL = threadIdx.y + jl,
 								kCL = threadIdx.z + kl,
@@ -212,12 +209,12 @@ namespace Kartet
 		{
 			// slooooooow, here the reads to the shared memory are not coalesced.
 			// I need to improve this to a better method.
-			for(unsigned int il=0; il<reductionBlockLayout.getNumRows(); il++)
-				v = Op<ReturnType, ReturnType>::apply(v, sharedData[subThreadId + threadIdx.x*reductionBlockLayout.getNumRows() + il]);
+			for(unsigned int il=0; il<reductionBlockLayout.numRows(); il++)
+				v = Op<ReturnType, ReturnType>::apply(v, sharedData[subThreadId + threadIdx.x*reductionBlockLayout.numRows() + il]);
 
 			const index_t	iBP = blockIdx.x * numSubReductionBlocks.x + threadIdx.x,
-					jBP = blockIdx.y * numSubReductionBlocks.y + threadIdx.y/reductionBlockLayout.getNumColumns(),
-					kBP = blockIdx.z * numSubReductionBlocks.z + threadIdx.z/reductionBlockLayout.getNumSlices();
+					jBP = blockIdx.y * numSubReductionBlocks.y + threadIdx.y/reductionBlockLayout.numColumns(),
+					kBP = blockIdx.z * numSubReductionBlocks.z + threadIdx.z/reductionBlockLayout.numSlices();
 			
 			if(output.isInside(iBP, jBP, kBP))
 				output.data(iBP, jBP, kBP) = complexCopy<TOut>(v);	
@@ -263,8 +260,8 @@ namespace Kartet
 			TOut	*castHostPtr   = reinterpret_cast<TOut*>(hostPtr),
 				*castDevicePtr = reinterpret_cast<TOut*>(devicePtr);
 
-			const dim3	blockSize = layout.getBlockSize(),
-					numBlocks = layout.getNumBlock();
+			const dim3	blockSize = layout.blockSize(),
+					numBlocks = layout.numBlocks();
 
 			// Compute the stride for each block, in order to limit the total number of blocks to fillNumBlocks :
 			dim3	reducedNumBlocks,
@@ -319,12 +316,10 @@ namespace Kartet
 		{
 			ReturnType result = defaultValue;
 
-			for(index_t k=0, j=0, i=0, q=0; q<layout.getNumElements(); q++)
+			for(index_t k=0, j=0, i=0, q=0; q<layout.numElements(); q++)
 			{
-				index_t p = layout.getIndex(i, j, k);
-				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
-
-				layout.moveToNextIndex(i, j, k);
+				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
+				layout.moveToNext(i, j, k);
 			}
 
 			return result;
@@ -342,7 +337,7 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ T ReduceContext::min(const Accessor<T,l>& accessor)
 		{
-			return min(accessor.getLayout(), accessor);
+			return min(accessor.layout(), accessor);
 		}
 
 		template<typename TExpr>
@@ -356,7 +351,7 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ T ReduceContext::max(const Accessor<T,l>& accessor)
 		{
-			return max(accessor.getLayout(), accessor);
+			return max(accessor.layout(), accessor);
 		}
 
 		template<typename TExpr>
@@ -369,19 +364,19 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ T ReduceContext::sum(const Accessor<T,l>& accessor)
 		{
-			return sum(accessor.getLayout(), accessor);
+			return sum(accessor.layout(), accessor);
 		}
 
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::mean(const Layout& layout, const TExpr& expr)
 		{
-			return sum(layout, expr) / layout.getNumElements();
+			return sum(layout, expr) / layout.numElements();
 		}
 
 		template<typename T, Location l>
 		__host__ T ReduceContext::mean(const Accessor<T,l>& accessor)
 		{
-			return sum(accessor.getLayout(), accessor) / accessor.getNumElements();
+			return sum(accessor.layout(), accessor) / accessor.numElements();
 		}
 
 		template<typename TExpr>
@@ -394,7 +389,7 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ T ReduceContext::prod(const Accessor<T,l>& accessor)
 		{
-			return prod(accessor.getLayout(), accessor);
+			return prod(accessor.layout(), accessor);
 		}
 
 		template<typename TExpr>
@@ -406,7 +401,7 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ bool ReduceContext::all(const Accessor<T,l>& accessor)
 		{
-			return all(accessor.getLayout(), accessor);
+			return all(accessor.layout(), accessor);
 		}
 
 		template<typename TExpr>
@@ -418,7 +413,7 @@ namespace Kartet
 		template<typename T, Location l>
 		__host__ bool ReduceContext::any(const Accessor<T,l>& accessor)
 		{
-			return any(accessor.getLayout(), accessor);
+			return any(accessor.layout(), accessor);
 		}
 
 	// Binning-like operations :
@@ -428,41 +423,41 @@ namespace Kartet
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		StaticAssert<ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide>(); // The expression must be on the same side than the output.
 
-		if((layout.getNumRows() % output.getNumRows())!=0 || (layout.getNumColumns() % output.getNumColumns())!=0 || (layout.getNumSlices() % output.getNumSlices())!=0)	
+		if((layout.numRows() % output.numRows())!=0 || (layout.numColumns() % output.numColumns())!=0 || (layout.numSlices() % output.numSlices())!=0)	
 			throw InvalidOperation;
 
 		#ifdef __CUDACC__
 		if(ExpressionEvaluation<TExpr>::location==DeviceSide || ExpressionEvaluation<TExpr>::location==AnySide)
 		{
-			dim3	blockSize = layout.getBlockSize(),
-				numBlocks = layout.getNumBlock(),
+			dim3	blockSize = layout.blockSize(),
+				numBlocks = layout.numBlocks(),
 				blockSteps,				// The steps to cover one block.
 				numSubReductionBlocks;			// The number of sub-blocks covered.
-			const Layout reductionBlockLayout(layout.getNumRows()/output.getNumRows(), layout.getNumColumns()/output.getNumColumns(), layout.getNumSlices()/output.getNumSlices());
+			const Layout reductionBlockLayout(layout.numRows()/output.numRows(), layout.numColumns()/output.numColumns(), layout.numSlices()/output.numSlices());
 
 			/* The approach here is to split the code in two different methods depending on the size of the block to be reduced.
 			   The chosen limit is still somewhat arbitrary and needs to be refined.
 			*/
-			//std::cout << "Reduction from layout " << layout << " to " << output.getLayout() << std::endl;
-			bool largeReductionMode = (reductionBlockLayout.getNumElements()>=(Layout::StaticContainer<void>::numThreads/2)); // Ad-hoc coefficient decision.
+			//std::cout << "Reduction from layout " << layout << " to " << output.layout() << std::endl;
+			bool largeReductionMode = (reductionBlockLayout.numElements()>=(Layout::StaticContainer<void>::numThreads/2)); // Ad-hoc coefficient decision.
 			if(largeReductionMode)
 			{
 				//std::cout << "Large reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut to the block size layout :
-				blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.getNumRows());
-				blockSize.y = std::min(Layout::StaticContainer<void>::numThreads/blockSize.x, reductionBlockLayout.getNumColumns());
-				blockSize.z = std::min(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y), reductionBlockLayout.getNumSlices());
+				blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.numRows());
+				blockSize.y = std::min(Layout::StaticContainer<void>::numThreads/blockSize.x, reductionBlockLayout.numColumns());
+				blockSize.z = std::min(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y), reductionBlockLayout.numSlices());
 			
 				// The number of steps to do depends on the previous cut :
-				blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
-				blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
-				blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z- 1) / blockSize.z;
+				blockSteps.x = (reductionBlockLayout.numRows() + blockSize.x - 1) / blockSize.x;
+				blockSteps.y = (reductionBlockLayout.numColumns() + blockSize.y - 1) / blockSize.y;
+				blockSteps.z = (reductionBlockLayout.numSlices() + blockSize.z- 1) / blockSize.z;
 			
 				// There will be exactly one block per output values :
-				numBlocks.x = output.getNumRows();
-				numBlocks.y = output.getNumColumns();
-				numBlocks.z = output.getNumSlices();
+				numBlocks.x = output.numRows();
+				numBlocks.y = output.numColumns();
+				numBlocks.z = output.numSlices();
 
 				// Each Cuda Block will only take care of one block :
 				numSubReductionBlocks.x = 1;
@@ -474,24 +469,24 @@ namespace Kartet
 				//std::cout << "Small reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut the block size to fit an integer number of blocks :
-				blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.getNumRows(), reductionBlockLayout.getNumRows() % blockSize.x), static_cast<index_t>(1));
-				blockSize.y = std::max( std::max(blockSize.y - blockSize.y % reductionBlockLayout.getNumColumns(), reductionBlockLayout.getNumColumns() % blockSize.y), static_cast<index_t>(1));
-				blockSize.z = std::max( std::max(blockSize.z - blockSize.z % reductionBlockLayout.getNumSlices(), reductionBlockLayout.getNumSlices() % blockSize.z), static_cast<index_t>(1));
+				blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.numRows(), reductionBlockLayout.numRows() % blockSize.x), static_cast<index_t>(1));
+				blockSize.y = std::max( std::max(blockSize.y - blockSize.y % reductionBlockLayout.numColumns(), reductionBlockLayout.numColumns() % blockSize.y), static_cast<index_t>(1));
+				blockSize.z = std::max( std::max(blockSize.z - blockSize.z % reductionBlockLayout.numSlices(), reductionBlockLayout.numSlices() % blockSize.z), static_cast<index_t>(1));
 			
 				// The number of steps to do also depends on the previous cut :
-				blockSteps.x = (reductionBlockLayout.getNumRows() + blockSize.x - 1) / blockSize.x;
-				blockSteps.y = (reductionBlockLayout.getNumColumns() + blockSize.y - 1) / blockSize.y;
-				blockSteps.z = (reductionBlockLayout.getNumSlices() + blockSize.z - 1) / blockSize.z;
+				blockSteps.x = (reductionBlockLayout.numRows() + blockSize.x - 1) / blockSize.x;
+				blockSteps.y = (reductionBlockLayout.numColumns() + blockSize.y - 1) / blockSize.y;
+				blockSteps.z = (reductionBlockLayout.numSlices() + blockSize.z - 1) / blockSize.z;
 			
 				// numBlocks
-				numBlocks.x = (output.getNumRows() + (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows()) - 1) / (blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows());
-				numBlocks.y = (output.getNumColumns() + (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns()) - 1) / (blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns());
-				numBlocks.z = (output.getNumSlices() + (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices()) - 1) / (blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices());
+				numBlocks.x = (output.numRows() + (blockSize.x * blockSteps.x / reductionBlockLayout.numRows()) - 1) / (blockSize.x * blockSteps.x / reductionBlockLayout.numRows());
+				numBlocks.y = (output.numColumns() + (blockSize.y * blockSteps.y / reductionBlockLayout.numColumns()) - 1) / (blockSize.y * blockSteps.y / reductionBlockLayout.numColumns());
+				numBlocks.z = (output.numSlices() + (blockSize.z * blockSteps.z / reductionBlockLayout.numSlices()) - 1) / (blockSize.z * blockSteps.z / reductionBlockLayout.numSlices());
 			
 				// Each Cuda Block will take care of multiple blocks :
-				numSubReductionBlocks.x = blockSize.x * blockSteps.x / reductionBlockLayout.getNumRows();
-				numSubReductionBlocks.y = blockSize.y * blockSteps.y / reductionBlockLayout.getNumColumns();
-				numSubReductionBlocks.z = blockSize.z * blockSteps.z / reductionBlockLayout.getNumSlices();
+				numSubReductionBlocks.x = blockSize.x * blockSteps.x / reductionBlockLayout.numRows();
+				numSubReductionBlocks.y = blockSize.y * blockSteps.y / reductionBlockLayout.numColumns();
+				numSubReductionBlocks.z = blockSize.z * blockSteps.z / reductionBlockLayout.numSlices();
 			}
 
 			// Testing the computation layouts :
@@ -525,27 +520,26 @@ namespace Kartet
 		}
 		else
 		{
-			const Layout block(layout.getNumRows()/output.getNumRows(), layout.getNumColumns()/output.getNumColumns(), layout.getNumSlices()/output.getNumSlices());
+			const Layout block(layout.numRows()/output.numRows(), layout.numColumns()/output.numColumns(), layout.numSlices()/output.numSlices());
 
-			for(index_t ko=0, jo=0, io=0, qo=0; qo<output.getNumElements(); qo++)
+			for(index_t ko=0, jo=0, io=0, qo=0; qo<output.numElements(); qo++)
 			{
 				ReturnType result = defaultValue;
 
-				for(index_t kb=0, jb=0, ib=0, qb=0; qb<block.getNumElements(); qb++)
+				for(index_t kb=0, jb=0, ib=0, qb=0; qb<block.numElements(); qb++)
 				{
-					index_t	i = io * block.getNumRows() + ib,
-						j = jo * block.getNumColumns() + jb,
-						k = ko * block.getNumSlices() + kb,
-						p = layout.getIndex(i, j, k);
+					index_t	i = io * block.numRows() + ib,
+						j = jo * block.numColumns() + jb,
+						k = ko * block.numSlices() + kb;
 
-					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, p, i, j, k));
+					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
 
-					block.moveToNextIndex(ib, jb, kb);
+					block.moveToNext(ib, jb, kb);
 				}
 				
 				output.data(io, jo, ko) = complexCopy<TOut>(result);
 
-				output.moveToNextIndex(io, jo, ko);
+				output.moveToNext(io, jo, ko);
 			}
 		}
 	}
@@ -561,7 +555,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			minBlock(accessor.getLayout(), accessor, output);
+			minBlock(accessor.layout(), accessor, output);
 		}
 
 		template<typename TExpr, typename TOut, Location l>
@@ -575,7 +569,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			maxBlock(accessor.getLayout(), accessor, output);
+			maxBlock(accessor.layout(), accessor, output);
 		}
 
 		template<typename TExpr, typename TOut, Location l>
@@ -588,7 +582,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			sumBlock(accessor.getLayout(), accessor, output);
+			sumBlock(accessor.layout(), accessor, output);
 		}
 
 		template<typename TExpr, typename TOut, Location l>
@@ -601,7 +595,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			prodBlock(accessor.getLayout(), accessor, output);
+			prodBlock(accessor.layout(), accessor, output);
 		}
 
 		template<typename TExpr, typename TOut, Location l>
@@ -613,7 +607,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			allBlock(accessor.getLayout(), accessor, output);
+			allBlock(accessor.layout(), accessor, output);
 		}
 
 		template<typename TExpr, typename TOut, Location l>
@@ -625,7 +619,7 @@ namespace Kartet
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
-			anyBlock(accessor.getLayout(), accessor, output);
+			anyBlock(accessor.layout(), accessor, output);
 		}
 } // namespace Kartet
 

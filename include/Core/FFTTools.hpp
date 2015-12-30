@@ -72,31 +72,31 @@ namespace Kartet
 
 			if(planeFlag==Single)
 			{
-				if(inputLayout.getNumSlices()==1 && inputLayout.getNumColumns()==1)
-					err = cufftPlan1d(&handle, inputLayout.getNumRows(), getCuFFTType(operation), 1); // 1 transformation.
-				else if(inputLayout.getNumSlices()==1)
-					err = cufftPlan2d(&handle, inputLayout.getNumRows(), inputLayout.getNumColumns(), getCuFFTType(operation));
+				if(inputLayout.numSlices()==1 && inputLayout.numColumns()==1)
+					err = cufftPlan1d(&handle, inputLayout.numRows(), getCuFFTType(operation), 1); // 1 transformation.
+				else if(inputLayout.numSlices()==1)
+					err = cufftPlan2d(&handle, inputLayout.numRows(), inputLayout.numColumns(), getCuFFTType(operation));
 				else
-					err = cufftPlan3d(&handle, inputLayout.getNumRows(), inputLayout.getNumColumns(), inputLayout.getNumSlices(), getCuFFTType(operation));
+					err = cufftPlan3d(&handle, inputLayout.numRows(), inputLayout.numColumns(), inputLayout.numSlices(), getCuFFTType(operation));
 			}
 			else // Many planes
 			{
-				if(inputLayout.getNumColumns()>1 && inputLayout.getNumSlices()==1) // Many 1D along the rows
+				if(inputLayout.numColumns()>1 && inputLayout.numSlices()==1) // Many 1D along the rows
 				{
-					int nI[1] = {inputLayout.getNumRows()},
-					    nO[1] = {outputLayout.getNumRows()};
-					int idist = inputLayout.getLeadingColumns(),
-					    odist = outputLayout.getLeadingColumns();
+					int nI[1] = {static_cast<int>(inputLayout.numRows())},
+					    nO[1] = {static_cast<int>(outputLayout.numRows())};
+					int idist = static_cast<int>(inputLayout.columnsStride()),
+					    odist = static_cast<int>(outputLayout.columnsStride());
 
-					err = cufftPlanMany(&handle, 1, nI, nI, 1, idist, nO, 1, odist, getCuFFTType(operation), inputLayout.getNumColumns());
+					err = cufftPlanMany(&handle, 1, nI, nI, 1, idist, nO, 1, odist, getCuFFTType(operation), inputLayout.numColumns());
 				}
-				else if(inputLayout.getNumColumns()>1 && inputLayout.getNumSlices()>1) // Many 2D along the slices
+				else if(inputLayout.numColumns()>1 && inputLayout.numSlices()>1) // Many 2D along the slices
 				{
-					int nI[2] = {inputLayout.getNumRows(), inputLayout.getNumColumns()},
-					    nO[2] = {outputLayout.getNumRows(), outputLayout.getNumColumns()};
-					int idist = inputLayout.getLeadingSlices(),
-					    odist = outputLayout.getLeadingSlices();
-					err = cufftPlanMany(&handle, 2, nI, nI, 1, idist, nO, 1, odist, getCuFFTType(operation), inputLayout.getNumSlices());
+					int nI[2] = {static_cast<int>(inputLayout.numRows()), static_cast<int>(inputLayout.numColumns())},
+					    nO[2] = {static_cast<int>(outputLayout.numRows()), static_cast<int>(outputLayout.numColumns())};
+					int idist = static_cast<int>(inputLayout.slicesStride()),
+					    odist = static_cast<int>(outputLayout.slicesStride());
+					err = cufftPlanMany(&handle, 2, nI, nI, 1, idist, nO, 1, odist, getCuFFTType(operation), inputLayout.numSlices());
 				}
 				else
 					throw NotSupported;
@@ -113,20 +113,20 @@ namespace Kartet
 		#endif
 
 		#ifdef KARTET_USE_FFTW
-			if(inputLayout.getNumSlices()==1 && inputLayout.getNumColumns()==1)
+			if(inputLayout.numSlices()==1 && inputLayout.numColumns()==1)
 			{
-				fftwHandleFloat = fftwf_plan_dft_1d(inputLayout.getNumRows(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
-				fftwHandleDouble= fftw_plan_dft_1d(inputLayout.getNumRows(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleFloat = fftwf_plan_dft_1d(static_cast<int>(inputLayout.numRows()), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleDouble= fftw_plan_dft_1d(static_cast<int>(inputLayout.numRows()), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
 			}
-			else if(inputLayout.getNumSlices()==1)
+			else if(inputLayout.numSlices()==1)
 			{
-				fftwHandleFloat = fftwf_plan_dft_2d(inputLayout.getNumRows(), inputLayout.getNumColumns(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
-				fftwHandleDouble= fftw_plan_dft_2d(inputLayout.getNumRows(), inputLayout.getNumColumns(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleFloat = fftwf_plan_dft_2d(inputLayout.numRows(), inputLayout.numColumns(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleDouble= fftw_plan_dft_2d(inputLayout.numRows(), inputLayout.numColumns(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
 			}
 			else
 			{
-				fftwHandleFloat = fftwf_plan_dft_3d(inputLayout.getNumRows(), inputLayout.getNumColumns(), inputLayout.getNumSlices(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
-				fftwHandleDouble= fftw_plan_dft_3d(inputLayout.getNumRows(), inputLayout.getNumColumns(), inputLayout.getNumSlices(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleFloat = fftwf_plan_dft_3d(inputLayout.numRows(), inputLayout.numColumns(), inputLayout.numSlices(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
+				fftwHandleDouble= fftw_plan_dft_3d(inputLayout.numRows(), inputLayout.numColumns(), inputLayout.numSlices(), NULL, NULL, FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT);
 			}
 		#endif
 	}
@@ -159,20 +159,20 @@ namespace Kartet
 	__host__ bool FFTContext::isValid(const Operation& _operation, const Layout& input, const Layout& output, const PlaneFlag& _planeFlag)
 	{		
 		/*MUST
-		input.getNumRows()>1
-		output.getNumRows()>1*/
+		input.numRows()>1
+		output.numRows()>1*/
 
 		/*if( 	// Check for the dimensions :
-			(input.getNumSlices()!=output.getNumSlices()) ||
-			(input.getNumColumns()==1 || input.getNumRows()==1) ||
-			(output.getNumColumns()==1 || output.getNumRows()==1) ||
+			(input.numSlices()!=output.numSlices()) ||
+			(input.numColumns()==1 || input.numRows()==1) ||
+			(output.numColumns()==1 || output.numRows()==1) ||
 			(!input.isSliceMonolithic() || !output.isSliceMonolithic()) ||
 			// Check for the types :
 			(!TypeInfo<TIn>::isComplex && !TypeInfo<TOut>::isComplex) ||
 			// Check for the sizes : 
-			(TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()==output.getNumRows())) ||
-			(TypeInfo<TIn>::isComplex && !TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()/2+1==output.getNumRows())) ||
-			(!TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.getNumColumns()==output.getNumColumns() && input.getNumRows()==output.getNumRows()/2+1)) )
+			(TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.numColumns()==output.numColumns() && input.numRows()==output.numRows())) ||
+			(TypeInfo<TIn>::isComplex && !TypeInfo<TOut>::isComplex && !(input.numColumns()==output.numColumns() && input.numRows()/2+1==output.numRows())) ||
+			(!TypeInfo<TIn>::isComplex && TypeInfo<TOut>::isComplex && !(input.numColumns()==output.numColumns() && input.numRows()==output.numRows()/2+1)) )
 			return false;
 		else
 			return true;*/

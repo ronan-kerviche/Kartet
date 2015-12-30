@@ -223,7 +223,7 @@ namespace Kartet
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				curandStatus_t err = curandGenerateUniform(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements());
+				curandStatus_t err = curandGenerateUniform(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements());
 				TEST_EXCEPTION(err)
 			#else 
 				throw NotSupported;
@@ -231,7 +231,7 @@ namespace Kartet
 		}
 		else
 		{
-			for(index_t p=0; p<currentAccessLayout.getNumElements(); p++)
+			for(index_t p=0; p<currentAccessLayout.numElements(); p++)
 				*(ptr+offset+p) = static_cast<float>(rand())/static_cast<float>(RAND_MAX);
 		}
 	}
@@ -247,7 +247,7 @@ namespace Kartet
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				curandStatus_t err = curandGenerateUniformDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements());
+				curandStatus_t err = curandGenerateUniformDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements());
 				TEST_EXCEPTION(err)
 			#else 
 				throw NotSupported;
@@ -255,7 +255,7 @@ namespace Kartet
 		}
 		else
 		{
-			for(index_t p=0; p<currentAccessLayout.getNumElements(); p++)
+			for(index_t p=0; p<currentAccessLayout.numElements(); p++)
 				*(ptr+offset+p) = static_cast<double>(rand())/static_cast<double>(RAND_MAX);
 		}
 	}
@@ -316,7 +316,7 @@ namespace Kartet
 		#ifdef __CUDACC__
 			if(l==DeviceSide)
 			{
-				curandStatus_t err = curandGenerateNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				curandStatus_t err = curandGenerateNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements(), mean, std);
 				TEST_EXCEPTION(err)
 			}
 			else
@@ -335,7 +335,7 @@ namespace Kartet
 		#ifdef __CUDACC__
 			if(l==DeviceSide)
 			{
-				curandStatus_t err = curandGenerateNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				curandStatus_t err = curandGenerateNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements(), mean, std);
 				TEST_EXCEPTION(err)
 			}
 			else
@@ -405,7 +405,7 @@ namespace Kartet
 		#ifdef __CUDACC__
 			if(l==DeviceSide)
 			{
-				curandStatus_t err = curandGenerateLogNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				curandStatus_t err = curandGenerateLogNormal(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements(), mean, std);
 				TEST_EXCEPTION(err)
 			}
 			else
@@ -424,7 +424,7 @@ namespace Kartet
 		#ifdef __CUDACC__
 			if(l==DeviceSide)
 			{
-				curandStatus_t err = curandGenerateLogNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.getNumElements(), mean, std);
+				curandStatus_t err = curandGenerateLogNormalDouble(RandomSourceContext<l>::gen, ptr+offset, currentAccessLayout.numElements(), mean, std);
 				TEST_EXCEPTION(err)
 			}
 			else

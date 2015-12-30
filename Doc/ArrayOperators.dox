@@ -1,0 +1,153 @@
+/**
+	\file    ArrayOperators.dox
+	\brief   Documentation of the arrays operators.
+	\author  R. Kerviche
+	\date    December 1st 201
+**/
+
+/*
+	This file is not needed for the library to work. It mirrors the definitions in $KARTET_PATH/include/Core/ArrayOperators.hpp.
+*/
+
+namespace Kartet
+{
+/**
+	\addtogroup OperatorsGroup
+	@{
+**/
+
+	/**
+	\return Minus the input expression.
+	\param a Expression.
+	**/
+	Result operator-(Expression a) { }
+
+	/**
+	\return Not the input expression
+	\param a Expression.
+	**/
+	Result operator!(Expression a) { }
+
+	/**
+	\return Binary complement of the input expression
+	\param a Expression.
+	**/
+	Result operator~(Expression a) { }
+
+	/**
+	\return Add two expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator+(Expression a, Expression b) { }
+
+	/**
+	\return Substract two expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator-(Expression a, Expression b) { }
+
+	/**
+	\return Multiply two expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator*(Expression a, Expression b) { }
+
+	/**
+	\return Divide two expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator/(Expression a, Expression b) { }
+
+	/**
+	\return Modulo with two expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator%(Expression a, Expression b) { }	
+
+	/**
+	\return Binary and between expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator&(Expression a, Expression b) { }
+
+	/**
+	\return Binary or between expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator|(Expression a, Expression b) { }
+
+	/**
+	\return And between expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator&&(Expression a, Expression b) { }
+
+	/**
+	\return Or between expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator||(Expression a, Expression b) { }
+
+	/**
+	\return Xor between expressions.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator^(Expression a, Expression b) { }
+		
+	/**
+	\return True if the two expressions are equal.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator==(Expression a, Expression b) { }
+
+	/**
+	\return True if the two expressions are different.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator!=(Expression a, Expression b) { }
+
+	/**
+	\return True if left is strictly larger than right.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator>(Expression a, Expression b) { }
+
+	/**
+	\return True if left is larger or equal to right.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator>=(Expression a, Expression b) { }
+
+	/**
+	\return True if right is strictly larger than left.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator<(Expression a, Expression b) { }
+
+	/**
+	\return True if right is larger or equal to left.
+	\param a Left.
+	\param b Right.
+	**/
+	Result operator<=(Expression a, Expression b) { }
+
+/**
+	@}
+**/
+}
+

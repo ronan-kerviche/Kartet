@@ -72,13 +72,13 @@ int main(int argc, char** argv)
 		std::cout << "Cx = " << Cx << std::endl;
 
 		// Computing over parts of the array :
-		C.vector(0) = C.vector(2) - C.vector(1);
+		C.column(0) = C.column(2) - C.column(1);
 		std::cout << "C = " << C << std::endl;
 		
 		// Explicit manipulations :
 		Kartet::Array<int> block(3, 3);
 		block = Kartet::cast<double>(Kartet::IndexI()!=1 && Kartet::IndexJ()!=1);
-		Kartet::Array<int> large(3*block.getNumRows(), 3*block.getNumColumns());
+		Kartet::Array<int> large(3*block.numRows(), 3*block.numColumns());
 		large = repeat(block);
 		std::cout << "Block = " << block << std::endl;
 		std::cout << "Large (repeat block) = " << large << std::endl;
@@ -97,10 +97,10 @@ int main(int argc, char** argv)
 
 		// Reduction example :
 		Kartet::ReduceContext reduceContext;
-		const double count1 = reduceContext.sum(A.getLayout(), Kartet::cast<int>(A>=B));
+		const double count1 = reduceContext.sum(A.layout(), Kartet::cast<int>(A>=B));
 		std::cout << "Number of elements of A larger than B : " << count1 << std::endl;
 		
-		const double sum1 = reduceContext.sum(A.getLayout(), abs(A-B));
+		const double sum1 = reduceContext.sum(A.layout(), abs(A-B));
 		std::cout << "Sum over |A-B| : " << sum1 << std::endl;
 
 		// BLAS Example :

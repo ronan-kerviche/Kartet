@@ -171,11 +171,14 @@ namespace Kartet
 		// Kartet Specifics :
 		InvalidNegativeSize,
 		InvalidNegativeStep,
+		InvalidStep,
+		InvalidSize,
 		OutOfRange,
 		OutOfMemory,
 		InvalidOperation,
+		InvalidLayout,
 		IncompatibleLayout,
-		InvalidLayoutChange,
+		InvalidLayoutReinterpretation,
 		InvalidInputStream,
 		InvalidOutputStream,
 		InvalidStreamHeader,
@@ -316,11 +319,14 @@ namespace Kartet
 			// Kartet : 
 			EXCEPTION_MESSAGE( InvalidNegativeSize )
 			EXCEPTION_MESSAGE( InvalidNegativeStep )
+			EXCEPTION_MESSAGE( InvalidStep )
+			EXCEPTION_MESSAGE( InvalidSize )
 			EXCEPTION_MESSAGE( OutOfRange )
 			EXCEPTION_MESSAGE( OutOfMemory )
 			EXCEPTION_MESSAGE( InvalidOperation )
+			EXCEPTION_MESSAGE( InvalidLayout )
 			EXCEPTION_MESSAGE( IncompatibleLayout )
-			EXCEPTION_MESSAGE( InvalidLayoutChange )
+			EXCEPTION_MESSAGE( InvalidLayoutReinterpretation )
 			EXCEPTION_MESSAGE( InvalidInputStream )
 			EXCEPTION_MESSAGE( InvalidOutputStream )
 			EXCEPTION_MESSAGE( InvalidStreamHeader )

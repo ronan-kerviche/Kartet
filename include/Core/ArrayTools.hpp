@@ -57,7 +57,7 @@ namespace Kartet
 
 // Layout::StaticContainer :
 	template<typename T>
-	inline size_t Layout::StaticContainer<T>::getStreamHeaderLength(void)
+	inline size_t Layout::StaticContainer<T>::streamHeaderLength(void)
 	{
 		return sizeof(Layout::StaticContainer<T>::streamHeader);
 	}
@@ -68,168 +68,199 @@ namespace Kartet
 	\param r Number of rows.
 	\param c Number of columns.
 	\param s Number of slices.
-	\param lc Distance between columns (LDA).
+	\param lc Distance between columns.
 	\param ls Distance between slices.
 	\param o Offset (not included in pointer calculations).
 	**/
 	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
-	 : 	numRows(r),
-		numColumns(c),
-		numSlices(s),
-		leadingColumns(lc),
-		leadingSlices(ls),
-		offset(o)
-	{
-		if(leadingColumns<r || c==1)
-			leadingColumns = numRows;
-		if(leadingSlices<(numColumns*leadingColumns) || numSlices==1)
-			leadingSlices = numColumns*leadingColumns;
-	}
+	 : 	nRows(r),
+		nColumns(c),
+		nSlices(s),
+		sColumns(lc),
+		sSlices(ls),
+		ofs(o)
+	{ }
+
+	/**
+	\brief Layout constructor.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+
+	The strides are automatically computed, assuming a monolithic layout.
+	**/
+	__host__ __device__ inline Layout::Layout(index_t r, index_t c, index_t s)
+	 :	nRows(r),
+		nColumns(c),
+		nSlices(s),
+		sColumns(r),
+		sSlices(r*c),
+		ofs(0)
+	{ }
 
 	/**
 	\brief Layout constructor.
 	\param l Original layout to be copied.
 	**/
 	__host__ __device__ inline Layout::Layout(const Layout& l)
-	 : 	numRows(l.numRows),
-		numColumns(l.numColumns),
-		numSlices(l.numSlices),
-		leadingColumns(l.leadingColumns),
-		leadingSlices(l.leadingSlices),
-		offset(l.offset)
+	 : 	nRows(l.nRows),
+		nColumns(l.nColumns),
+		nSlices(l.nSlices),
+		sColumns(l.sColumns),
+		sSlices(l.sSlices),
+		ofs(l.ofs)
 	{ }
+
+	/**
+	\brief Test if the layout is valid.
+
+	The layout is considered valid if it meets all of the following criteria : 
+	- All of the sizes are larger or equal to 1.
+	- The column stride is larger or equal to the number of rows.
+	- The slice stride is larger or equal to the number of elements per slice.
+
+	\return True if the layout is valid.
+	**/
+	__host__ __device__ inline bool Layout::isValid(void) const
+	{
+		return (nRows>0 && nColumns>0 && nSlices>0 && 
+			sColumns>=nRows && 
+			sSlices>=(nRows*nColumns));
+			//(nColumns!=1 || sColumns==sSlices) &&	- The column stride is equal to the slice stride if there is only one column.
+			//(nSlices!=1 || sSlices==numElements())	- The slice stride is equal to the number of elements if there is only one slice.
+	}
 
 	/**
 	\brief Returns the number of elements.
 	\return The number of elements (number or rows x number of columns x number of slices).
 	**/
-	__host__ __device__ inline index_t Layout::getNumElements(void) const
+	__host__ __device__ inline index_t Layout::numElements(void) const
 	{
-		return (numRows * numColumns * numSlices);
+		return (nRows * nColumns * nSlices);
 	}
 	
 	/**
 	\brief Returns the number of elements per slice.
 	\return The number of elements per slice (number or rows x number of columns).
 	**/
-	__host__ __device__ inline index_t Layout::getNumElementsPerSlice(void) const
+	__host__ __device__ inline index_t Layout::numElementsPerSlice(void) const
 	{
-		return (numRows * numColumns);
+		return (nRows * nColumns);
 	}
 
 	/**
 	\brief Returns the number of elements per smallest fragment.
 	\return The number of elements in the smallest monoloithic fragment.
 	**/
-	__host__ __device__ inline index_t Layout::getNumElementsPerFragment(void) const
+	__host__ __device__ inline index_t Layout::numElementsPerFragment(void) const
 	{
-		if(leadingColumns==numRows)
+		if(sColumns==nRows)
 		{
-			if(leadingSlices==(numRows * numColumns))
-				return (numRows * numColumns * numSlices);
+			if(sSlices==(nRows * nColumns))
+				return (nRows * nColumns * nSlices);
 			else
-				return (numRows * numColumns);
+				return (nRows * nColumns);
 		}
 		else
-			return numRows;
+			return nRows;
 	}
 
 	/**
 	\brief Returns the number of rows.
 	\return The number of rows.
 	**/
-	__host__ __device__ inline index_t Layout::getNumRows(void) const
+	__host__ __device__ inline index_t Layout::numRows(void) const
 	{
-		return numRows;
+		return nRows;
 	}
 
 	/**
 	\brief Returns the number of columns.
 	\return The number of columns.
 	**/
-	__host__ __device__ inline index_t Layout::getNumColumns(void) const
+	__host__ __device__ inline index_t Layout::numColumns(void) const
 	{
-		return numColumns;
+		return nColumns;
 	}
 
 	/**
 	\brief Returns the number of slices.
 	\return The number of slices.
 	**/
-	__host__ __device__ inline index_t Layout::getNumSlices(void) const
+	__host__ __device__ inline index_t Layout::numSlices(void) const
 	{
-		return numSlices;
+		return nSlices;
 	}
 
 	/**
 	\brief Returns the number of monolithic fragments.
 	\return The number of monolithic fragments.
 	**/
-	__host__ __device__ inline index_t Layout::getNumFragments(void) const
+	__host__ __device__ inline index_t Layout::numFragments(void) const
 	{
-		if(leadingColumns==numRows)
+		if(sColumns==nRows)
 		{
-			if(leadingSlices==(numRows * numColumns))
+			if(sSlices==(nRows * nColumns))
 				return 1;
 			else
-				return numSlices;
+				return nSlices;
 		}
 		else
-			return (numSlices * numColumns);
+			return (nSlices * nColumns);
 	}
 
 	/**
 	\brief Returns the number of columns.
 	\return The number of columns.
 	**/
-	__host__ __device__ inline index_t Layout::getWidth(void) const
+	__host__ __device__ inline index_t Layout::width(void) const
 	{
-		return numColumns;
+		return nColumns;
 	}
 
 	/**
 	\brief Returns the number of rows.
 	\return The number of rows.
 	**/
-	__host__ __device__ inline index_t Layout::getHeight(void) const
+	__host__ __device__ inline index_t Layout::height(void) const
 	{
-		return numRows;
+		return nRows;
 	}
 
 	/**
 	\brief Returns the number of slices.
 	\return The number of slices.
 	**/
-	__host__ __device__ inline index_t Layout::getDepth(void) const
+	__host__ __device__ inline index_t Layout::depth(void) const
 	{
-		return numSlices;
+		return nSlices;
 	}
 
 	/**
 	\brief Returns the distance between the beginnings of two consecutive columns.
 	\return The distance between the beginnings of two consecutive columns.
 	**/
-	__host__ __device__ inline index_t Layout::getLeadingColumns(void) const
+	__host__ __device__ inline index_t Layout::columnsStride(void) const
 	{
-		return leadingColumns;
+		return sColumns;
 	}
 
 	/**
 	\brief Returns the distance between the beginnings of two consecutive slices.
 	\return The distance between the beginnings of two consecutive slices.
 	**/
-	__host__ __device__ inline index_t Layout::getLeadingSlices(void) const
+	__host__ __device__ inline index_t Layout::slicesStride(void) const
 	{
-		return leadingSlices;
+		return sSlices;
 	}
 
 	/**
 	\brief Returns the offset of the data.
 	\return The offset of the data.
 	**/
-	__host__ __device__ inline index_t Layout::getOffset(void) const
+	__host__ __device__ inline index_t Layout::offset(void) const
 	{
-		return offset;
+		return ofs;
 	}
 
 	/**
@@ -242,8 +273,8 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::setOffset(index_t newOffset)
 	{
-		index_t oldOffset = offset;
-		offset = newOffset;
+		index_t oldOffset = ofs;
+		ofs = newOffset;
 		return oldOffset;
 	}
 
@@ -252,9 +283,9 @@ namespace Kartet
 	\brief Returns the dimensions of the array in a dim3 struct.
 	\return The dimensions of the array in a dim3 struct.
 	**/
-	__host__ __device__ inline dim3 Layout::getDimensions(void) const
+	__host__ __device__ inline dim3 Layout::dimensions(void) const
 	{
-		return dim3(numRows, numColumns, numSlices);
+		return dim3(nRows, nColumns, nSlices);
 	}
 	
 	/**
@@ -264,9 +295,9 @@ namespace Kartet
 
 	\return The strides of the array in a dim3 struct.
 	**/
-	__host__ __device__ inline dim3 Layout::getStride(void) const
+	__host__ __device__ inline dim3 Layout::strides(void) const
 	{
-		return dim3(1, leadingColumns, leadingSlices);
+		return dim3(1, sColumns, sSlices);
 	}
 	#endif
 
@@ -279,7 +310,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline bool Layout::isMonolithic(void) const
 	{
-		return (leadingColumns==numRows || numColumns==1) && (leadingSlices==(numRows*numColumns) || numSlices==1);
+		return (sColumns==nRows || nColumns==1) && (sSlices==(nRows*nColumns) || nSlices==1);
 	}
 
 	/**
@@ -291,7 +322,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline bool Layout::isSliceMonolithic(void) const
 	{
-		return (leadingColumns==numRows || numColumns==1);
+		return (sColumns==nRows || nColumns==1);
 	}
 
 	/**
@@ -307,45 +338,72 @@ namespace Kartet
 	It is not possible to reinterpret a layout from (2,6, leading columns = 4) to (3,4) because the fragments are non contiguous.
 	It is possible to reinterpret a layout from (2,6, leading columns = 4) to (2,1,6) because the fragments are kept.
 
-	\throw InvalidLayoutChange In case of a failure.
+	\throw InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::reinterpretLayout(index_t r, index_t c, index_t s)
 	{
-		if(r!=numRows && numRows!=leadingColumns) // Modification of the number of rows while interlaced into a larger memory area.
-			throw InvalidLayoutChange;
-		else if((r*c)!=(numRows*numColumns) && (numRows*numColumns)!=leadingSlices)
-			throw InvalidLayoutChange;
-		else if(r*c*s!=getNumElements())
-			throw InvalidLayoutChange;
+		if(!isValid())
+			throw InvalidLayout;
+		else if(r<=0 || c<=0 || s<=0 || r*c*s!=numElements())
+			throw InvalidLayoutReinterpretation;
+
+		const bool 	im = isMonolithic(),
+				ism = isSliceMonolithic();
+		const index_t	nPerSlice = numElementsPerSlice(),
+				newPerSlice = r*c;
+		index_t lc = 0,
+			ls = 0;
+
+		// Test if the new number of rows is valid : 
+		if((r>nRows && !ism) || (r>nPerSlice && !im)) // If it does not go outside a continuous fragment (column if not ism, slice if not im, the last condition is handled in the first test).
+			throw InvalidLayoutReinterpretation;
+		
+		// Find the corresponding distance between columns for this new number of rows :
+		if(r==nRows && !ism)
+			lc = sColumns;
+		else if(r==numElementsPerSlice() && !im)
+			lc = sSlices;
 		else
+			lc = r;
+
+		// If the new slices are monolithic : 
+		if(lc==r)
 		{
-			// Preset :
-			if(r!=numRows)
-				leadingColumns	= r;
-			if((r*c)!=(numRows*numColumns))		
-				leadingSlices	= r*c;
-
-			numRows			= r;
-			numColumns		= c;
-			numSlices 		= s;
-
-			// Simplify :
-			if(numColumns==1)
-				leadingColumns	= numRows;
-			if(numSlices==1)
-				leadingSlices	= numRows * numColumns;
+			if((newPerSlice>nRows && !ism) || (newPerSlice>nPerSlice && !im))
+				throw InvalidLayoutReinterpretation;
+			else if(newPerSlice==nRows && !ism)
+				ls = sColumns;
+			else if(newPerSlice==nPerSlice && !im)
+				ls = sSlices;
+			else
+				ls = newPerSlice;
 		}
+		else // if(lc>r) // The new slices are not monolithic
+		{
+			// Test if it is possible to retract or expand the number of columns : 
+			if(c!=nColumns && c>1 && nColumns>1 && nColumns*sColumns!=sSlices)
+				throw InvalidLayoutReinterpretation;
+			else
+				ls = c*lc;
+		}
+
+		// Set : 
+		nRows		= r;
+		nColumns	= c;
+		nSlices 	= s;
+		sColumns	= lc;
+		sSlices		= ls;
 	}
 
 	/**
 	\brief Modify the layout without changing the number of elements.
 	\param other New layout (only the number of rows, columns and slices are considered).
 
-	\throw InvalidLayoutChange In case of a failure.
+	\throw InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::reinterpretLayout(const Layout& other)
 	{
-		reinterpretLayout(other.numRows, other.numColumns, other.numSlices);
+		reinterpretLayout(other.nRows, other.nColumns, other.nSlices);
 	}
 
 	/**
@@ -353,11 +411,11 @@ namespace Kartet
 
 	The layout becomes of size (R, C*S, 1).
 
-	\throw InvalidLayoutChange In case of a failure.
+	\throw InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::flatten(void)
 	{
-		reinterpretLayout(numRows, numColumns*numSlices, 1);
+		reinterpretLayout(nRows, nColumns*nSlices, 1);
 	}
 
 	/**
@@ -365,11 +423,11 @@ namespace Kartet
 
 	The layout becomes of size (R*C, S, 1).
 
-	\throw InvalidLayoutChange In case of a failure.
+	\throw InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::stretch(void)
 	{
-		reinterpretLayout(numRows*numColumns, numSlices, 1);
+		reinterpretLayout(nRows*nColumns, nSlices, 1);
 	}
 
 	/**
@@ -377,32 +435,35 @@ namespace Kartet
 	
 	The layout becomes of size (R*C*S, 1, 1).
 
-	\throw InvalidLayoutChange In case of a failure.
+	\throw InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::vectorize(void)
 	{
-		reinterpretLayout(numRows*numColumns*numSlices, 1, 1);
+		reinterpretLayout(nRows*nColumns*nSlices, 1, 1);
 	}
 
 	/**
 	\brief Generates a series of layout, each containing a specified number of columns of the original layout.
 	\param jBegin Origin column index.
-	\param nColumns Number of columns in each split.
+	\param c Number of columns in each split.
 
-	Note : the number of slices is preserved in the background of each split. The last split might contain less than nColumns columns (gracious).
-	
-	\throw OutOfRange If the index of the origin is invalid or nColumns is strictly less than 1.
+	Note : the number of slices is preserved in the background of each split. The last split might contain less than c columns (gracious).
+
+	\throw Kartet::InvalidSize If the number of columns is strictly less than 1.
+	\throw Kartet::OutOfRange If the first targeted column is not in range.
 	\return A vector containing all the splits (ordered).
 	**/
-	__host__ inline std::vector<Layout> Layout::splitLayoutColumns(index_t jBegin, index_t nColumns) const
+	__host__ inline std::vector<Layout> Layout::splitLayoutColumns(index_t jBegin, index_t c) const
 	{
 		std::vector<Layout> pages;
 
-		if(!validColumnIndex(jBegin) || nColumns<1)
+		if(c<1)
+			throw InvalidSize;
+		else if(!isColumnValid(jBegin))
 			throw OutOfRange;
 	
-		for(index_t j=jBegin; j<numColumns; j+=nColumns)
-			pages.push_back(Layout(numRows, std::min(nColumns, numColumns-j), numSlices, getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,j,0)));
+		for(index_t j=jBegin; j<nColumns; j+=c)
+			pages.push_back(Layout(nRows, std::min(c, nColumns-j), nSlices, sColumns, sSlices, ofs+getPosition(0,j,0)));
 
 		return pages;
 	}
@@ -410,22 +471,25 @@ namespace Kartet
 	/**
 	\brief Generates a series of layout, each containing a specified number of slices of the original layout.
 	\param kBegin Origin slice index.
-	\param nSlices Number of slices in each split.
+	\param s Number of slices in each split.
 
-	Note : the last split might contain less than nSlices slices (gracious).
+	Note : the last split might contain less than s slices (gracious).
 	
-	\throw OutOfRange If the index of the origin is invalid or nSlices is strictly less than 1.
+	\throw Kartet::InvalidSize If the number of slices is strictly less than 1.
+	\throw Kartet::OutOfRange If the first targeted slice is not in range.
 	\return A vector containing all the splits (ordered).
 	**/
-	__host__ inline std::vector<Layout> Layout::splitLayoutSlices(index_t kBegin, index_t nSlices) const
+	__host__ inline std::vector<Layout> Layout::splitLayoutSlices(index_t kBegin, index_t s) const
 	{
 		std::vector<Layout> pages;
 
-		if(!validSliceIndex(kBegin) || nSlices<1)
+		if(s<1)
+			throw InvalidSize;
+		else if(!isSliceValid(kBegin))
 			throw OutOfRange;
 	
-		for(index_t k=kBegin; k<numSlices; k+=nSlices)
-			pages.push_back(Layout(numRows, numColumns, std::min(nSlices, numSlices-k), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,0,k)));
+		for(index_t k=kBegin; k<nSlices; k+=s)
+			pages.push_back(Layout(nRows, nColumns, std::min(s, nSlices-k), sColumns, sSlices, ofs+getPosition(0,0,k)));
 
 		return pages;
 	}
@@ -435,32 +499,35 @@ namespace Kartet
 	\param iBegin Origin row index.
 	\param jBegin Origin column index.
 	\param kBegin Origin slice index.
-	\param nRows Number of rows in the block split.
-	\param nColumns Number of columns in the block split.
-	\param nSlices Number of slices in the block split.
+	\param r Number of rows in the block split. If equals to 0, it will be replaced with the number or rows of the layout.
+	\param c Number of columns in the block split. If equals to 0, it will be replaced with the number or columns of the layout.
+	\param s Number of slices in the block split. If equals to 0, it will be replaced with the number or slices of the layout.
 	
-	\throw OutOfRange If the index of the origin in any dimension is invalid or the size in any dimension is strictly less than 1.
+	\throw Kartet::InvalidSize If any of the sizes is strictly less than 1.
+	\throw Kartet::OutOfRange If any index is not in range
 	\return A vector containing all the splits (column-major ordered).
 	**/
-	__host__ inline std::vector<Layout> Layout::splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const
+	__host__ inline std::vector<Layout> Layout::splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const
 	{
 		std::vector<Layout> pages;
 
 		// Fill missing arguments
-		if(nRows==0)	
-			nRows = getNumRows();
-		if(nColumns==0)
-			nColumns = getNumColumns();
-		if(nSlices==0)
-			nSlices = getNumSlices();
+		if(r==0)	
+			r = numRows();
+		if(c==0)
+			c = numColumns();
+		if(s==0)
+			s = numSlices();
 
-		if(!validRowIndex(iBegin) || nRows<1 || !validColumnIndex(jBegin) || nColumns<1 || !validSliceIndex(kBegin) || nSlices<1)
+		if(r<1 || c<1 ||  s<1)
+			throw InvalidSize;
+		else if(!isRowValid(iBegin) || !isColumnValid(jBegin) ||  !isSliceValid(kBegin))
 			throw OutOfRange;
-		
-		for(index_t k=kBegin; k<numSlices; k+=nSlices)
-			for(index_t j=jBegin; j<numColumns; j+=nColumns)
-				for(index_t i=iBegin; i<numRows; i+=nRows)
-					pages.push_back(Layout(std::min(nRows, numRows-i), std::min(nColumns, numColumns-j), std::min(nSlices, numSlices-k), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(i,j,k)));
+			
+		for(index_t k=kBegin; k<nSlices; k+=s)
+			for(index_t j=jBegin; j<nColumns; j+=c)
+				for(index_t i=iBegin; i<nRows; i+=r)
+					pages.push_back(Layout(std::min(r, nRows-i), std::min(c, nColumns-j), std::min(s, nSlices-k), sColumns, sSlices, ofs+getPosition(i,j,k)));
 
 		return pages;
 	}
@@ -477,7 +544,7 @@ namespace Kartet
 	**/
 	__host__ inline std::vector<Layout> Layout::splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const
 	{
-		return splitLayoutSubArrays(iBegin, jBegin, kBegin, layout.getNumRows(), layout.getNumColumns(), layout.getNumSlices());
+		return splitLayoutSubArrays(iBegin, jBegin, kBegin, layout.numRows(), layout.numColumns(), layout.numSlices());
 	}
 
 	/**
@@ -487,7 +554,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline bool Layout::sameLayoutAs(const Layout& other) const
 	{
-		return (numRows==other.numRows && numColumns==other.numColumns && numSlices==other.numSlices && leadingColumns==other.leadingColumns && leadingSlices==other.leadingSlices); 
+		return (nRows==other.nRows && nColumns==other.nColumns && nSlices==other.nSlices && sColumns==other.sColumns && sSlices==other.sSlices); 
 	}
 
 	/**
@@ -497,7 +564,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline bool Layout::sameSliceLayoutAs(const Layout& other) const
 	{
-		return (numRows==other.numRows && numColumns==other.numColumns && leadingColumns==other.leadingColumns); 
+		return (nRows==other.nRows && nColumns==other.nColumns && sColumns==other.sColumns); 
 	}
 
 	#ifdef __CUDACC__
@@ -533,42 +600,42 @@ namespace Kartet
 	\brief Get the normalized row index.
 	\param i The original row index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The normalized row index (i/nRows).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getINorm(index_t i) const
 	{
-		return static_cast<TOut>(i)/static_cast<TOut>(numRows);
+		return static_cast<TOut>(i)/static_cast<TOut>(nRows);
 	}
 
 	/**
 	\brief Get the normalized column index.
 	\param j The original column index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The normalized column index (j/nColumns).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getJNorm(index_t j) const
 	{
-		return static_cast<TOut>(j)/static_cast<TOut>(numColumns);
+		return static_cast<TOut>(j)/static_cast<TOut>(nColumns);
 	}
 
 	/**
 	\brief Get the normalized slice index.
 	\param k The original slice index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The normalized slice index (k/nSlices).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getKNorm(index_t k) const
 	{
-		return static_cast<TOut>(k)/static_cast<TOut>(numSlices);
+		return static_cast<TOut>(k)/static_cast<TOut>(nSlices);
 	}
 
 	#ifdef __CUDACC__
@@ -607,42 +674,42 @@ namespace Kartet
 	\brief Get the inclusive normalized row index.
 	\param i The original row index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The inclusive normalized row index (i/(nRows-1)).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getINormIncl(index_t i) const
 	{
-		return static_cast<TOut>(i)/static_cast<TOut>(numRows-1);
+		return static_cast<TOut>(i)/static_cast<TOut>(nRows-1);
 	}
 
 	/**
 	\brief Get the inclusive normalized column index.
 	\param j The original column index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The inclusive normalized column index (i/(nColumns-1)).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getJNormIncl(index_t j) const
 	{
-		return static_cast<TOut>(j)/static_cast<TOut>(numColumns-1);
+		return static_cast<TOut>(j)/static_cast<TOut>(nColumns-1);
 	}
 
 	/**
 	\brief Get the inclusive normalized slice index.
 	\param k The original slice index.
 
-	Note : this function does not perform bound checking.
+	Note : this function does not perform boundary checking.
 	
 	\return The inclusive normalized slice index (i/(nSlices-1)).
 	**/
 	template<typename TOut>
 	__host__ __device__ inline TOut Layout::getKNormIncl(index_t k) const
 	{
-		return static_cast<TOut>(k)/static_cast<TOut>(numSlices-1);
+		return static_cast<TOut>(k)/static_cast<TOut>(nSlices-1);
 	}
 
 	#ifdef __CUDACC__
@@ -684,7 +751,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getIClamped(index_t i) const
 	{
-		return min( max(static_cast<index_t>(0), i), numRows-1);
+		return min( max(static_cast<index_t>(0), i), nRows-1);
 	}
 
 	/**
@@ -694,7 +761,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getJClamped(index_t j) const
 	{
-		return min( max(static_cast<index_t>(0), j), numColumns-1);
+		return min( max(static_cast<index_t>(0), j), nColumns-1);
 	}
 
 	/**
@@ -704,7 +771,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getKClamped(index_t k) const
 	{
-		return min( max(static_cast<index_t>(0), k), numSlices-1);
+		return min( max(static_cast<index_t>(0), k), nSlices-1);
 	}
 
 	/**
@@ -714,7 +781,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getIWrapped(index_t i) const
 	{
-		return (i % numRows);
+		return (i % nRows);
 	}
 
 	/**
@@ -724,7 +791,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getJWrapped(index_t j) const
 	{
-		return (j % numColumns);
+		return (j % nColumns);
 	}
 
 	/**
@@ -734,7 +801,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getKWrapped(index_t k) const
 	{
-		return (k % numSlices);
+		return (k % nSlices);
 	}
 
 	/**
@@ -743,13 +810,30 @@ namespace Kartet
 	\param j The column index.
 	\param k The slice index.
 
-	Note the function does not perform bound checking.
+	The index does not take stides into account. For a monolithic array index and position are the same.
+	Note : the function does not perform boundary checking.
 
 	\return The index of the element corresponding to the coordinates.
 	**/
 	__host__ __device__ inline index_t Layout::getIndex(index_t i, index_t j, index_t k) const
 	{
-		return k*leadingSlices + j*leadingColumns + i;
+		return k*nSlices + j*nColumns + i;
+	}
+
+	/**
+	\brief Get the position offset of an element from coordinates : 
+	\param i The row index.
+	\param j The column index.
+	\param k The slice index.
+
+	The position takes stides into account. For a monolithic array index and position are the same.
+	Note : the function does not perform boundary checking.
+
+	\return The position of the element corresponding to the coordinates.
+	**/
+	__host__ __device__ inline index_t Layout::getPosition(index_t i, index_t j, index_t k) const
+	{
+		return k*sSlices + j*sColumns + i;
 	}
 
 	#ifdef __CUDACC__
@@ -761,127 +845,118 @@ namespace Kartet
 	{
 		return getIndex(getI(), getJ(), getK());
 	}
+
+	/**
+	\brief Get the position of the current element.
+	\return The position of the current element.
+	**/
+	__device__ inline index_t Layout::getPosition(void) const
+	{
+		return getPosition(getI(), getJ(), getK());
+	}
 	#endif
 
 	/**
-	\brief Get the index of an element from coordinates, after fftshift. Modify the arguments.
+	\brief Get the position of an element from coordinates, after fftshift. Modify the arguments.
+	\param i The row index. Will be modified.
+	\param j The column index. Will be modified.
+	\param k The slice index. Will be modified.
+
+	Note the function does not perform boundary checking.
+
+	\return The position of the element corresponding to the fftshift coordinates.
+	**/
+	__host__ __device__ inline index_t Layout::getPositionFFTShift(index_t& i, index_t& j, index_t& k) const
+	{
+		const index_t	hi = nRows % 2,
+				hj = nColumns % 2;
+
+		if(i<(nRows-hi)/2) 	j = j + (nRows+hi)/2;
+		else			j = j - (nRows-hi)/2;
+
+		if(j<(nColumns-hj)/2) i = i + (nColumns+hj)/2;
+		else 			i = i - (nColumns-hj)/2;
+
+		return getPosition(i, j, k);
+	}
+
+	/**
+	\brief Get the position of an element from coordinates, after ifftshift. Modify the arguments.
 	\param i The row index. Will be modified.
 	\param j The column index. Will be modified.
 	\param k The slice index. Will be modified.
 
 	Note the function does not perform bound checking.
 
-	\return The index of the element corresponding to the fftshift coordinates.
+	\return The position of the element corresponding to the ifftshift coordinates.
 	**/
-	__host__ __device__ inline index_t Layout::getIndicesFFTShift(index_t& i, index_t& j, index_t& k) const
+	__host__ __device__ inline index_t Layout::getPositionFFTInverseShift(index_t& i, index_t& j, index_t& k) const
 	{
-		const index_t	hi = numRows % 2,
-				hj = numColumns % 2;
+		const index_t	hi = nRows % 2,
+				hj = nColumns % 2;
 
-		if(i<(numRows-hi)/2) 	j = j + (numRows+hi)/2;
-		else			j = j - (numRows-hi)/2;
+		if(i<(nRows+hi)/2) 	i = i + (nRows-hi)/2;
+		else			i = i - (nRows+hi)/2;
 
-		if(j<(numColumns-hj)/2) i = i + (numColumns+hj)/2;
-		else 			i = i - (numColumns-hj)/2;
+		if(j<(nColumns+hj)/2) j = j + (nColumns-hj)/2;
+		else 			j = j - (nColumns+hj)/2;
 
+		return getPosition(i, j, k);
+	}
+
+	/**
+	\brief Get the position of an element from coordinates, after clamping.
+	\param i The row index.
+	\param j The column index.
+	\param k The slice index.
+	\return The position of the element corresponding to the clamped coordinates.
+	**/
+	__host__ __device__ inline index_t Layout::getPositionClampedToEdge(index_t& i, index_t& j, index_t& k) const
+	{
+		i = getIClamped(i);
+		j = getJClamped(j);
+		k = getKClamped(k);
 		return getIndex(i, j, k);
 	}
 
 	/**
-	\brief Get the index of an element from coordinates, after fftshift.
+	\brief Get the position of an element from coordinates, after wrapping.
 	\param i The row index.
 	\param j The column index.
 	\param k The slice index.
-
-	Note the function does not perform bound checking.
-
-	\return The index of the element corresponding to the fftshift coordinates.
+	\return The position of the element corresponding to the wrapped coordinates.
 	**/
-	__host__ __device__ inline index_t Layout::getIndexFFTShift(index_t i, index_t j, index_t k) const
+	__host__ __device__ inline index_t Layout::getPositionWarped(index_t& i, index_t& j, index_t& k) const
 	{
-		return getIndicesFFTShift(i, j, k);
-	}
-
-	/**
-	\brief Get the index of an element from coordinates, after ifftshift. Modify the arguments.
-	\param i The row index. Will be modified.
-	\param j The column index. Will be modified.
-	\param k The slice index. Will be modified.
-
-	Note the function does not perform bound checking.
-
-	\return The index of the element corresponding to the ifftshift coordinates.
-	**/
-	__host__ __device__ inline index_t Layout::getIndicesFFTInverseShift(index_t& i, index_t& j, index_t& k) const
-	{
-		const index_t	hi = numRows % 2,
-				hj = numColumns % 2;
-
-		if(i<(numRows+hi)/2) 	i = i + (numRows-hi)/2;
-		else			i = i - (numRows+hi)/2;
-
-		if(j<(numColumns+hj)/2) j = j + (numColumns-hj)/2;
-		else 			j = j - (numColumns+hj)/2;
-
+		i = getIWrapped(i);
+		j = getJWrapped(j);
+		k = getKWrapped(k);
 		return getIndex(i, j, k);
-	}
-
-	/**
-	\brief Get the index of an element from coordinates, after ifftshift.
-	\param i The row index.
-	\param j The column index.
-	\param k The slice index.
-
-	Note the function does not perform bound checking.
-
-	\return The index of the element corresponding to the ifftshift coordinates.
-	**/
-	__host__ __device__ inline index_t Layout::getIndexFFTInverseShift(index_t i, index_t j, index_t k) const
-	{
-		return getIndicesFFTInverseShift(i, j, k);
-	}
-
-	/**
-	\brief Get the index of an element from coordinates, after clamping.
-	\param i The row index.
-	\param j The column index.
-	\param k The slice index.
-	\return The index of the element corresponding to the clamped coordinates.
-	**/
-	__host__ __device__ inline index_t Layout::getIndexClampedToEdge(index_t i, index_t j, index_t k) const
-	{
-		return getIndex(getIClamped(i), getJClamped(j), getKClamped(k));
-	}
-
-	/**
-	\brief Get the index of an element from coordinates, after wrapping.
-	\param i The row index.
-	\param j The column index.
-	\param k The slice index.
-	\return The index of the element corresponding to the wrapped coordinates.
-	**/
-	__host__ __device__ inline index_t Layout::getIndexWarped(index_t i, index_t j, index_t k) const
-	{
-		return getIndex(getIWrapped(i), getJWrapped(j), getKWrapped(k));
 	}
 
 	#ifdef __CUDACC__
 	/**
 	\brief Get the index of the current element, after fftshift.
-	\return The index of the current element, after fftshift.
+	\return The position of the current element, after fftshift.
 	**/
-	__device__ inline index_t Layout::getIndexFFTShift(void) const
+	__device__ inline index_t Layout::getPositionFFTShift(void) const
 	{
-		return getIndexFFTShift(getI(), getJ(), getK());
+		index_t	i = getI(),
+			j = getJ(),
+			k = getK();
+		return getPositionFFTShift(i, j, k);
 	}
 
 	/**
 	\brief Get the index of the current element, after inverse fftshift.
-	\return The index of the current element, after inverse fftshift.
+	\return The position of the current element, after inverse fftshift.
 	**/
-	__device__ inline index_t Layout::getIndexFFTInverseShift(void) const
+	__device__ inline index_t Layout::getPositionFFTInverseShift(void) const
 	{
-		return getIndexFFTInverseShift(getI(), getJ(), getK());
+		index_t	i = getI(),
+			j = getJ(),
+			k = getK();
+		return getPositionFFTInverseShift(i, j, k);
 	}
 	#endif
 	
@@ -894,7 +969,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline bool Layout::isInside(index_t i, index_t j, index_t k) const
 	{
-		return (i>=0 && i<numRows && j>=0 && j<numColumns && k>=0 && k<numSlices);
+		return (i>=0 && i<nRows && j>=0 && j<nColumns && k>=0 && k<nSlices);
 	}
 
 	#ifdef __CUDACC__
@@ -913,9 +988,9 @@ namespace Kartet
 	\param i Row index.
 	\return True if the row index is valid.
 	**/
-	__host__ __device__ inline bool Layout::validRowIndex(index_t i) const	
+	__host__ __device__ inline bool Layout::isRowValid(index_t i) const	
 	{
-		return (i>=0 && i<numRows);
+		return (i>=0 && i<nRows);
 	}
 
 	/**
@@ -923,9 +998,9 @@ namespace Kartet
 	\param j Column index.
 	\return True if the column index is valid.
 	**/
-	__host__ __device__ inline bool Layout::validColumnIndex(index_t j) const
+	__host__ __device__ inline bool Layout::isColumnValid(index_t j) const
 	{
-		return (j>=0 && j<numColumns);
+		return (j>=0 && j<nColumns);
 	}
 
 	/**
@@ -933,9 +1008,9 @@ namespace Kartet
 	\param k Slice index.
 	\return True if the slice index is valid.
 	**/
-	__host__ __device__ inline bool Layout::validSliceIndex(index_t k) const
+	__host__ __device__ inline bool Layout::isSliceValid(index_t k) const
 	{
-		return (k>=0 && k<numSlices);
+		return (k>=0 && k<nSlices);
 	}
 
 	/**
@@ -947,9 +1022,24 @@ namespace Kartet
 	**/
 	__host__ __device__ inline void Layout::unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const
 	{
-		k = index / leadingSlices;
-		j = (index - k*leadingSlices) / leadingColumns;
-		i = index - k*leadingSlices - j*leadingColumns;
+		const index_t n = nRows*nColumns;
+		k = index / n;
+		j = (index - k*n) / nRows;
+		i = index - k*n - j*nRows;
+	}
+
+	/**
+	\brief Unpack element position to coordinates.
+	\param position Element position.
+	\param i Output, row index.
+	\param j Output, column index.
+	\param k Output, slice index.
+	**/
+	__host__ __device__ inline void Layout::unpackPosition(index_t position, index_t& i, index_t& j, index_t& k) const
+	{
+		k = position / sSlices;
+		j = (position - k*sSlices) / sColumns;
+		i = position - k*sSlices - j*sColumns;
 	}
 
 	/**
@@ -958,20 +1048,20 @@ namespace Kartet
 	\param j Input : current column index. Output : next column index.
 	\param k Input : current slice index. Output : next slice index.
 	**/
-	__host__ __device__ inline void Layout::moveToNextIndex(index_t& i, index_t& j, index_t& k) const
+	__host__ __device__ inline void Layout::moveToNext(index_t& i, index_t& j, index_t& k) const
 	{
 		// This version is the "protected version" 
 		// It will safely warp bad coordinates.
-		//i = ((i+1) % numRows);
-		//j = (((i==0) ? (j+1) : j) % numColumns);
+		//i = ((i+1) % nRows);
+		//j = (((i==0) ? (j+1) : j) % nColumns);
 		//k = ((i==0 && j==0) ? (k+1) : k);
 
 		// This version is the "unprotected version"
 		// It is also much faster by avoiding index_t modulos. 
 		i = (i+1);
-		i = (i>=numRows) ? 0 : i;
+		i = (i>=nRows) ? 0 : i;
 		j = (i==0) ? (j+1) : j;
-		j = (j>=numColumns) ? 0 : j;
+		j = (j>=nColumns) ? 0 : j;
 		k = (i==0 && j==0) ? (k+1) : k;
 	}
 
@@ -980,13 +1070,13 @@ namespace Kartet
 	\brief Get the block size for CUDA computation.
 	\return dim3 struct with correct block settings.
 	**/
-	__host__ inline dim3 Layout::getBlockSize(void) const
+	__host__ inline dim3 Layout::blockSize(void) const
 	{
 		dim3 d;
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
-		d.x = min(StaticContainer<void>::numThreads, numRows);
-		d.y = min(StaticContainer<void>::numThreads/d.x, numColumns);
-		d.z = min(min(StaticContainer<void>::numThreads/(d.x*d.y), numSlices), StaticContainer<void>::maxZThreads);
+		d.x = min(StaticContainer<void>::numThreads, nRows);
+		d.y = min(StaticContainer<void>::numThreads/d.x, nColumns);
+		d.z = min(min(StaticContainer<void>::numThreads/(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
 		//std::cout << "Layout::getBlockSize : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}
@@ -995,44 +1085,48 @@ namespace Kartet
 	\brief Get the grid size for CUDA computation.
 	\return dim3 struct with correct grid settings.
 	**/
-	__host__ inline dim3 Layout::getNumBlock(void) const
+	__host__ inline dim3 Layout::numBlocks(void) const
 	{
 		dim3 d;
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
-		const dim3 blockSize = getBlockSize();
-		d.x = (numRows + blockSize.x - 1)/blockSize.x;
-		d.y = (numColumns + blockSize.y - 1)/blockSize.y;
-		d.z = (numSlices + blockSize.z - 1)/blockSize.z;
-		//std::cout << "Layout::getNumBlock : " << d.x << ", " << d.y << ", " << d.z << std::endl;
+		const dim3 b = blockSize();
+		d.x = (nRows + b.x - 1)/b.x;
+		d.y = (nColumns + b.y - 1)/b.y;
+		d.z = (nSlices + b.z - 1)/b.z;
+		//std::cout << "Layout::numBlock : " << d.x << ", " << d.y << ", " << d.z << std::endl;
 		return d;
 	}
 	#endif
 
 	/**
-	\brief Get the layout corresponding to a vector.
-	\return The layout of a vector.
+	\brief Get the layout corresponding to a column. Retains strides.
+	\param includeSlices If true also include the depth of the current layout (number of slices).
+	\return The layout of a column.
 	**/
-	__host__ inline Layout Layout::getVectorLayout(void) const
+	__host__ inline Layout Layout::columnLayout(const bool& includeSlices) const
 	{
-		return Layout(numRows);
+		if(includeSlices)
+			return Layout(nRows, 1, nSlices, sColumns, sSlices);
+		else
+			return Layout(nRows, 1, 1, sColumns, sSlices);
 	}
 
 	/**
-	\brief Get the layout corresponding to a slice.
+	\brief Get the layout corresponding to a slice. Retains strides.
 	\return The layout of a slice.
 	**/
-	__host__ inline Layout Layout::getSliceLayout(void) const
+	__host__ inline Layout Layout::sliceLayout(void) const
 	{
-		return Layout(numRows, numColumns, 1, getLeadingColumns());
+		return Layout(nRows, nColumns, 1, sColumns, sSlices);
 	}
 
 	/**
 	\brief Get the monolithic layout corresponding to this object.
 	\return The monolithic layout corresponding to this object.
 	**/
-	__host__ inline Layout Layout::getMonolithicLayout(void) const
+	__host__ inline Layout Layout::monolithicLayout(void) const
 	{
-		return Layout(numRows, numColumns, numSlices);
+		return Layout(nRows, nColumns, nSlices);
 	}
 
 	/**
@@ -1053,21 +1147,21 @@ namespace Kartet
 	template<class Op, typename T>
 	__host__ void Layout::singleScan(T* ptr, const Op& op) const
 	{
-		if(numRows==getLeadingColumns() && getNumElementsPerSlice()==getLeadingSlices())
+		if(nRows==columnsStride() && numElementsPerSlice()==slicesStride())
 			op.apply(*this, *this, ptr, 0, 0, 0, 0);		
-		else if(numRows==getLeadingColumns())
+		else if(nRows==columnsStride())
 		{
-			const Layout sliceLayout = getSliceLayout();
-			for(index_t k=0; k<numSlices; k++)
-				op.apply(*this, sliceLayout, ptr, k*getLeadingSlices(), 0, 0, k);	
+			const Layout sl = sliceLayout();
+			for(index_t k=0; k<nSlices; k++)
+				op.apply(*this, sl, ptr, k*sSlices, 0, 0, k);	
 		}
 		else
 		{
-			const Layout vectorLayout = getVectorLayout();
-			for(index_t k=0; k<numSlices; k++)
+			const Layout cl = columnLayout();
+			for(index_t k=0; k<nSlices; k++)
 			{
-				for(index_t j=0; j<numColumns; j++)
-					op.apply(*this, vectorLayout, ptr, (k*getLeadingSlices() + j*getLeadingColumns()), 0, j, k);
+				for(index_t j=0; j<nColumns; j++)
+					op.apply(*this, cl, ptr, (k*sSlices + j*sColumns), 0, j, k);
 			}
 		}
 	}
@@ -1093,28 +1187,28 @@ namespace Kartet
 	template<class Op, typename T>
 	__host__ void Layout::dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op)
 	{
-		if(!layoutA.getMonolithicLayout().sameLayoutAs(layoutB.getMonolithicLayout()))
+		if(!layoutA.monolithicLayout().sameLayoutAs(layoutB.monolithicLayout()))
 			throw IncompatibleLayout;
 
-		if(	(layoutA.getNumRows()==layoutA.getLeadingColumns() && layoutA.getNumElementsPerSlice()==layoutA.getLeadingSlices()) &&
-			(layoutB.getNumRows()==layoutB.getLeadingColumns() && layoutB.getNumElementsPerSlice()==layoutB.getLeadingSlices()) )
+		if(	(layoutA.numRows()==layoutA.columnsStride() && layoutA.numElementsPerSlice()==layoutA.slicesStride()) &&
+			(layoutB.numRows()==layoutB.columnsStride() && layoutB.numElementsPerSlice()==layoutB.slicesStride()) )
 		{
 			op.apply(layoutA, layoutA, ptrA, ptrB, 0, 0, 0, 0, 0);
 		}
-		else if((layoutA.getNumRows()==layoutA.getLeadingColumns()) &&
-			(layoutB.getNumRows()==layoutB.getLeadingColumns()) )
+		else if((layoutA.numRows()==layoutA.columnsStride()) &&
+			(layoutB.numRows()==layoutB.columnsStride()) )
 		{
-			const Layout sliceLayout = layoutA.getSliceLayout();
-			for(index_t k=0; k<layoutA.getNumSlices(); k++)
-				op.apply(layoutA, sliceLayout, ptrA, ptrB, k*layoutA.getLeadingSlices(), k*layoutB.getLeadingSlices(), 0, 0, k);
+			const Layout sliceLayout = layoutA.sliceLayout();
+			for(index_t k=0; k<layoutA.numSlices(); k++)
+				op.apply(layoutA, sliceLayout, ptrA, ptrB, k*layoutA.slicesStride(), k*layoutB.slicesStride(), 0, 0, k);
 		}
 		else
 		{
-			const Layout vectorLayout = layoutA.getVectorLayout();
-			for(index_t k=0; k<layoutA.getNumSlices(); k++)
+			const Layout cl = layoutA.columnLayout();
+			for(index_t k=0; k<layoutA.numSlices(); k++)
 			{
-				for(index_t j=0; j<layoutB.getNumColumns(); j++)
-					op.apply(layoutA, vectorLayout, ptrA, ptrB, (k*layoutA.getLeadingSlices() + j*layoutA.getLeadingColumns()), (k*layoutB.getLeadingSlices() + j*layoutB.getLeadingColumns()), 0, j, k);
+				for(index_t j=0; j<layoutB.numColumns(); j++)
+					op.apply(layoutA, cl, ptrA, ptrB, (k*layoutA.slicesStride() + j*layoutA.columnsStride()), (k*layoutB.slicesStride() + j*layoutB.columnsStride()), 0, j, k);
 			}
 		}
 	}
@@ -1134,12 +1228,12 @@ namespace Kartet
 			throw InvalidInputStream;
 		
 		const size_t bufferLength = 32;
-		if(bufferLength<StaticContainer<void>::getStreamHeaderLength())
+		if(bufferLength<StaticContainer<void>::streamHeaderLength())
 			throw InvalidOperation;
 		char headerBuffer[bufferLength];
 		std::memset(headerBuffer, 0, bufferLength);
-		stream.read(headerBuffer, StaticContainer<void>::getStreamHeaderLength()-1);
-		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, StaticContainer<void>::getStreamHeaderLength()-1)!=0)
+		stream.read(headerBuffer, StaticContainer<void>::streamHeaderLength()-1);
+		if(strncmp(StaticContainer<void>::streamHeader, headerBuffer, StaticContainer<void>::streamHeaderLength()-1)!=0)
 			throw InvalidStreamHeader;
 	
 		// Read the type :
@@ -1193,15 +1287,15 @@ namespace Kartet
 			throw InvalidOutputStream;
 
 		// Write the header :
-		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::getStreamHeaderLength()-1);
+		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::streamHeaderLength()-1);
 		
 		// Write the type :	
 		stream.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
 	
 		// Write the size :
-		stream.write(reinterpret_cast<char*>(&numRows), sizeof(index_t));
-		stream.write(reinterpret_cast<char*>(&numColumns), sizeof(index_t));
-		stream.write(reinterpret_cast<char*>(&numSlices), sizeof(index_t));	
+		stream.write(reinterpret_cast<char*>(&nRows), sizeof(index_t));
+		stream.write(reinterpret_cast<char*>(&nColumns), sizeof(index_t));
+		stream.write(reinterpret_cast<char*>(&nSlices), sizeof(index_t));	
 	}
 
 	/**
@@ -1254,34 +1348,34 @@ namespace Kartet
 	std;;cout << l << std::endl;
 
 	Output (strides are replaced by an underscore if elements are contiguous, and not printed if the layout is monolithic) : 
-	['rows', 'columns', 'slices', 'leadingColumns', 'leadingSlices', 'offset']
+	['rows', 'columns', 'slices', 'sColumns', 'sSlices', 'offset']
 
 	\return Reference to the modified std::ostream, for chain.
 	**/
 	__host__ inline std::ostream& operator<<(std::ostream& os, const Layout& layout)
 	{
-		if(layout.getNumSlices()==1)
-			os << '[' << layout.getNumRows() << ", " << layout.getNumColumns();
+		if(layout.numSlices()==1)
+			os << '[' << layout.numRows() << ", " << layout.numColumns();
 		else
-			os << '[' << layout.getNumRows() << ", " << layout.getNumColumns() << ", " << layout.getNumSlices();
+			os << '[' << layout.numRows() << ", " << layout.numColumns() << ", " << layout.numSlices();
 
-		if(layout.getLeadingColumns()>layout.getNumRows() || layout.getLeadingSlices()>layout.getNumElementsPerSlice())
+		if(layout.columnsStride()>layout.numRows() || layout.slicesStride()>layout.numElementsPerSlice())
 		{
 			os << "; ";
-			if(layout.getLeadingColumns()==layout.getNumRows())
+			if(layout.columnsStride()==layout.numRows() && layout.numColumns()>1)
 				os << '_';
 			else
-				os << '+' << layout.getLeadingColumns();
+				os << '+' << layout.columnsStride();
 			os << ", ";
-			if(layout.getLeadingSlices()==layout.getNumElementsPerSlice())
+			if(layout.slicesStride()==layout.numElementsPerSlice() && layout.numSlices()>1)
 				os << '_';
 			else
-				os << '+' << layout.getLeadingSlices();
+				os << '+' << layout.slicesStride();
 			os << ", ";
-			if(layout.getOffset()==0)
+			if(layout.offset()==0)
 				os << '_';
 			else
-				os << '+' << layout.getOffset();
+				os << '+' << layout.offset();
 		}
 		os << ']';
 
@@ -1289,66 +1383,169 @@ namespace Kartet
 	}
 
 // Accessor :
+	/**
+	\brief Accessor constructor.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	\param lc Distance between two consecutive columns.
+	\param ls Distance between two consecutive slices.
+	\param o Pointer offset.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 : 	Layout(r, c, s, lc, ls, o),
 		ptr(NULL)	
 	{ }
 
+	/**
+	\brief Accessor constructor.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	
+	Assumes monolithic layout.
+	**/
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(index_t r, index_t c, index_t s)
+	 :	Layout(r, c, s),
+		ptr(NULL)
+	{ }
+
+	/**
+	\brief Accessor constructor.
+	\param layout Layout of the accessor.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(const Layout& layout)
 	 : 	Layout(layout), 
 		ptr(NULL)
 	{ }
 
+	/**
+	\brief Accessor constructor.
+	\param ptr Data pointer.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	\param lc Distance between two consecutive columns.
+	\param ls Distance between two consecutive slices.
+	\param o Pointer offset.
+
+	The data pointer provided will not be released by the accessor.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 :	Layout(r, c, s, lc, ls, o),
 		ptr(ptr)
 	{ }
 
+	/**
+	\brief Accessor constructor.
+	\param ptr Data pointer.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	
+	Assumes monolithic layout.
+	**/
+	template<typename T, Location l>
+	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, index_t r, index_t c, index_t s)
+	 :	Layout(r, c, s),
+		ptr(ptr)
+	{ }
+
+	/**
+	\brief Accessor constructor.
+	\param ptr Data pointer.
+	\param layout Layout of the accessor.
+	
+	The data pointer provided will not be released by the accessor.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, const Layout& layout)
 	 :	Layout(layout),
 		ptr(ptr)
 	{ }
 	
+	/**
+	\brief Accessor constructor.
+	\param a Array to be accessed.
+
+	The accessor will shadow the array provided.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l>::Accessor(const Array<T,l>& a)
 	 :	Layout(a), 
 		ptr(a.ptr)
 	{ }
 
+	/**
+	\brief Accessor constructor.
+	\param a Another accessor.
+
+	The accessor will shadow the accessor provided.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(const Accessor<T,l>& a)
 	 : 	Layout(a),
 		ptr(a.ptr)
 	{ }
 
+	/**
+	\brief Get the location of the data manipulated by this accessor.
+	\return Location value (see Kartet::Location).
+	**/
 	template<typename T, Location l>
-	__host__ __device__ Location Accessor<T,l>::getLocation(void) const
+	__host__ __device__ Location Accessor<T,l>::location(void) const
 	{
 		return l;
 	}
 
+	/**
+	\brief Get the underlying data pointer (might be on device side).
+	\return The data pointer.
+	**/
 	template<typename T, Location l>
-	__host__ __device__ T* Accessor<T,l>::getPtr(void) const
+	__host__ __device__ T* Accessor<T,l>::dataPtr(void) const
 	{
 		return ptr;
 	}
 
+	/**
+	\brief Get the size of the data manipulated.
+	\return The size of the layout in bytes.
+	**/
 	template<typename T, Location l>
-	__host__ __device__ size_t Accessor<T,l>::getSize(void) const
+	__host__ __device__ size_t Accessor<T,l>::size(void) const
 	{
-		return static_cast<size_t>(getNumElements())*sizeof(T);
-	}	
+		return static_cast<size_t>(numElements())*sizeof(T);
+	}
 
+	/**
+	\brief Access the underlying data directly.
+	\param i Row index.
+	\param j Column index.
+	\param k Slice index.
+	
+	Warnings : this function does not perform bound checking. If the data is on the device side, the reference is invalid when used from the host side.
+
+	\return A reference to the data at the given coordinates.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ inline T& Accessor<T,l>::data(index_t i, index_t j, index_t k) const
 	{
-		return ptr[getIndex(i, j, k)];
+		return ptr[getPosition(i, j, k)];
 	}
 
+	/**
+	\brief Access the underlying data directly.
+	\param p Element index.
+	
+	Warnings : this function does not perform bound checking. This function will likely return wrong reference for non monolithic layout. If the data is on the device side, the reference is invalid when used from the host side.
+
+	\return A reference to the data at the given index.
+	**/
 	template<typename T, Location l>
 	__host__ __device__ inline T& Accessor<T,l>::data(index_t p) const
 	{
@@ -1356,35 +1553,59 @@ namespace Kartet
 	}
 
 	#ifdef __CUDACC__
+	/**
+	\brief Access the underlying data directly, at the current coordinates.
+	\return A reference to the data at the current coordinates.
+	**/
 	template<typename T, Location l>
 	__device__ inline T& Accessor<T,l>::data(void) const
 	{
-		return ptr[getIndex()];
+		return ptr[getPosition()];
 	}
 
+	/**
+	\brief Access the underlying data directly, at the current coordinates, in another slice.
+	\param k Slice index.
+	\return A reference to the data at the current coordinates, in the specified slice.
+	**/
 	template<typename T, Location l>
 	__device__ inline T& Accessor<T,l>::dataInSlice(int k) const
 	{
-		return ptr[getIndex(getI(),getJ(),k)];
+		return ptr[getPosition(getI(),getJ(),k)];
 	}
 
+	/**
+	\brief Access the underlying data directly, at the current fftshift coordinates.
+	\return A reference to the data at the current fftshift coordinates.
+	**/
 	template<typename T, Location l>
 	__device__ inline T& Accessor<T,l>::dataFFTShift(void) const
 	{
-		return ptr[getIndexFFTShift()];
+		return ptr[getPositionFFTShift()];
 	}
 
+	/**
+	\brief Access the underlying data directly, at the current inverse fftshift coordinates.
+	\return A reference to the data at the current inverse fftshift coordinates.
+	**/
 	template<typename T, Location l>
 	__device__ inline T& Accessor<T,l>::dataFFTInverseShift(void) const
 	{
-		return ptr[getIndexFFTInverseShift()];
+		return ptr[getPositionFFTInverseShift()];
 	}
 	#endif
 
+	/**
+	\brief Get a copy of the data (regardless of its location).
+	
+	The user takes the responsability of releasing the memory.
+
+	\return A copy of the data in the host side.
+	**/
 	template<typename T, Location l>
 	T* Accessor<T,l>::getData(void) const
 	{	
-		T* ptr = new T[getNumElements()];
+		T* ptr = new T[numElements()];
 		getData(ptr);
 		return ptr;
 	}
@@ -1404,7 +1625,7 @@ namespace Kartet
 				from(_from),
 				to(_to),
 				originalLayout(_originalLayout),
-				solidLayout(_originalLayout.getMonolithicLayout())
+				solidLayout(_originalLayout.monolithicLayout())
 			{
 				#ifdef __CUDACC__
 					if(direction==HostToDevice || direction==DeviceToHost || direction==DeviceToDevice)
@@ -1422,26 +1643,31 @@ namespace Kartet
 					fromOffset = 0;
 				if(direction==DeviceToHost)
 				{
-					toOffset	= solidLayout.getIndex(i, j, k);
-					fromOffset	= originalLayout.getIndex(i, j, k);
+					toOffset	= solidLayout.getPosition(i, j, k);
+					fromOffset	= originalLayout.getPosition(i, j, k);
 				}
 				else
 				{
-					toOffset	= originalLayout.getIndex(i, j, k);
-					fromOffset	= solidLayout.getIndex(i, j, k);
+					toOffset	= originalLayout.getPosition(i, j, k);
+					fromOffset	= solidLayout.getPosition(i, j, k);
 				}
 
 				#ifdef __CUDACC__
 					const cudaMemcpyKind _direction = getCudaDirection(direction);
-					cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T), _direction);
+					cudaError_t err = cudaMemcpy((to + toOffset), (from + fromOffset), currentAccessLayout.numElements()*sizeof(T), _direction);
 					if(err!=cudaSuccess)
 						throw static_cast<Exception>(CudaExceptionsOffset + err);
 				#else
-					memcpy((to + toOffset), (from + fromOffset), currentAccessLayout.getNumElements()*sizeof(T));
+					memcpy((to + toOffset), (from + fromOffset), currentAccessLayout.numElements()*sizeof(T));
 				#endif
 			}
 		};
 
+	/**
+	\brief Copy the data (read, regardless of its location).
+	\param dst Pointer to destination memory. The space must be sufficient.
+	\param lout Location of the memory to be written.
+	**/
 	template<typename T, Location l>
 	void Accessor<T,l>::getData(T* dst, const Location lout) const
 	{
@@ -1453,6 +1679,11 @@ namespace Kartet
 		singleScan(toolbox);
 	}
 
+	/**
+	\brief Copy the data (write, regardless of its location).
+	\param src Pointer to source memory.
+	\param lin Location of the memory to be read.
+	**/
 	template<typename T, Location l>
 	void Accessor<T,l>::setData(const T* src, const Location lin) const
 	{
@@ -1521,15 +1752,15 @@ namespace Kartet
 
 				if(destinationLocation==HostSide && !conversion)
 				{
-					stream.read(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+					stream.read(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.numElements()*sizeof(T));
 					if(stream.fail())
 						throw InvalidInputStream;
 				}
 				else
 				{
-					for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.getNumElements(); )
+					for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.numElements(); )
 					{
-						const index_t currentCopyNumElements = std::min(currentAccessLayout.getNumElements()-offsetCopied, static_cast<index_t>(numBufferElements));
+						const index_t currentCopyNumElements = std::min(currentAccessLayout.numElements()-offsetCopied, static_cast<index_t>(numBufferElements));
 						stream.read(bufferRead, currentCopyNumElements*sourceTypeSize);
 						if(stream.fail())
 							throw InvalidInputStream;
@@ -1541,6 +1772,8 @@ namespace Kartet
 							dynamicCopy(reinterpret_cast<T*>(castPtr), bufferRead, sourceTypeIndex, currentCopyNumElements);
 							tmpSrc = castPtr;
 						}
+						else
+							UNUSED_PARAMETER(tmpSrc)							
 
 						if(destinationLocation==DeviceSide)
 						{
@@ -1559,6 +1792,17 @@ namespace Kartet
 			}
 		};
 
+	/**
+	\brief Read data from stream.
+	\param stream Input stream.
+	\param convert True if the data from the stream must be converted to the type of the accessor.
+	\param maxBufferSize In the case of a conversion, the 
+	\param skipHeader Skip header read if True. The data read must be of the same type. No conversion will be performed.
+	\param sourceTypeIndex Force the data type of the input stream (useful if the header is skipped).
+	\throw Kartet::InvalidOperation If maxBufferSize is insufficient or if the source type is different than the accessor type and the conversion is disabled.
+	\throw Kartet::InvalidInputStream If the stream cannot be read.
+	\throw Kartet::IncompatibleLayout If the layouts of the source and the accessor are not compatible.
+	**/
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader, int sourceTypeIndex)
 	{
@@ -1567,10 +1811,10 @@ namespace Kartet
 		if(!stream.good())
 			throw InvalidInputStream;
 		
-		Layout layout = getLayout();
+		Layout lt = layout();
 		if(!skipHeader)
-			layout = Layout::readFromStream(stream, &sourceTypeIndex);
-		if(!layout.sameLayoutAs(*this))
+			lt = Layout::readFromStream(stream, &sourceTypeIndex);
+		if(!lt.sameLayoutAs(*this))
 			throw IncompatibleLayout;
 	
 		const bool conversion = (sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value);
@@ -1579,12 +1823,21 @@ namespace Kartet
 		
 		const size_t 	sourceTypeSize = sizeOfType(sourceTypeIndex),
 				maxSize = conversion ? (sourceTypeSize + sizeof(T)) : sizeof(T),
-				numBufferElements = std::min(static_cast<size_t>(layout.getNumElements())*maxSize, maxBufferSize)/maxSize;
+				numBufferElements = std::min(static_cast<size_t>(lt.numElements())*maxSize, maxBufferSize)/maxSize;
 		
-		StreamInputToolBox<T> toolbox(stream, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
+		StreamInputToolBox<T> toolbox(stream, lt, sourceTypeIndex, sourceTypeSize, numBufferElements);
 		singleScan(toolbox);
 	}
 
+	/**
+	\brief Read data from file.
+	\param filename Filename to load.
+	\param convert True if the data from the stream must be converted to the type of the accessor.
+	\param maxBufferSize In the case of a conversion, the 
+	\throw Kartet::InvalidOperation If maxBufferSize is insufficient or if the source type is different than the accessor type and the conversion is disabled.
+	\throw Kartet::InvalidInputStream If the stream cannot be read.
+	\throw Kartet::IncompatibleLayout If the layouts of the source and the accessor are not compatible.
+	**/
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::readFromFile(const std::string& filename, bool convert, const size_t maxBufferSize)
 	{
@@ -1640,9 +1893,9 @@ namespace Kartet
 				{
 					#ifdef __CUDACC__
 						// Copy to the buffer :
-						for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.getNumElements(); )
+						for(index_t offsetCopied=0; offsetCopied<currentAccessLayout.numElements(); )
 						{
-							const index_t currentCopyNumElements = std::min(currentAccessLayout.getNumElements()-offsetCopied, static_cast<index_t>(numBufferElements));
+							const index_t currentCopyNumElements = std::min(currentAccessLayout.numElements()-offsetCopied, static_cast<index_t>(numBufferElements));
 							cudaError_t err = cudaMemcpy(buffer, (ptr + offset + offsetCopied), currentCopyNumElements*sizeof(T), cudaMemcpyDeviceToHost);
 							if(err!=cudaSuccess)
 								throw static_cast<Exception>(CudaExceptionsOffset + err);
@@ -1658,20 +1911,25 @@ namespace Kartet
 				else
 				{
 					// Write the full data directly :
-					stream.write(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.getNumElements()*sizeof(T));
+					stream.write(reinterpret_cast<char*>(ptr + offset), currentAccessLayout.numElements()*sizeof(T));
 					if(stream.fail())
 						throw InvalidOutputStream;
 				}
 			}
 		};
 
+	/**
+	\brief Write data to stream (including layout header).
+	\param stream Stream to write to.
+	\param maxBufferSize Buffer size used for transfers from the device.
+	**/
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::writeToStream(std::ostream& stream, const size_t maxBufferSize)
 	{
 		if(maxBufferSize<sizeof(T))
 			throw InvalidOperation;
 
-		const size_t numBufferElements = std::min(static_cast<size_t>(getNumElements())*sizeof(T), maxBufferSize)/sizeof(T);
+		const size_t numBufferElements = std::min(static_cast<size_t>(numElements())*sizeof(T), maxBufferSize)/sizeof(T);
 
 		// Write the header :
 		Layout::writeToStream<T>(stream);
@@ -1679,6 +1937,11 @@ namespace Kartet
 		singleScan(toolbox);
 	}
 
+	/**
+	\brief Write data to file (including layout header).
+	\param filename Filename to write to.
+	\param maxBufferSize Buffer size used for transfers from the device.
+	**/
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::writeToFile(const std::string& filename, const size_t maxBufferSize)
 	{
@@ -1690,25 +1953,47 @@ namespace Kartet
 		file.close();
 	}
 
+	/**
+	\brief Get the layout of this accessor.
+	\return The layout, include stride parameters.
+	**/
 	template<typename T, Location l>
-	__host__ const Layout& Accessor<T,l>::getLayout(void) const
+	__host__ const Layout& Accessor<T,l>::layout(void) const
 	{
 		return (*this);
 	}
 
+	/**
+	\brief Get an accessor to the specified element.
+	\param i Row index.
+	\param j Column index.
+	\param k Slice index.
+
+	Note that this method can be used to modify a single element of data on either host or device side, but is slow.
+
+	\throw Kartet::OutOfRange If the coordinates are not valid.
+	\return An accessor for a single element.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::element(index_t i, index_t j, index_t k) const
 	{
 		if(!isInside(i, j, k))
 			throw OutOfRange;		
 
-		return Accessor<T,l>(ptr + getIndex(i, j, k), 1, 1, 1, 1, 1, getOffset()+getIndex(i, j, k));
+		return Accessor<T,l>(ptr + getPosition(i, j, k), 1, 1, 1, 1, 1, offset()+getPosition(i, j, k));
 	}
 
+	/**
+	\brief Get an accessor to the specified elements.
+	\param p Starting index.
+	\param n Number of elements.
+	\throw Kartet::OutofRange If the starting index is not valid or if the number of elements is larger than the number of contiguous elements.
+	\return An accessor to the contiguous elements.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::elements(index_t p, index_t numElements) const
+	__host__ Accessor<T,l> Accessor<T,l>::elements(index_t p, index_t n) const
 	{
-		if(p<0 || numElements<0 || p>=getNumElements() || (p+numElements)>getNumElements())
+		if(p<0 || n<0 || p>=numElements() || (p+n)>numElements())
 			throw OutOfRange;
 
 		// Test if the block is fully in this accessor :
@@ -1717,92 +2002,172 @@ namespace Kartet
 			index_t i = 0,
 				j = 0,
 				k = 0;
-			unpackIndex(p, i, j, k);
-			if(getNumRows()!=getLeadingColumns())
+			unpackPosition(p, i, j, k);
+			if(numRows()!=columnsStride())
 			{
-				if(numElements>getNumRows())
+				if(n>numRows())
 					throw OutOfRange;
 			}
-			else if(getNumElementsPerSlice()!=getLeadingColumns())
+			else if(numElementsPerSlice()!=columnsStride())
 			{
-				if(numElements>getNumElementsPerSlice())
+				if(n>numElementsPerSlice())
 					throw OutOfRange;
 			}
 		}
-		return Accessor<T,l>(ptr + p, numElements, 1, 1, numElements, numElements, getOffset()+p);
+		return Accessor<T,l>(ptr + p, n, 1, 1, n, n, offset()+p);
 	}
 
+	/**
+	\brief Get an accessor to all the underlying elements.
+	\throw Kartet::InvalidOperation If the accessor is not monolithic.
+	\returns An accessor to all the elements.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::elements(void) const
 	{
 		if(!isMonolithic())
 			throw InvalidOperation;
-		return Accessor<T,l>(ptr, getNumElements(), 1, 1, getNumElements(), getNumElements(), getOffset());
+		return Accessor<T,l>(ptr, numElements(), 1, 1, numElements(), numElements(), offset());
 	}
 
+	/**
+	\brief Get an accesor to a particular column.
+	\param j Column index.
+	\throw Kartet::OutOfRange If the column index is out of range.
+	\return An accessor to the specified column.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::vector(index_t j) const
+	__host__ Accessor<T,l> Accessor<T,l>::column(index_t j) const
 	{
-		if(!validColumnIndex(j))
+		if(!isColumnValid(j))
 			throw OutOfRange;
 
-		return Accessor<T,l>(ptr + getIndex(0,j,0), getNumRows(), 1, getNumSlices(), getNumRows(), getLeadingSlices(), getOffset()+getIndex(0,j,0));
+		return Accessor<T,l>(ptr + getPosition(0,j,0), numRows(), 1, numSlices(), numRows(), slicesStride(), offset()+getPosition(0,j,0));
 	}
 
+	/**
+	\brief Get an accessor to the last column.
+	\return An accessor to the last column.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::endVector(void) const
+	__host__ Accessor<T,l> Accessor<T,l>::endColumn(void) const
 	{
-		return vector(getNumColumns()-1);
+		return column(numColumns()-1);
 	}
 
+	/**
+	\brief Get an accessor to the specified columns.
+	\param jBegin Starting index of the column.
+	\param c Number of columns.
+	\param jStep Step between two columns.
+	\throw Kartet::InvalidNegativeStep If the number of columns is less or equal to 0 or the step is less or equal to 0.
+	\throw Kartet::OutOfRange If any column has an invalid index.
+	\return An accessor to the specified columns.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::vectors(index_t jBegin, index_t numVectors, index_t jStep) const
+	__host__ Accessor<T,l> Accessor<T,l>::columns(index_t jBegin, index_t c, index_t jStep) const
 	{
-		if(jStep<=0 || numVectors<=0)
+		if(jStep<=0 || c<=0)
 			throw InvalidNegativeStep;
-		if(!validColumnIndex(jBegin) || !validColumnIndex(jBegin+(numVectors-1)*jStep))
+		if(!isColumnValid(jBegin) || !isColumnValid(jBegin+(c-1)*jStep))
 			throw OutOfRange;
 
-		return Accessor<T,l>(ptr + getIndex(0,jBegin,0), getNumRows(), numVectors, getNumSlices(), jStep*getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(0,jBegin,0));
+		return Accessor<T,l>(ptr + getPosition(0,jBegin,0), numRows(), c, numSlices(), jStep*columnsStride(), slicesStride(), offset()+getPosition(0,jBegin,0));
 	}
 
+	/**
+	\brief Get an accessor to a slice.
+	\param k Slice index.
+	\throw Kartet::OutOfRange If the index of the slice is invalid.
+	\return An accessor to the required slice.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::slice(index_t k) const
 	{
-		if(!validSliceIndex(k))
+		if(!isSliceValid(k))
 			throw OutOfRange;
 
-		return Accessor<T,l>(ptr + getIndex(0,0,k), getNumRows(), getNumColumns(), 1, getLeadingColumns(), getOffset()+getIndex(0,0,k));
+		return Accessor<T,l>(ptr + getPosition(0,0,k), numRows(), numColumns(), 1, columnsStride(), offset()+getPosition(0,0,k));
 	}
 
+	/**
+	\brief Get an accessor to the last slice.
+	\return An accessor to the last slice.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::endSlice(void) const
 	{
-		return slice(getNumSlices()-1);
+		return slice(numSlices()-1);
 	}
 
+	/**
+	\brief Get an accessor to multiple slices.
+	\param kBegin Starting index of the slices.
+	\param s Number of slices.
+	\param kStep Step between two slices.
+	\throw Kartet::InvalidNegativeStep If the number of slices is less or equal to 0 or the step is less or equal to 0.
+	\throw Kartet::OutOfRange If any slice has an invalid index.
+	\return An accessor to the specified slices.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::slices(index_t kBegin, index_t numSlices, index_t kStep) const
+	__host__ Accessor<T,l> Accessor<T,l>::slices(index_t kBegin, index_t s, index_t kStep) const
 	{
-		if(kStep<0 || numSlices<=0)
+		if(kStep<0 || s<=0)
 			throw InvalidNegativeStep;
-		if(!validSliceIndex(kBegin) || !validSliceIndex(kBegin+(numSlices-1)*kStep))
+		if(!isSliceValid(kBegin) || !isSliceValid(kBegin+(s-1)*kStep))
 			throw OutOfRange;
 
-		return Accessor<T,l>(ptr + getIndex(0,0,kBegin), getNumRows(), getNumColumns(), numSlices, getLeadingColumns(), kStep*getLeadingSlices(), getOffset()+getIndex(0,0,kBegin));
+		return Accessor<T,l>(ptr + getPosition(0,0,kBegin), numRows(), numColumns(), s, columnsStride(), kStep*slicesStride(), offset()+getPosition(0,0,kBegin));
 	}
 
+	/**
+	\brief Get an accessor to a sub-array.
+	\param iBegin Starting row index.
+	\param jBegin Starting column index.
+	\param r Number of rows.
+	\param c Number of columns.
+	\throw Kartet::InvalidNegativeStep If the number of rows or columns is less or equal to 0.
+	\throw Kartet::OutOfRange If any index is invalid.
+	\return An accessor to the specified sub-array.
+	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const
+	__host__ Accessor<T,l> Accessor<T,l>::subArray(index_t iBegin, index_t jBegin, index_t r, index_t c) const
 	{
-		if(numRows<=0 || numColumns<=0)
+		if(r<=0 || c<=0)
 			throw InvalidNegativeStep;
-		if(!validRowIndex(iBegin) || !validRowIndex(iBegin+numRows-1) || !validColumnIndex(jBegin) || !validColumnIndex(jBegin+numColumns-1))
+		if(!isRowValid(iBegin) || !isRowValid(iBegin+r-1) || !isColumnValid(jBegin) || !isColumnValid(jBegin+c-1))
 			throw OutOfRange;
 		
-		return Accessor<T,l>(ptr + getIndex(iBegin,jBegin,0), numRows, numColumns, getNumSlices(), getLeadingColumns(), getLeadingSlices(), getOffset()+getIndex(iBegin,jBegin,0));
+		return Accessor<T,l>(ptr + getPosition(iBegin,jBegin,0), r, c, numSlices(), columnsStride(), slicesStride(), offset()+getPosition(iBegin,jBegin,0));
 	}
 
+	/**
+	\brief Get an accessor to a sub-array.
+	\param iBegin Starting row index.
+	\param jBegin Starting column index.
+	\param kBegin Starting slice index.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	\throw Kartet::InvalidNegativeStep If the number of rows, or columns; or slices is less or equal to 0.
+	\throw Kartet::OutOfRange If any index is invalid.
+	\return An accessor to the specified sub-array.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::subArray(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const
+	{
+		if(r<=0 || c<=0 || s<=0)
+			throw InvalidNegativeStep;
+		if(!isRowValid(iBegin) || !isRowValid(iBegin+r-1) || !isColumnValid(jBegin) || !isColumnValid(jBegin+c-1) || !isSliceValid(kBegin+s-1))
+			throw OutOfRange;
+
+		return Accessor<T,l>(ptr + getPosition(iBegin,jBegin,kBegin), r, c, s, columnsStride(), slicesStride(), offset()+getPosition(iBegin,jBegin,kBegin));
+	}
+
+	/**
+	\brief Return the flattened version of this accessor (see Kartet::Layout::flatten()).
+	\return The flattened version of this accessor.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::flattened(void) const
 	{
@@ -1811,6 +2176,10 @@ namespace Kartet
 		return result;
 	}
 
+	/**
+	\brief Return the stretched version of this accessor (see Kartet::Layout::stretch()).
+	\return The stretched version of this accessor.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::stretched(void) const
 	{
@@ -1819,6 +2188,10 @@ namespace Kartet
 		return result;
 	}
 
+	/**
+	\brief Return the vectorized version of this accessor (see Kartet::Layout::vectorize()).
+	\return The vectorized version of this accessor.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l> Accessor<T,l>::vectorized(void) const
 	{
@@ -1827,63 +2200,97 @@ namespace Kartet
 		return result;
 	}
 
+	/**
+	\brief Split columns into several accessors.
+	\param jBegin Starting index of the columns.
+	\param c Number of columns per sub-accessor.
+	\return A standard vector containing the sub-accessors (ordered).
+	**/
 	template<typename T, Location l>
-	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitColumns(index_t jBegin, index_t nColumns) const
+	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitColumns(index_t jBegin, index_t c) const
 	{
 		std::vector< Accessor<T,l> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
-		const std::vector<Layout> pagesLayout = tmp.splitLayoutColumns(jBegin, nColumns);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutColumns(jBegin, c);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
-			pages.push_back( Accessor<T,l>(ptr + it->getOffset(), *it) );
-			pages.back().setOffset(getOffset() + pages.back().getOffset());
+			pages.push_back( Accessor<T,l>(ptr + it->offset(), *it) );
+			pages.back().setOffset(offset() + pages.back().offset());
 		}
 
 		return pages;
 	}
 
+	/**
+	\brief Split slices into several accessors.
+	\param kBegin Starting index of the slices.
+	\param s Number of slices per sub-accessor.
+	\return A standard vector containing the sub-accessors (ordered).
+	**/
 	template<typename T, Location l>
-	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitSlices(index_t kBegin, index_t nSlices) const
+	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitSlices(index_t kBegin, index_t s) const
 	{
 		std::vector< Accessor<T,l> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
-		const std::vector<Layout> pagesLayout = tmp.splitLayoutSlices(kBegin, nSlices);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutSlices(kBegin, s);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
-			pages.push_back( Accessor<T,l>(ptr + it->getOffset(), *it) );
-			pages.back().setOffset(getOffset() + pages.back().getOffset());
+			pages.push_back( Accessor<T,l>(ptr + it->offset(), *it) );
+			pages.back().setOffset(offset() + pages.back().offset());
 		}
 
 		return pages;
 	}
 
+	/**
+	\brief Split sub-arrays into several accessors.	
+	\param iBegin Starting index of the rows.
+	\param jBegin Starting index of the columns.
+	\param kBegin Starting index of the columns.
+	\param r Number of rows per sub-accessor.
+	\param c Number of columns per sub-accessor.
+	\param s Number of slices per sub-accessor.
+	\return A standard vector containing the sub-accessors (ordered).
+	**/
 	template<typename T, Location l>
-	__host__ std::vector< Accessor<T,l> > Accessor<T,l>::splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows, index_t nColumns, index_t nSlices) const
+	__host__ std::vector< Accessor<T,l> > Accessor<T,l>::splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const
 	{
 		std::vector< Accessor<T,l> > pages;
 		Layout tmp = this->getLayout();
 		tmp.setOffset(0);
-		const std::vector<Layout> pagesLayout = tmp.splitLayoutSubArrays(iBegin, jBegin, kBegin, nRows, nColumns, nSlices);
+		const std::vector<Layout> pagesLayout = tmp.splitLayoutSubArrays(iBegin, jBegin, kBegin, r, c, s);
 
 		for(std::vector<Layout>::const_iterator it=pagesLayout.begin(); it!=pagesLayout.end(); it++)	
 		{
-			pages.push_back( Accessor<T,l>(ptr + it->getOffset(), *it) );
-			pages.back().setOffset(getOffset() + pages.back().getOffset());
+			pages.push_back( Accessor<T,l>(ptr + it->offset(), *it) );
+			pages.back().setOffset(offset() + pages.back().offset());
 		}
 
 		return pages;
 	}
 
+	/**
+	\brief Split sub-arrays into several accessors.	
+	\param iBegin Starting index of the rows.
+	\param jBegin Starting index of the columns.
+	\param kBegin Starting index of the columns.
+	\param layout Layout of the sub-arrays.
+	\return A standard vector containing the sub-accessors (ordered).
+	**/
 	template<typename T, Location l>
 	__host__ std::vector< Accessor<T,l> > Accessor<T,l>::splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const
 	{
-		return Accessor<T,l>::splitSubArrays(iBegin, jBegin, kBegin, layout.getNumRows(), layout.getNumColumns(), layout.getNumSlices());
+		return Accessor<T,l>::splitSubArrays(iBegin, jBegin, kBegin, layout.numRows(), layout.numColumns(), layout.numSlices());
 	}
 
+	/**
+	\brief Perform a single scan operation on the accessor.
+	\param op Operator object (see Layout::singleScan for more information).
+	**/
 	template<typename T, Location l>
 	template<class Op>
 	__host__ void Accessor<T,l>::singleScan(const Op& op) const
@@ -1891,6 +2298,22 @@ namespace Kartet
 		Layout::singleScan(ptr, op);
 	}
 
+	/**
+	\brief Output accessor data on stream.
+	\param os Output stream (std::cout, std::cerr, etc.)
+	\param A Accessor object.
+	
+	Example : 
+	\code
+	Kartet::Array<int> a(4, 4);
+	a = Kartet::IndexI() + Kartet::IndexJ();
+	std::cout << "Array data : " << a << std::endl;
+	std::cout << "Second vector : " << a.vector(1) << std::endl;
+	std::cout << "Last two vectors : " << a.vectors(2,2) << std::endl;
+	\endcode
+
+	\return Output stream object for follow-up.
+	**/
 	template<typename T, Location l>
 	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T,l>& A)
 	{
@@ -1901,84 +2324,158 @@ namespace Kartet
 			  maxWidth = precision+3;
 		const char fillCharacter = ' ';
 		const char* spacing = "  ";
-		const Kartet::Layout layout = A.getMonolithicLayout();
-
-		T* tmp = (A.getLocation()==DeviceSide) ? A.getData() : A.getPtr();
+		const Kartet::Layout layout = (A.location()==DeviceSide) ? A.monolithicLayout() : A.layout();
+		T* tmp = (A.location()==DeviceSide) ? A.getData() : A.dataPtr();
 
 		// Get old parameter :
 		const int oldPrecision = os.precision(precision);
 
-		os << "(Array of size " << A.getLayout() << ", " << ((A.getLocation()==DeviceSide) ? "DeviceSide" : "HostSide") << ')' << std::endl;
-		for(int k=0; k<layout.getNumSlices(); k++)
+		os << "(Array of size " << A.layout() << ", " << ((A.location()==DeviceSide) ? "DeviceSide" : "HostSide") << ')' << std::endl;
+		for(int k=0; k<layout.numSlices(); k++)
 		{
-			if(layout.getNumSlices()>1)
+			if(layout.numSlices()>1)
 				os << "Slice " << k << " : "<< std::endl;
 	
-			for(int i=0; i<layout.getNumRows(); i++)
+			for(int i=0; i<layout.numRows(); i++)
 			{
-				for(int j=0; j<(layout.getNumColumns()-1); j++)
-					os << FMT << static_cast<CastType>(tmp[layout.getIndex(i,j,k)]) << spacing;
-				os << FMT << static_cast<CastType>(tmp[layout.getIndex(i,layout.getNumColumns()-1,k)]) << std::endl;
+				for(int j=0; j<(layout.numColumns()-1); j++)
+					os << FMT << static_cast<CastType>(tmp[layout.getPosition(i,j,k)]) << spacing;
+				os << FMT << static_cast<CastType>(tmp[layout.getPosition(i,layout.numColumns()-1,k)]) << std::endl;
 			}
 		}
 		#undef FMT
 
 		os.precision(oldPrecision);
 
-		if(A.getLocation()==DeviceSide)
+		if(A.location()==DeviceSide)
 			delete[] tmp;
 		
 		return os;
 	}
 
 // Array :
+	/**
+	\brief Array constructor.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	\throw Kartet::InvalidLayout If the layout is invalid (incorrect sizes).
+	**/
 	template<typename T, Location l>
 	__host__ Array<T,l>::Array(index_t r, index_t c, index_t s)
 	 :	Accessor<T,l>(r, c, s)
 	{
+		if(!layout().isValid())
+			throw InvalidLayout;
 		allocateMemory();	
 	}
 	
+	/**
+	\brief Array constructor.
+	\param lt Layout of the array.
+	\throw Kartet::InvalidLayout If the layout is invalid (incorrect sizes).
+	**/
 	template<typename T, Location l>
-	__host__ Array<T,l>::Array(const Layout& layout)
-	 :	Accessor<T,l>(layout.getMonolithicLayout())
+	__host__ Array<T,l>::Array(const Layout& lt)
+	 :	Accessor<T,l>(lt.monolithicLayout())
 	{
+		if(!layout().isValid())
+			throw InvalidLayout;
 		allocateMemory();
 	}
 
+	/**
+	\brief Array constructor.
+	\param ptr Data to be copied. This memory space will not be used once the constructor finishes.
+	\param r Number of rows.
+	\param c Number of columns.
+	\param s Number of slices.
+	\throw Kartet::InvalidLayout If the layout is invalid (incorrect sizes).
+	**/
 	template<typename T, Location l>
 	__host__ Array<T,l>::Array(const T* ptr, index_t r, index_t c, index_t s)
 	 :	Accessor<T,l>(r, c, s)
 	{
+		if(!layout().isValid())
+			throw InvalidLayout;
 		allocateMemory();
 		setData(ptr);
 	}
 
+	/**
+	\brief Array constructor.
+	\param ptr Data to be copied. This memory space will not be used once the constructor finishes.
+	\param lt Layout of the array.
+	\throw Kartet::InvalidLayout If the layout is invalid (incorrect sizes).
+	**/
 	template<typename T, Location l>
-	__host__ Array<T,l>::Array(const T* ptr, const Layout& layout)
-	 :	Accessor<T,l>(layout.getMonolithicLayout())
+	__host__ Array<T,l>::Array(const T* ptr, const Layout& lt)
+	 :	Accessor<T,l>(layout.monolithicLayout())
 	{
+		if(!layout().isValid())
+			throw InvalidLayout;
 		allocateMemory();
 		setData(ptr);
 	}
 
+	/**
+	\brief Copy constructor.
+	\param A Array to be copied.
+	**/
 	template<typename T, Location l>
 	__host__ Array<T,l>::Array(const Array<T,l>& A)
-	 :	Accessor<T,l>(A.getMonolithicLayout())
+	 :	Accessor<T,l>(A.monolithicLayout())
 	{
 		allocateMemory();
 		(*this) = A;
 	}
 
+	/**
+	\brief Copy constructor.
+	\param A Accessor to be copied (can also be an array with a different location parameter).
+	**/
 	template<typename T, Location l>
 	template<typename TIn, Location lin>
 	__host__ Array<T,l>::Array(const Accessor<TIn,lin>& A)
-	 : 	Accessor<T,l>(A.getMonolithicLayout())
+	 : 	Accessor<T,l>(A.monolithicLayout())
 	{
 		allocateMemory();
 		(*this) = A;
 	}
 
+	/**
+	\brief Array constructor.
+	\param stream Input stream to read from.
+	\param convert Set to true if the data can be converted to the current type.
+	\param maxBufferSize The maximum buffer size to be allocated to perform the requested conversion.
+	\param sourceTypeIndex For internal use only.
+	**/
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(std::istream& stream, const bool convert, const size_t maxBufferSize, int sourceTypeIndex)
+	 :	Accessor<T,l>(Layout::readFromStream(stream, &sourceTypeIndex))
+	{
+		allocateMemory();
+		readFromStream(stream, convert, maxBufferSize, true, sourceTypeIndex);
+	}
+
+	/**
+	\brief Array constructor.
+	\param filename Filename to read from.
+	\param convert Set to true if the data can be converted to the current type.
+	\param maxBufferSize The maximum buffer size to be allocated to perform the requested conversion.
+	\param sourceTypeIndex For internal use only.
+	**/
+	template<typename T, Location l>
+	__host__ Array<T,l>::Array(const std::string& filename, const bool convert, const size_t maxBufferSize, int sourceTypeIndex)
+	 :	Accessor<T,l>(Layout::readFromFile(filename, &sourceTypeIndex))
+	{
+		allocateMemory();
+		readFromFile(filename, convert, maxBufferSize);
+	}
+
+	/**
+	\brief Array destructor.
+	**/
 	template<typename T, Location l>
 	__host__ Array<T,l>::~Array(void)
 	{
@@ -2006,6 +2503,9 @@ namespace Kartet
 		this->ptr = NULL;
 	}
 
+	/**
+	\brief Automatic memory allocation.
+	**/
 	template<typename T, Location l>
 	__host__ void Array<T,l>::allocateMemory(void)
 	{
@@ -2017,7 +2517,7 @@ namespace Kartet
 				{
 				#ifdef __CUDACC__
 					cudaError_t err = cudaSuccess;
-					err = cudaMalloc(reinterpret_cast<void**>(&this->ptr), getNumElements()*sizeof(T));
+					err = cudaMalloc(reinterpret_cast<void**>(&this->ptr), numElements()*sizeof(T));
 					if(err!=cudaSuccess)
 						throw static_cast<Exception>(CudaExceptionsOffset + err);
 					break;
@@ -2026,27 +2526,42 @@ namespace Kartet
 				#endif
 				}
 			case HostSide :
-				this->ptr = new T[getNumElements()];
+				this->ptr = new T[numElements()];
 				break;
 			default :
 				throw InvalidLocation;
 		}
 	}
 
+	/**
+	\brief Get the accessor corresponding to the full array.
+	\return An accessor object.
+	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l>& Array<T,l>::accessor(void)
 	{
 		return (*this);
 	}
 
+	/**
+	\brief Get the accessor corresponding to the full array.
+	\return An accessor object.
+	**/
 	template<typename T, Location l>
 	__host__ const Accessor<T,l>& Array<T,l>::accessor(void) const
 	{
 		return (*this);
 	}
 
+	/**
+	\brief Build the array with data from a stream.
+	\param stream The input stream.
+	\param convert Set to true if the data can be converted to the current type.
+	\param maxBufferSize The maximum buffer size to be allocated to perform the requested conversion.
+	\return A pointer to the newly created array.
+	**/
 	template<typename T, Location l>
-	__host__ Array<T,l>* Array<T,l>::buildFromStream(std::istream& stream, bool convert, size_t maxBufferSize)
+	__host__ Array<T,l>* Array<T,l>::buildFromStream(std::istream& stream, const bool convert, const size_t maxBufferSize)
 	{
 		int sourceTypeIndex = 0; // void;
 		const Layout layout = Layout::readFromStream(stream, &sourceTypeIndex);
@@ -2064,8 +2579,15 @@ namespace Kartet
 		return result;
 	}
 
+	/**
+	\brief Build the array with data from a stream.
+	\param filename Filename to read from.
+	\param convert Set to true if the data can be converted to the current type.
+	\param maxBufferSize The maximum buffer size to be allocated to perform the requested conversion.
+	\return A pointer to the newly created array.
+	**/
 	template<typename T, Location l>
-	__host__ Array<T,l>* Array<T,l>::buildFromFile(const std::string& filename, bool convert, size_t maxBufferSize)
+	__host__ Array<T,l>* Array<T,l>::buildFromFile(const std::string& filename, const bool convert, const size_t maxBufferSize)
 	{
 		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 		if(!file.is_open() || file.fail())

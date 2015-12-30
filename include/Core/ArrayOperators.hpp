@@ -32,6 +32,15 @@
 namespace Kartet
 {
 // Assignement operators :
+	/**
+	\brief Evaluate an expression and store the result.
+	\param expr Expression.
+	\param stream Stream to be used for the computation (if the location is set to Kartet::DeviceSide).
+
+	See \ref OperatorsGroup and \ref FunctionsGroup.
+
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<typename TExpr>
 	Accessor<T,l>& Accessor<T,l>::assign(const TExpr& expr, cudaStream_t stream)
@@ -61,6 +70,12 @@ namespace Kartet
 		return *this;
 	}
 
+	/**
+	\brief Copy data.
+	\param a Other accessor.
+	\param stream Stream to be used for the copy (if the location is set to Kartet::DeviceSide).
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l>& a, cudaStream_t stream)
 	{
@@ -112,9 +127,9 @@ namespace Kartet
 
 				cudaError_t err = cudaSuccess;
 				if(stream!=NULL)
-					err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction);
+					err = cudaMemcpy((dst + offsetDst), (src + offsetSrc), currentAccessLayout.numElements()*sizeof(T), direction);
 				else
-					err = cudaMemcpyAsync((dst + offsetDst), (src + offsetSrc), currentAccessLayout.getNumElements()*sizeof(T), direction, stream);
+					err = cudaMemcpyAsync((dst + offsetDst), (src + offsetSrc), currentAccessLayout.numElements()*sizeof(T), direction, stream);
 
 				if(err!=cudaSuccess)
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
@@ -122,6 +137,12 @@ namespace Kartet
 		};
 	#endif
 
+	/**
+	\brief Copy data.
+	\param a Other accessor.
+	\param stream Stream to be used for the copy (if one of the location is set to Kartet::DeviceSide).
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l2>& a, cudaStream_t stream)
@@ -130,7 +151,7 @@ namespace Kartet
 
 		#ifdef __CUDACC__
 			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, stream);
-			dualScan(*this, getPtr(), a, a.getPtr(), op);
+			dualScan(*this, dataPtr(), a, a.dataPtr(), op);
 			
 			return *this;
 		#else
@@ -138,12 +159,24 @@ namespace Kartet
 		#endif
 	}
 
+	/**
+	\brief Copy data.
+	\param a Other array.
+	\param stream Stream to be used for the copy (if the location is set to Kartet::DeviceSide).
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::assign(const Array<T,l>& a, cudaStream_t stream)
 	{
 		return assign(a.accessor(), stream);
 	}
 
+	/**
+	\brief Copy data.
+	\param a Other array.
+	\param stream Stream to be used for the copy (if one of the location is set to Kartet::DeviceSide).
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::assign(const Array<T,l2>& a, cudaStream_t stream)
@@ -151,6 +184,14 @@ namespace Kartet
 		return assign(a.accessor(), stream);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param expr Expression.
+	
+	See \ref OperatorsGroup and \ref FunctionsGroup.
+
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<typename TExpr>
 	Accessor<T,l>& Accessor<T,l>::operator=(const TExpr& expr)
@@ -158,12 +199,22 @@ namespace Kartet
 		return assign(expr);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Accessor.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	Accessor<T,l>& Accessor<T,l>::operator=(const Accessor<T,l>& a)
 	{
 		return assign(a);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Accessor.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::operator=(const Accessor<T,l2>& a)
@@ -177,6 +228,11 @@ namespace Kartet
 		return assign(a);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Array.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::operator=(const Array<T,l2>& a)
@@ -184,6 +240,14 @@ namespace Kartet
 		return assign(a);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param expr Expression.
+
+	See \ref OperatorsGroup and \ref FunctionsGroup.
+
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<typename TExpr>
 	Array<T,l>& Array<T,l>::operator=(const TExpr& expr)
@@ -192,6 +256,11 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Accessor.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	Array<T,l>& Array<T,l>::operator=(const Accessor<T,l>& a)
 	{
@@ -199,6 +268,11 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Accessor.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Array<T,l>& Array<T,l>::operator=(const Accessor<T,l2>& a)
@@ -207,6 +281,11 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Array.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	Array<T,l>& Array<T,l>::operator=(const Array<T,l>& a)
 	{
@@ -214,6 +293,11 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Assignment operator.
+	\param a Array.
+	\return Reference to this.
+	**/
 	template<typename T, Location l>
 	template<Location l2>
 	Array<T,l>& Array<T,l>::operator=(const Array<T,l2>& a)
@@ -309,29 +393,36 @@ namespace Kartet
 			typedef Type5 ReturnType;
 	};
 
+} // Namespace Kartet
+
 // Nullary Standard Maths Operators :
 	#define STANDARD_NULLARY_OPERATOR_OBJECT(objName, operation, outputType) \
+	namespace Kartet \
+	{ \
 		struct objName \
 		{ \
 			typedef outputType ReturnType; \
 			\
-			__host__ __device__ inline static ReturnType apply(const Layout& l, const index_t& p, const index_t& i, const index_t& j, const index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, const index_t& i, const index_t& j, const index_t& k) \
 			{ \
 				UNUSED_PARAMETER(l) \
-				UNUSED_PARAMETER(p) \
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
 				return operation ; \
 			} \
-		};
+		}; \
+	}
 
 	// Keep the inline here to avoid redefinition errors at client compile time.
 	#define STANDARD_NULLARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		inline ExpressionContainer< NullaryExpression< opName > > funcName (void) \
 		{ \
 			return ExpressionContainer< NullaryExpression< opName > >( NullaryExpression< opName >() ); \
-		}
+		} \
+	}
 
 	#define STANDARD_NULLARY_OPERATOR_DEFINITION( objName, funcName, outputType, operation) \
 		STANDARD_NULLARY_OPERATOR_OBJECT( objName, operation, outputType) \
@@ -339,6 +430,8 @@ namespace Kartet
 
 // Unary Standard Maths Operators :
 	#define STANDARD_UNARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T> \
 		struct objName \
 		{ \
@@ -348,9 +441,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define C2R_UNARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T> \
 		struct objName \
 		{ \
@@ -360,9 +456,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define R2C_UNARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T> \
 		struct objName \
 		{ \
@@ -372,9 +471,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define CAST_UNARY_OPERATOR(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename TOut> \
 		struct objName \
 		{ \
@@ -388,9 +490,12 @@ namespace Kartet
 					return static_cast<TOut>(operation) ; \
 				} \
 			}; \
-		};
+		}; \
+	}
 
 	#define STANDARD_UNARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename T, Location l> \
 		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
@@ -407,9 +512,12 @@ namespace Kartet
 		ExpressionContainer< UnaryExpression< ExpressionContainer<T>, opName > > funcName (const ExpressionContainer<T>& a) \
 		{ \
 			return ExpressionContainer< UnaryExpression< ExpressionContainer<T>, opName > >( UnaryExpression< ExpressionContainer<T>, opName >(a) ); \
-		}
+		} \
+	}
 
 	#define CAST_UNARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename TOut, typename T, Location l> \
 		ExpressionContainer< UnaryExpression< Accessor<T,l>, opName <TOut>::template Sub > > funcName (const Accessor<T,l>& a) \
 		{ \
@@ -426,7 +534,8 @@ namespace Kartet
 		ExpressionContainer< UnaryExpression< ExpressionContainer<T>, opName <TOut>::template Sub > > funcName (const ExpressionContainer<T>& a) \
 		{ \
 			return ExpressionContainer< UnaryExpression< ExpressionContainer<T>, opName <TOut>::template Sub > >( UnaryExpression< ExpressionContainer<T>, opName <TOut>::template Sub >(a) ); \
-		}
+		} \
+	}
 
 	#define STANDARD_UNARY_OPERATOR_DEFINITION(objName, funcName, operation) \
 		STANDARD_UNARY_OPERATOR_OBJECT(objName, operation) \
@@ -446,22 +555,26 @@ namespace Kartet
 
 // Standard Transform Operators :
 	#define STANDARD_TRANSFORM_OPERATOR_OBJECT(objName, operations) \
+	namespace Kartet \
+	{ \
 		struct objName \
 		{ \
 			typedef void ReturnType; \
 			\
-			__host__ __device__ inline static ReturnType apply(const Layout& l, index_t& p, index_t& i, index_t& j, index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, index_t& i, index_t& j, index_t& k) \
 			{ \
 				UNUSED_PARAMETER(l) \
-				UNUSED_PARAMETER(p) \
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
 				operations \
 			} \
-		};
+		}; \
+	}
 
 	#define STANDARD_TRANSFORM_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename T, Location l> \
 		ExpressionContainer< TransformExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
@@ -479,6 +592,7 @@ namespace Kartet
 		{ \
 			return ExpressionContainer< TransformExpression< ExpressionContainer<T>, opName > >( TransformExpression< ExpressionContainer<T>, opName >(a) ); \
 		} \
+	}
 
 	#define STANDARD_TRANSFORM_OPERATOR_DEFINITION( objName, funcName, operation) \
 		STANDARD_TRANSFORM_OPERATOR_OBJECT( objName, operation) \
@@ -486,33 +600,37 @@ namespace Kartet
 
 // Standard Layout Reinterpretation Operators :
 	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT(objName, operations) \
+	namespace Kartet \
+	{ \
 		struct objName \
 		{ \
 			typedef void ReturnType; \
 			\
-			__host__ __device__ inline static ReturnType apply(const Layout& l, const Layout& lnew, index_t& p, index_t& i, index_t& j, index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const Layout& l, const Layout& lnew, index_t& i, index_t& j, index_t& k) \
 			{ \
 				UNUSED_PARAMETER(l) \
 				UNUSED_PARAMETER(lnew) \
-				UNUSED_PARAMETER(p) \
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
 				operations \
 			} \
-		};
+		}; \
+	}
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename T, Location l> \
 		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Accessor<T,l>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.getLayout(), a) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.layout(), a) ); \
 		} \
 		\
 		template<typename T, Location l> \
 		ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > > funcName (const Array<T,l>& a) \
 		{ \
-			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.getLayout(), a) ); \
+			return ExpressionContainer< LayoutReinterpretationExpression< Accessor<T,l>, opName > >( LayoutReinterpretationExpression< Accessor<T,l>, opName >(a.layout(), a) ); \
 		} \
 		\
 		template<typename T, Location l> \
@@ -532,6 +650,7 @@ namespace Kartet
 		{ \
 			return ExpressionContainer< LayoutReinterpretationExpression< ExpressionContainer<T>, opName > >( LayoutReinterpretationExpression< ExpressionContainer<T>, opName >(layout, a) ); \
 		} \
+	}
 
 	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, operation) \
 		STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT( objName, operation) \
@@ -539,6 +658,8 @@ namespace Kartet
 
 // Binary Operators Tools :
 	#define STANDARD_BINARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T1, typename T2> \
 		struct objName \
 		{ \
@@ -548,9 +669,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define COMPARISON_BINARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T1, typename T2> \
 		struct objName \
 		{ \
@@ -560,9 +684,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define R2C_BINARY_OPERATOR_OBJECT(objName, operation) \
+	namespace Kartet \
+	{ \
 		template<typename T1, typename T2> \
 		struct objName \
 		{ \
@@ -572,9 +699,12 @@ namespace Kartet
 			{ \
 				return (operation) ; \
 			} \
-		};
+		}; \
+	}
 
 	#define STANDARD_BINARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename T1, Location l1, typename T2> \
 		ExpressionContainer< BinaryExpression< Accessor<T1,l1>, T2, opName > > funcName (const Accessor<T1,l1>& a, const T2& b) \
 		{ \
@@ -651,7 +781,8 @@ namespace Kartet
 		ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, ExpressionContainer<T2>, opName > > funcName (const ExpressionContainer<T1>& a, const ExpressionContainer<T2>& b) \
 		{ \
 			return ExpressionContainer< BinaryExpression< ExpressionContainer<T1>, ExpressionContainer<T2>, opName > >( BinaryExpression< ExpressionContainer<T1>, ExpressionContainer<T2>, opName >(a, b) ); \
-		}
+		} \
+	}
 
 	#define STANDARD_BINARY_OPERATOR_DEFINITION( objName, funcName, operation) \
 		STANDARD_BINARY_OPERATOR_OBJECT( objName, operation) \
@@ -667,25 +798,29 @@ namespace Kartet
 
 // Shuffle Operator Tools (can make use of v variable from the index data) :
 	#define STANDARD_SHUFFLE_FUNCTION_OBJECT(objName, operations) \
+	namespace Kartet \
+	{ \
 		template<typename TIndex> \
 		struct objName \
 		{ \
 			typedef void ReturnType; \
 			\
-			__host__ __device__ inline static ReturnType apply(const TIndex& index, const Layout& l, index_t& p, index_t& i, index_t& j, index_t& k) \
+			__host__ __device__ inline static ReturnType apply(const TIndex& index, const Layout& l, index_t& i, index_t& j, index_t& k) \
 			{ \
 				UNUSED_PARAMETER(l) \
-				UNUSED_PARAMETER(p) \
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
 				typedef typename ExpressionEvaluation<TIndex>::ReturnType IndexType; \
-				const IndexType v = ExpressionEvaluation<TIndex>::evaluate(index, l, p, i, j, k); \
+				const IndexType v = ExpressionEvaluation<TIndex>::evaluate(index, l, i, j, k); \
 				operations \
 			} \
-		};
+		}; \
+	}
 
 	#define SHUFFLE_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
 		template<typename TIndex, Location lIndex, typename TData, Location lData> \
 		ExpressionContainer< ShuffleExpression< Accessor<TIndex,lIndex>, Array<TData,lData>, opName > > funcName (const Accessor<TIndex,lIndex>& index, const Array<TData,lData>& data) \
 		{ \
@@ -738,7 +873,8 @@ namespace Kartet
 		ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName > > funcName (const ExpressionContainer<TIndex>& index, const ExpressionContainer<TData>& data) \
 		{ \
 			return ExpressionContainer< ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName > >( ShuffleExpression< ExpressionContainer<TIndex>, ExpressionContainer<TData>, opName >(index, data) ); \
-		}
+		} \
+	}
 
 	#define STANDARD_SHUFFLE_FUNCTION_DEFINITION( objName, funcName, operation) \
 		STANDARD_SHUFFLE_FUNCTION_OBJECT( objName, operation) \
@@ -768,8 +904,6 @@ namespace Kartet
 		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_GreaterOrEqual, 	operator>=, 	a>=b )
 		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerStrict, 	operator<, 	a<b )
 		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerOrEqual, 	operator<=, 	a<=b )
-
-} // Namespace Kartet
 
 // Unary and Binary functions :
 	#include "Core/ArrayFunctions.hpp"

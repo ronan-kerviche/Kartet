@@ -62,6 +62,11 @@
 	#endif
 #endif
 
+#ifndef KARTET_DEFAULT_BUFFER_SIZE
+	// 100 MB :
+	#define KARTET_DEFAULT_BUFFER_SIZE (104857600)
+#endif
+
 /// Kartet main namespace.
 namespace Kartet
 {
@@ -73,7 +78,7 @@ namespace Kartet
 			HostSide,
 			/// Device side (typically GPU/VRAM).
 			DeviceSide,
-			/// Either Host or Device side (typically and analytical expression not tied to hardware).
+			/// Either Host or Device side (analytical expression not tied to hardware, cannot be used to declare an accessor or an array).
 			AnySide
 		};
 
@@ -134,12 +139,12 @@ namespace Kartet
 	class Layout
 	{
 		private :
-			index_t	numRows,		// Also Height
-				numColumns,		// Also Width
-				numSlices,		// Also Depth
-				leadingColumns,		// Number of elements between the start of each column.
-				leadingSlices,		// Number of elements between the start of each slice.
-				offset;			// Starting point from the original position (informative parameter, not decisive).
+			index_t	nRows,			// Number of rows, also Height
+				nColumns,		// Number of columns, also width
+				nSlices,		// Number of slices, also depth
+				sColumns,		// Columns stride, the number of elements between the start of each column.
+				sSlices,		// Slices stride, the number of elements between the start of each slice.
+				ofs;			// Offset, starting point from the original position (informative parameter, not decisive).
 							//  It will not be taken into account in most of the transformations.
 
 		public :
@@ -150,31 +155,33 @@ namespace Kartet
 				static index_t numThreads;
 				static index_t maxZThreads;				
 				static const char streamHeader[];
-				static size_t getStreamHeaderLength();
+				static size_t streamHeaderLength();
 			};
 
 			// Constructors :
-				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
+				__host__ __device__ inline Layout(index_t r, index_t c, index_t s, index_t cs, index_t ss, index_t o=0);
+				__host__ __device__ inline Layout(index_t r, index_t c=1, index_t s=1);
 				__host__ __device__ inline Layout(const Layout& l);
 
 			// Dimensions :
-				__host__ __device__ inline index_t getNumElements(void) const;
-				__host__ __device__ inline index_t getNumElementsPerSlice(void) const;
-				__host__ __device__ inline index_t getNumElementsPerFragment(void) const; // per monolithic fragment
-				__host__ __device__ inline index_t getNumRows(void) const;
-				__host__ __device__ inline index_t getNumColumns(void) const;
-				__host__ __device__ inline index_t getNumSlices(void) const;
-				__host__ __device__ inline index_t getNumFragments(void) const;
-				__host__ __device__ inline index_t getWidth(void) const;		// For convenience ?
-				__host__ __device__ inline index_t getHeight(void) const;		// For convenience ?
-				__host__ __device__ inline index_t getDepth(void) const;		// For convenience ?
-				__host__ __device__ inline index_t getLeadingColumns(void) const;
-				__host__ __device__ inline index_t getLeadingSlices(void) const;
-				__host__ __device__ inline index_t getOffset(void) const;
+				__host__ __device__ inline bool isValid(void) const;
+				__host__ __device__ inline index_t numElements(void) const;
+				__host__ __device__ inline index_t numElementsPerSlice(void) const;
+				__host__ __device__ inline index_t numElementsPerFragment(void) const; // per monolithic fragment
+				__host__ __device__ inline index_t numRows(void) const;
+				__host__ __device__ inline index_t numColumns(void) const;
+				__host__ __device__ inline index_t numSlices(void) const;
+				__host__ __device__ inline index_t numFragments(void) const;
+				__host__ __device__ inline index_t width(void) const;		// For convenience ?
+				__host__ __device__ inline index_t height(void) const;		// For convenience ?
+				__host__ __device__ inline index_t depth(void) const;		// For convenience ?
+				__host__ __device__ inline index_t columnsStride(void) const;
+				__host__ __device__ inline index_t slicesStride(void) const;
+				__host__ __device__ inline index_t offset(void) const;
 				__host__ __device__ inline index_t setOffset(index_t newOffset);
 				#ifdef __CUDACC__
-				__host__ __device__ inline dim3 getDimensions(void) const;
-				__host__ __device__ inline dim3 getStride(void) const;
+				__host__ __device__ inline dim3 dimensions(void) const;
+				__host__ __device__ inline dim3 strides(void) const;
 				#endif
 				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__ __device__ inline bool isSliceMonolithic(void) const;
@@ -231,37 +238,38 @@ namespace Kartet
 				__host__ __device__ inline index_t getJWrapped(index_t j) const;
 				__host__ __device__ inline index_t getKWrapped(index_t k) const;
 				__host__ __device__ inline index_t getIndex(index_t i, index_t j=0, index_t k=0) const;
+				__host__ __device__ inline index_t getPosition(index_t i, index_t j=0, index_t k=0) const;
 			#ifdef __CUDACC__
 					 __device__ inline index_t getIndex(void) const;
+					 __device__ inline index_t getPosition(void) const;
 			#endif
-				__host__ __device__ inline index_t getIndicesFFTShift(index_t& i, index_t& j, index_t& k) const;
-				__host__ __device__ inline index_t getIndexFFTShift(index_t i, index_t j, index_t k=0) const;
-				__host__ __device__ inline index_t getIndicesFFTInverseShift(index_t& i, index_t& j, index_t& k) const;
-				__host__ __device__ inline index_t getIndexFFTInverseShift(index_t i, index_t j, index_t k=0) const;
-				__host__ __device__ inline index_t getIndexClampedToEdge(index_t i, index_t j, index_t k=0) const;
-				__host__ __device__ inline index_t getIndexWarped(index_t i, index_t j, index_t k=0) const;
+				__host__ __device__ inline index_t getPositionFFTShift(index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline index_t getPositionFFTInverseShift(index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline index_t getPositionClampedToEdge(index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline index_t getPositionWarped(index_t& i, index_t& j, index_t& k) const;
 			#ifdef __CUDACC__
-					 __device__ inline index_t getIndexFFTShift(void) const;
-					 __device__ inline index_t getIndexFFTInverseShift(void) const;
+					 __device__ inline index_t getPositionFFTShift(void) const;
+					 __device__ inline index_t getPositionFFTInverseShift(void) const;
 			#endif
 				__host__ __device__ inline bool isInside(index_t i, index_t j, index_t k=0) const;	
 			#ifdef __CUDACC__
 					 __device__ inline bool isInside(void) const;
 			#endif
-				__host__ __device__ inline bool validRowIndex(index_t i) const;
-				__host__ __device__ inline bool validColumnIndex(index_t j) const;
-				__host__ __device__ inline bool validSliceIndex(index_t k) const;
+				__host__ __device__ inline bool isRowValid(index_t i) const;
+				__host__ __device__ inline bool isColumnValid(index_t j) const;
+				__host__ __device__ inline bool isSliceValid(index_t k) const;
 				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const;
-				__host__ __device__ inline void moveToNextIndex(index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline void unpackPosition(index_t index, index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline void moveToNext(index_t& i, index_t& j, index_t& k) const;
 
 			// Other Tools : 
 				#ifdef __CUDACC__
-				__host__ 	    inline dim3 getBlockSize(void) const;
-				__host__ 	    inline dim3 getNumBlock(void) const;
+				__host__ 	    inline dim3 blockSize(void) const;
+				__host__ 	    inline dim3 numBlocks(void) const;
 				#endif
-				__host__	    inline Layout getVectorLayout(void) const;
-				__host__	    inline Layout getSliceLayout(void) const;
-				__host__	    inline Layout getMonolithicLayout(void) const;
+				__host__	    inline Layout columnLayout(const bool& includeSlices=false) const;
+				__host__	    inline Layout sliceLayout(void) const;
+				__host__	    inline Layout monolithicLayout(void) const;
 
 				template<class Op, typename T>
 				__host__ void singleScan(T* ptr, const Op& op) const;
@@ -292,8 +300,8 @@ namespace Kartet
 
 	// To compute on a specific layout : 
 	#ifdef __CUDACC__
-		#define COMPUTE_LAYOUT(x) <<<(x).getNumBlock(), (x).getBlockSize()>>>
-		#define COMPUTE_LAYOUT_STREAM(x, s) <<<(x).getNumBlock(), (x).getBlockSize(), 0, (s)>>>
+		#define COMPUTE_LAYOUT(x) <<<(x).numBlocks(), (x).blockSize()>>>
+		#define COMPUTE_LAYOUT_STREAM(x, s) <<<(x).numBlocks(), (x).blockSize(), 0, (s)>>>
 	#endif
 
 	/**
@@ -310,20 +318,22 @@ namespace Kartet
 		protected :
 			T* ptr; // Already includes the offset.
 			
-				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0);
+				__host__ __device__ Accessor(index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o=0);
+				__host__ __device__ Accessor(index_t r, index_t c=1, index_t s=1);
 				__host__ __device__ Accessor(const Layout& layout);
 
 		public :
 			// Constructors :
-				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1, index_t lc=0, index_t ls=0, index_t o=0); // offset will not change the given ptr, and only is informative.
+				__host__ __device__ Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o=0); // offset will not change the given ptr, and only is informative.
+				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1);
 				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 				__host__	    Accessor(const Array<T,l>& a);
 				__host__ __device__ Accessor(const Accessor<T,l>& a);
 			
 			// Data Tools :
-				__host__ __device__ 	   Location getLocation(void) const;
-				__host__ __device__        T* getPtr(void) const;
-				__host__ __device__        size_t getSize(void) const;
+				__host__ __device__ 	   Location location(void) const;
+				__host__ __device__        T* dataPtr(void) const;
+				__host__ __device__        size_t size(void) const;
 				__host__ __device__ inline T& data(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline T& data(index_t p) const;
 				#ifdef __CUDACC__
@@ -335,29 +345,30 @@ namespace Kartet
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
 				__host__                   void setData(const T* ptr, const Location lin=HostSide) const;
-				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=104857600, const bool skipHeader=false, int sourceTypeIndex=GetIndex<TypesSortedByAccuracy, T>::value); // 100 MB
-				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=104857600); // 100 MB
-				__host__                   void writeToStream(std::ostream& stream, const size_t maxBufferSize=104857600); // 100 MB
-				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=104857600); // 100 MB
+				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, const bool skipHeader=false, int sourceTypeIndex=GetIndex<TypesSortedByAccuracy, T>::value);
+				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
+				__host__                   void writeToStream(std::ostream& stream, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
+				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
 	
 			// Layout tools :
-				__host__	           const Layout& getLayout(void) const;
+				__host__	           const Layout& layout(void) const;
 				__host__	           Accessor<T,l> element(index_t i, index_t j=0, index_t k=0) const;
 				__host__	           Accessor<T,l> elements(index_t p, index_t numElements) const;
 				__host__	           Accessor<T,l> elements(void) const;
-				__host__ 	           Accessor<T,l> vector(index_t j) const;
-				__host__ 	           Accessor<T,l> endVector(void) const;
-				__host__ 	           Accessor<T,l> vectors(index_t jBegin, index_t numVectors, index_t jStep=1) const;
+				__host__ 	           Accessor<T,l> column(index_t j) const;
+				__host__ 	           Accessor<T,l> endColumn(void) const;
+				__host__ 	           Accessor<T,l> columns(index_t jBegin, index_t c, index_t jStep=1) const;
 				__host__ 	           Accessor<T,l> slice(index_t k=0) const;
 				__host__ 	           Accessor<T,l> endSlice(void) const;
-				__host__ 	           Accessor<T,l> slices(index_t kBegin, index_t numSlices, index_t kStep=1) const;
-				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t numRows, index_t numColumns) const;
+				__host__ 	           Accessor<T,l> slices(index_t kBegin, index_t s, index_t kStep=1) const;
+				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t r, index_t c) const;
+				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const;
 				__host__  	           Accessor<T,l> flattened(void) const;
 				__host__  	           Accessor<T,l> stretched(void) const;
 				__host__  	           Accessor<T,l> vectorized(void) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t nColumns) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t nSlices) const;
-				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t c) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t s) const;
+				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t r=0, index_t c=0, index_t s=0) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 
 			// Assignment :
@@ -413,31 +424,38 @@ namespace Kartet
 			__host__ Array(const Array<T,l>& a);
 			template<typename TIn, Location lin>
 			__host__ Array(const Accessor<TIn,lin>& a);
+			__host__ Array(std::istream& stream, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, int sourceTypeIndex=0);
+			__host__ Array(const std::string& filename, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, int sourceTypeIndex=0);
 			__host__ ~Array(void);
 
 			// From Accessor<T,l>::Layout
-			using Accessor<T,l>::Layout::getNumElements;
-			using Accessor<T,l>::Layout::getNumRows;
-			using Accessor<T,l>::Layout::getNumColumns;
-			using Accessor<T,l>::Layout::getNumSlices;
-			using Accessor<T,l>::Layout::getWidth;
-			using Accessor<T,l>::Layout::getHeight;
-			using Accessor<T,l>::Layout::getDepth;
-			using Accessor<T,l>::Layout::getLeadingColumns;
-			using Accessor<T,l>::Layout::getLeadingSlices;
-			using Accessor<T,l>::Layout::getOffset;
+			using Accessor<T,l>::Layout::numElements;
+			using Accessor<T,l>::Layout::numElementsPerSlice;
+			using Accessor<T,l>::Layout::numElementsPerFragment;
+			using Accessor<T,l>::Layout::numRows;
+			using Accessor<T,l>::Layout::numColumns;
+			using Accessor<T,l>::Layout::numSlices;
+			using Accessor<T,l>::Layout::numFragments;
+			using Accessor<T,l>::Layout::width;
+			using Accessor<T,l>::Layout::height;
+			using Accessor<T,l>::Layout::depth;
+			using Accessor<T,l>::Layout::columnsStride;
+			using Accessor<T,l>::Layout::slicesStride;
+			using Accessor<T,l>::Layout::offset;
 			using Accessor<T,l>::Layout::setOffset;
 			#ifdef __CUDACC__
-			using Accessor<T,l>::Layout::getDimensions;
-			using Accessor<T,l>::getStride;
+			using Accessor<T,l>::Layout::dimensions;
+			using Accessor<T,l>::strides;
 			#endif
 			using Accessor<T,l>::Layout::isMonolithic;
 			using Accessor<T,l>::Layout::isSliceMonolithic;
 			using Accessor<T,l>::Layout::reinterpretLayout;
 			using Accessor<T,l>::Layout::flatten;
+			using Accessor<T,l>::Layout::stretch;
 			using Accessor<T,l>::Layout::vectorize;
 			using Accessor<T,l>::Layout::splitLayoutColumns;
 			using Accessor<T,l>::Layout::splitLayoutSlices;
+			using Accessor<T,l>::Layout::splitLayoutSubArrays;
 			using Accessor<T,l>::Layout::sameLayoutAs;
 			using Accessor<T,l>::Layout::sameSliceLayoutAs;
 			#ifdef __CUDACC__
@@ -445,31 +463,63 @@ namespace Kartet
 			using Accessor<T,l>::Layout::getJ;
 			using Accessor<T,l>::Layout::getK;
 			#endif
+			using Accessor<T,l>::Layout::getINorm;
+			using Accessor<T,l>::Layout::getJNorm;
+			using Accessor<T,l>::Layout::getKNorm;
+			using Accessor<T,l>::Layout::getINormIncl;
+			using Accessor<T,l>::Layout::getJNormIncl;
+			using Accessor<T,l>::Layout::getKNormIncl;
+			using Accessor<T,l>::Layout::getIClamped;
+			using Accessor<T,l>::Layout::getJClamped;
+			using Accessor<T,l>::Layout::getKClamped;
+			using Accessor<T,l>::Layout::getIWrapped;
+			using Accessor<T,l>::Layout::getJWrapped;
+			using Accessor<T,l>::Layout::getKWrapped;
 			using Accessor<T,l>::Layout::getIndex;
+			using Accessor<T,l>::Layout::getPosition;
+			using Accessor<T,l>::Layout::getPositionFFTShift;
+			using Accessor<T,l>::Layout::getPositionFFTInverseShift;
+			using Accessor<T,l>::Layout::getPositionClampedToEdge;
+			using Accessor<T,l>::Layout::getPositionWarped;
 			using Accessor<T,l>::Layout::isInside;
-			using Accessor<T,l>::Layout::validRowIndex;
-			using Accessor<T,l>::Layout::validColumnIndex;
-			using Accessor<T,l>::Layout::validSliceIndex;
+			using Accessor<T,l>::Layout::isRowValid;
+			using Accessor<T,l>::Layout::isColumnValid;
+			using Accessor<T,l>::Layout::isSliceValid;
+			using Accessor<T,l>::Layout::unpackIndex;
+			using Accessor<T,l>::Layout::unpackPosition;
+			using Accessor<T,l>::Layout::moveToNext;
 			#ifdef __CUDACC__
-			using Accessor<T,l>::Layout::getBlockSize;
-			using Accessor<T,l>::Layout::getNumBlock;
-			#endif		
+			using Accessor<T,l>::Layout::blockSize;
+			using Accessor<T,l>::Layout::numBlocks;
+			#endif
+			using Accessor<T,l>::Layout::singleScan;
+			using Accessor<T,l>::Layout::dualScan;
+			using Accessor<T,l>::Layout::columnLayout;
+			using Accessor<T,l>::Layout::sliceLayout;
+			using Accessor<T,l>::Layout::monolithicLayout;
 
 			// From Accessor<T,l>
-			using Accessor<T,l>::getLocation;
-			using Accessor<T,l>::getPtr;
-			using Accessor<T,l>::getSize;
+			using Accessor<T,l>::location;
+			using Accessor<T,l>::dataPtr;
+			using Accessor<T,l>::size;
+			#ifdef __CUDACC__
+			using Accessor<T,l>::data;
+			using Accessor<T,l>::dataInSlice;
+			using Accessor<T,l>::dataFFTShift;
+			using Accessor<T,l>::dataFFTInverseShift;
+			#endif
 			using Accessor<T,l>::getData;
 			using Accessor<T,l>::setData;
 			using Accessor<T,l>::readFromStream;
 			using Accessor<T,l>::readFromFile;
 			using Accessor<T,l>::writeToStream;
 			using Accessor<T,l>::writeToFile;
+			using Accessor<T,l>::layout;
 			using Accessor<T,l>::element;
 			using Accessor<T,l>::elements;
-			using Accessor<T,l>::vector;
-			using Accessor<T,l>::endVector;
-			using Accessor<T,l>::vectors;
+			using Accessor<T,l>::column;
+			using Accessor<T,l>::endColumn;
+			using Accessor<T,l>::columns;
 			using Accessor<T,l>::slice;
 			using Accessor<T,l>::endSlice;
 			using Accessor<T,l>::slices;
@@ -482,8 +532,6 @@ namespace Kartet
 			using Accessor<T,l>::splitSubArrays;
 			using Accessor<T,l>::assign;
 			using Accessor<T,l>::maskedAssignment;
-			using Accessor<T,l>::singleScan;
-			using Accessor<T,l>::dualScan;
 
 			// Specifics :
 			Accessor<T,l>& accessor(void);
@@ -498,8 +546,8 @@ namespace Kartet
 			template<Location l2>
 			Array<T,l>& operator=(const Array<T,l2>& a);
 
-			__host__ static Array<T,l>* buildFromStream(std::istream& stream, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
-			__host__ static Array<T,l>* buildFromFile(const std::string& filename, bool convert=true, size_t maxBufferSize=104857600); // 100 MB
+			__host__ static Array<T,l>* buildFromStream(std::istream& stream, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
+			__host__ static Array<T,l>* buildFromFile(const std::string& filename, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
 	};
 	
 } // namespace Kartet
