@@ -185,7 +185,7 @@ namespace Kartet
 	**/
 	Result conj(Expression a) { }
 
-// Double or automatic Precision : 
+// Double or automatic Precision, from Cuda : 
 	/**
 	\return The cosine of the argument.
 	\param a Real expression.
@@ -193,58 +193,10 @@ namespace Kartet
 	T cos(Expression a) { }
 
 	/**
-	\return The cosine of the argument.
+	\return The hyperbolic cosine of the argument.
 	\param a Real expression.
 	**/
-	float cosf(Expression a) { }
-
-	/**
-	\return The sine of the argument.
-	\param a Real expression.
-	**/
-	T sin(Expression a) { }
-
-	/**
-	\return The sine of the argument.
-	\param a Real expression.
-	**/
-	float sinf(Expression a) { }
-
-	/**
-	\return The square root of the argument.
-	\param a Real expression.
-	**/
-	T sqrt(Expression a) { }
-
-	/**
-	\return The square root of the argument.
-	\param a Real expression.
-	**/
-	float sqrtf(Expression a) { }
-
-	/**
-	\return The exponential of the argument.
-	\param a Real expression.
-	**/
-	T exp(Expression a) { }
-
-	/**
-	\return The exponential of the argument.
-	\param a Real expression.
-	**/
-	float expf(Expression a) { }
-
-	/**
-	\return The natural logarithm of the argument.
-	\param a Real expression.
-	**/
-	T log(Expression a) { }
-
-	/**
-	\return The natural logarithm of the argument.
-	\param a Real expression.
-	**/
-	float logf(Expression a) { }
+	T cosh(Expression a) { }
 
 	/**
 	\return The arc-cosine of the argument.
@@ -259,6 +211,24 @@ namespace Kartet
 	T acosh(Expression a) { }
 
 	/**
+	\return The cosine of the argument times Pi.
+	\param a Real expression
+	**/
+	T cospi(Expression a) { }
+
+	/**
+	\return The sine of the argument.
+	\param a Real expression.
+	**/
+	T sin(Expression a) { }
+
+	/**
+	\return The hyperbolic sine of the argument.
+	\param a Real expression.
+	**/
+	T sinh(Expression a) { }
+
+	/**
 	\return The arc-sine of the argument.
 	\param a Real expression.
 	**/
@@ -271,16 +241,28 @@ namespace Kartet
 	T asinh(Expression a) { }
 
 	/**
+	\return The sine of the argument times Pi.
+	\param a Real expression
+	**/
+	T sinpi(Expression a) { }
+
+	/**
+	\return The tangent of the argument.
+	\param a Real expression.
+	**/
+	T tan(Expression a) { }
+
+	/**
+	\return The hyperbolictangent of the argument.
+	\param a Real expression.
+	**/
+	T tanh(Expression a) { }
+	
+	/**
 	\return The arc-tangent of the argument.
 	\param a Real expression.
 	**/
 	T atan(Expression a) { }
-
-	/**
-	\return The arc-tangent of the argument (within quadrant).
-	\param a Real expression.
-	**/
-	T atan2(Expression a) { }
 
 	/**
 	\return The hyperbolic arc-tangent of the argument.
@@ -289,10 +271,178 @@ namespace Kartet
 	T atanh(Expression a) { }
 
 	/**
+	\return The square root of the argument.
+	\param a Real expression.
+	**/
+	T sqrt(Expression a) { }
+
+	/**
 	\return The cube root of the argument.
 	\param a Real expression.
 	**/
 	T cbrt(Expression a) { }
+
+	/**
+	\return The reciprocal square root of the argument.
+	\param a Real expression.
+	**/
+	T rsqrt(Expression a) { }
+
+	/**
+	\return The reciprocal cube root of the argument.
+	\param a Real expression.
+	**/
+	T rcbrt(Expression a) { }
+
+	/**
+	\return The exponential of the argument.
+	\param a Real expression.
+	**/
+	T exp(Expression a) { }
+
+	/**
+	\return The base 2 exponential of the argument.
+	\param a Real expression.
+	**/
+	T exp2(Expression a) { }
+
+	/**
+	\return The base 10 exponential of the argument.
+	\param a Real expression.
+	**/
+	T exp10(Expression a) { } 
+
+	/**
+	\return The exponential of the argument minus 1.
+	\param a Real expression.
+	**/
+	T expm1(Expression a) { } 
+
+	/**
+	\return The error function of the argument.
+	\param a Real expression.
+	**/
+	T erf(Expression a) { }
+
+	/**
+	\return The complementary error function of the argument.
+	\param a Real expression.
+	**/
+	T erfc(Expression a) { }
+
+	/**
+	\return The natural logarithm of the argument.
+	\param a Real expression.
+	**/
+	T log(Expression a) { }
+
+	/**
+	\return The base 2 logarithm of the argument.
+	\param a Real expression.
+	**/
+	T log2(Expression a) { }
+
+	/**
+	\return The base 10 logarithm of the argument.
+	\param a Real expression.
+	**/
+	T log10(Expression a) { }
+
+	/**
+	\return The natural logarithm of 1 plus the argument.
+	\param a Real expression.
+	**/
+	T log1p(Expression a) { }
+
+	/**
+	\return The unbiased integer exponent of the argument. 
+	\param a Real expression.
+	**/
+	T ilogp(Expression a) { }
+
+	/**
+	\return The inverse error function of the argument.
+	\param a Real expression.
+	**/
+	T erfinv(Expression a) { }
+
+	/**
+	\return The scaled complementary error function of the argument.
+	\param a Real expression.
+	**/
+	T erfcx(Expression a) { }
+
+	/**
+	\return The inverse complementary error function of the argument.
+	\param a Real expression.
+	**/
+	T erfcinv(Expression a) { }
+
+	/**
+	\return The standard normal cumulative distribution function for the argument.
+	\param a Real expression.
+	**/
+	T normcdf(Expression a) { }
+
+	/**
+	\return The inverse of the standard normal cumulative distribution function for the argument.
+	\param a Real expression.
+	**/
+	T normcdfinv(Expression a) { }
+
+	/**
+	\return The natural logarithm of the absolute value of the gamma function for the argument. 
+	\param a Real expression.
+	**/
+	T lgamma(Expression a) { }
+
+	/**
+	\return The gamma function for the argument.
+	\param a Real expression.
+	**/
+	T tgamma(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order 0 for the argument.
+	\param a Real expression.
+	**/
+	T j0(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order 1 for the argument.
+	\param a Real expression.
+	**/
+	T j1(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order 0 for the argument.
+	\param a Real expression.
+	**/
+	T y0(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order 1 for the argument.
+	\param a Real expression.
+	**/
+	T y1(Expression a) { }
+
+	/**
+	\return 1 if the argument is finite.
+	\param a Real expression.
+	**/
+	T isFinite(Expression a) { }
+
+	/**
+	\return 1 if the argument is infinite.
+	\param a Real expression.
+	**/
+	T isInf(Expression a) { }
+
+	/**
+	\return 1 if the argument is NaN.
+	\param a Real expression.
+	**/
+	T isNan(Expression a) { }
 
 	/**
 	\return The ceiling of the argument.
@@ -301,185 +451,768 @@ namespace Kartet
 	T ceil(Expression a) { }
 
 	/**
+	\return The largest integer less than or equal to the argument. 
+	\param a Real expression.
+	**/
+	T floor(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value in floating-point.
+	\param a Real expression.
+	**/
+	T round(Expression a) { }
+
+	/**
+	\return Truncatation of the argument to the integral part. 
+	\param a Real expression.
+	**/
+	T trunc(Expression a) { }
+
+	/**
+	\return Roundinf of the argument to the nearest integer value in floating-point. 
+	\param a Real expression.
+	**/
+	T rint(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value. 
+	\param a Real expression.
+	**/
+	T lrint(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value. 
+	\param a Real expression.
+	**/
+	T lround(Expression a) { }
+
+// Single precision :
+	/**
+	\return The cosine of the argument.
+	\param a Real expression.
+	**/
+	float cosf(Expression a) { }
+
+	/**
 	\return The hyperbolic cosine of the argument.
 	\param a Real expression.
 	**/
-	T cosh(Expression a) { }
+	float coshf(Expression a) { }
+
+	/**
+	\return The arc-cosine of the argument.
+	\param a Real expression.
+	**/
+	float acosf(Expression a) { }
+
+	/**
+	\return The hyperbolic arc-cosine of the argument.
+	\param a Real expression.
+	**/
+	float acoshf(Expression a) { }
 
 	/**
 	\return The cosine of the argument times Pi.
 	\param a Real expression
 	**/
-	T cospi(Expression a) { }
+	float cospif(Expression a) { }
 
 	/**
-	\return The error function for the argument.
+	\return The sine of the argument.
 	\param a Real expression.
 	**/
-	T erf(Expression a) { }
+	float sinf(Expression a) { }
 
 	/**
-	\return 
-	**/
-	// erfc
-	// erfcinv
-	// erfcx
-	// erfinv
-
-	/**
-	\return The exponential of the argument in base 10.
+	\return The hyperbolic sine of the argument.
 	\param a Real expression.
 	**/
-	double exp10(Expression a) { } 
+	float sinhf(Expression a) { }
 
 	/**
-	\return The exponential of the argument in base 2.
+	\return The arc-sine of the argument.
 	\param a Real expression.
 	**/
-	double exp2(Expression a) { }
-
-	// expm1
+	float asinf(Expression a) { }
+	
+	/**
+	\return The hyperbolic arc-sine of the argument.
+	\param a Real expression.
+	**/
+	float asinhf(Expression a) { }
 
 	/**
-	\return The floor value of the argument.
+	\return The sine of the argument times Pi.
+	\param a Real expression
+	**/
+	float sinpif(Expression a) { }
+
+	/**
+	\return The tangent of the argument.
 	\param a Real expression.
 	**/
-	double floor(Expression a) { } 
+	float tanf(Expression a) { }
+
+	/**
+	\return The hyperbolictangent of the argument.
+	\param a Real expression.
+	**/
+	float tanhf(Expression a) { }
+	
+	/**
+	\return The arc-tangent of the argument.
+	\param a Real expression.
+	**/
+	float atanf(Expression a) { }
+
+	/**
+	\return The hyperbolic arc-tangent of the argument.
+	\param a Real expression.
+	**/
+	float atanhf(Expression a) { }
+
+	/**
+	\return The square root of the argument.
+	\param a Real expression.
+	**/
+	float sqrtf(Expression a) { }
+
+	/**
+	\return The cube root of the argument.
+	\param a Real expression.
+	**/
+	float cbrtf(Expression a) { }
+
+	/**
+	\return The reciprocal square root of the argument.
+	\param a Real expression.
+	**/
+	float rsqrtf(Expression a) { }
+
+	/**
+	\return The reciprocal cube root of the argument.
+	\param a Real expression.
+	**/
+	float rcbrtf(Expression a) { }
+
+	/**
+	\return The exponential of the argument.
+	\param a Real expression.
+	**/
+	float expf(Expression a) { }
+
+	/**
+	\return The base 2 exponential of the argument.
+	\param a Real expression.
+	**/
+	float exp2f(Expression a) { }
+
+	/**
+	\return The base 10 exponential of the argument.
+	\param a Real expression.
+	**/
+	float exp10f(Expression a) { } 
+
+	/**
+	\return The exponential of the argument minus 1.
+	\param a Real expression.
+	**/
+	float expm1f(Expression a) { } 
+
+	/**
+	\return The error function of the argument.
+	\param a Real expression.
+	**/
+	float erff(Expression a) { }
+
+	/**
+	\return The complementary error function of the argument.
+	\param a Real expression.
+	**/
+	float erfcf(Expression a) { }
+
+	/**
+	\return The natural logarithm of the argument.
+	\param a Real expression.
+	**/
+	float logf(Expression a) { }
+
+	/**
+	\return The base 2 logarithm of the argument.
+	\param a Real expression.
+	**/
+	float log2f(Expression a) { }
+
+	/**
+	\return The base 10 logarithm of the argument.
+	\param a Real expression.
+	**/
+	float log10f(Expression a) { }
+
+	/**
+	\return The natural logarithm of 1 plus the argument.
+	\param a Real expression.
+	**/
+	float log1pf(Expression a) { }
+
+	/**
+	\return The unbiased integer exponent of the argument. 
+	\param a Real expression.
+	**/
+	float ilogpf(Expression a) { }
+
+	/**
+	\return The inverse error function of the argument.
+	\param a Real expression.
+	**/
+	float erfinvf(Expression a) { }
+
+	/**
+	\return The scaled complementary error function of the argument.
+	\param a Real expression.
+	**/
+	float erfcxf(Expression a) { }
+
+	/**
+	\return The inverse complementary error function of the argument.
+	\param a Real expression.
+	**/
+	float erfcinvf(Expression a) { }
+
+	/**
+	\return The standard normal cumulative distribution function for the argument.
+	\param a Real expression.
+	**/
+	float normcdff(Expression a) { }
+
+	/**
+	\return The inverse of the standard normal cumulative distribution function for the argument.
+	\param a Real expression.
+	**/
+	float normcdfinvf(Expression a) { }
+
+	/**
+	\return The natural logarithm of the absolute value of the gamma function for the argument. 
+	\param a Real expression.
+	**/
+	float lgammaf(Expression a) { }
+
+	/**
+	\return The gamma function for the argument.
+	\param a Real expression.
+	**/
+	float tgammaf(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order 0 for the argument.
+	\param a Real expression.
+	**/
+	float j0f(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order 1 for the argument.
+	\param a Real expression.
+	**/
+	float j1f(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order 0 for the argument.
+	\param a Real expression.
+	**/
+	float y0f(Expression a) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order 1 for the argument.
+	\param a Real expression.
+	**/
+	float y1f(Expression a) { }
+
+	/**
+	\return The ceiling of the argument.
+	\param a Real expression.
+	**/
+	float ceilfExpression a) { }
+
+	/**
+	\return The largest integer less than or equal to the argument. 
+	\param a Real expression.
+	**/
+	float floorf(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value in floating-point.
+	\param a Real expression.
+	**/
+	float roundf(Expression a) { }
+
+	/**
+	\return Truncatation of the argument to the integral part. 
+	\param a Real expression.
+	**/
+	float truncf(Expression a) { }
+
+	/**
+	\return Roundinf of the argument to the nearest integer value in floating-point. 
+	\param a Real expression.
+	**/
+	float rintf(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value. 
+	\param a Real expression.
+	**/
+	float lrintf(Expression a) { }
+
+	/**
+	\return Rounding of the argument to the nearest integer value. 
+	\param a Real expression.
+	**/
+	float lroundf(Expression a) { }
+
+// Specials :
+	/**
+	\return The complex conjugate of the argument.
+	\param a Expression.
+	**/
+	T conj(Expression a) { }
+
+	/**
+	\return The real part of the argument.
+	\param a Expression.
+	**/
+	T real(Expression a) { }
+
+	/**
+	\return The imaginary part of the argument.
+	\param a Expression.
+	**/
+	T imag(Expression a) { }
+
+	/**
+	\return The absolute value of the argument (magnitude).
+	\param a Expression.
+	**/
+	T abs(Expression a) { }
+
+	/**
+	\return The squqred absolute value of the argument (magnitude squared).
+	\param a Expression.
+	**/
+	T absSq(Expression a) { }
+
+	/**
+	\return The angle of the argument (complex argument).
+	\param a Expression.
+	**/
+	T angle(Expression a) { }
+
+	/**
+	\return The unitary complex number defined by the argument as angle.
+	\param a Real expression.
+	**/
+	Complex<T> angleToComplex(Expression a) { }
+
+	/**
+	\return The unitary complex number defined by the argument times Pi as angle.
+	\param a Real expression.
+	**/
+	Complex<T> piAngleToComplex(Expression a) { }
+
+	/**
+	\return The argument casted to another type.
+	\param TNew The new type.
+	\param a Expression.
+	
+	Example : 
+	\code
+	b = Kartet::cast<float>(a);
+	\endcode	
+	**/
+	template<typename TNew>
+	TNew cast(Expression a) { }
+
+// Transform functions :
+	/**
+	\return The FFT shifted version of the argument.
+	\param a Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T fftshift(Expression a) { }
+
+	/**
+	\return The inverse FFT shifted version of the argument.
+	\param a Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T ifftshift(Expression a) { }
+
+	/**
+	\return The flipped version of the argument around X.
+	\param a Expression.
+
+	- First column become last column.
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T xFlip(Expression a) { }
+	
+	/**
+	\return The flipped version of the argument around X.
+	\param a Expression.
+
+	- First column become last column.
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T yFlip(Expression a) { }
+
+	/**
+	\return Distribute the first slice of the argument on all slices of the output expression.
+	\param a Expression.
+	**/
+	T distributeSlice(Expression a) { }
+
+	/**
+	\return Distribute the first column of the argument on all columns of the output expression.
+	\param a Expression.
+	**/
+	T distributeColumn(Expression a) { }
+
+	/**
+	\return Distribute the first element of the argument on all elements of the output expression.
+	\param a Expression.
+	**/
+	T distributeElement(Expression a) { }
+
+	/**
+	\return Dispatch the argument on the main diagonal.
+	\param a Expression.
+	**/
+	T diagonalVector(Expression a) { }
+
+	/**
+	\return Distribute the elements of the argument on the columns of the output expression.
+	\param a Expression.
+	**/
+	T distributeElementsOnColumns(Expression a) { }
+
+	/**
+	\return Distribute the elements of the argument on the slices of the output expression.
+	\param a Expression.
+	**/
+	T distributeElementsOnSlices(Expression a) { }
+
+	/**
+	\return Transpose the argument.
+	\param a Expression.
+	
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T transpose(Expression a) { }
+
+	/**
+	\return Duplicate the upper triangular part of the argument onto the lower triangular part.
+	\param a Expression.
+	
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T forceUpSymmetry(Expression a) { }
+
+	/**
+	\return Duplicate the lower triangular part of the argument onto the upper triangular part.
+	\param a Expression.
+	
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T forceDownSymmetry(Expression a) { }
+
+// Layout reinterpretation functions :
+	/**
+	\return Clamp the argument for the output expression. 
+	\param a Expression.
+
+	If the argument is smaller than the output expression, then its border values are repeated.
+	**/
+	T clamp(Expression a) { }
+
+	/**
+	\return Repeat the argument for the output expression. 
+	\param a Expression.
+
+	If the argument is smaller than the output expression, then its values are repeated.
+	**/
+	T repeat(Expression a) { }
+
+	/**
+	\return Stretch the argument for the output expression.
+	\param a Expression.
+
+	If the argument is smaller than the output expression then its values are stretched to occupy all of the space (nearest neighbour).
+	**/
+	T expandf(Expression a) { }
+	
+	/**
+	\return Stretch the argument for the output expression.
+	\param a Expression.
+
+	If the argument is smaller than the output expression then its values are stretched to occupy all of the space (nearest neighbour).
+	**/
+	T expand(Expression a) { }
+
+// Binary functions : 
+// Automatic or double precision
+	/**
+	\return The minimum between the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T min(Expression a, Expression b) { }
+
+	/**
+	\return The maximum between the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T max(Expression a, Expression b) { }
+
+	/**
+	\return The arc tangent of the ratio of first and second arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T atan2(Expression a, Expression b) { }
+
+	/**
+	\return The maximum numeric value of the arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T fmax(Expression a, Expression b) { }
+
+	/**
+	\return The minimum numeric value of the arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T fmin(Expression a, Expression b) { }
+
+	/**
+	\return The floating-point remainder of a / b.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T fmod(Expression a, Expression b) { }
+
+	/**
+	\return The square root of the sum of squares of the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T hypot(Expression a, Expression b) { }
+
+	/**
+	\return The square root reciprocal of the sum of squares of the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T rhypot(Expression a, Expression b) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order n for the argument.
+	\param n Expression, order, casted to int.
+	\param a Expression, argument.
+	**/
+	T jn(Expression a, Expression b) { }
+
+	/**
+	\return a*2^b.
+	\param a Expression.
+	\param b Expression, casted to int.
+	**/
+	T ldexp(Expression a, Expression b) { }
+	
+	/**
+	\return The value of first argument to the power of second argument.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T pow(Expression a, Expression b) { }
+
+	/**
+	\return The double-precision floating-point remainder in the division of the first argument by the second.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	T remainder(Expression a, Expression b) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order n for the argument.
+	\param n Expression, order, casted to int.
+	\param a Expression, argument.
+	**/
+	T yn(Expression a, Expression b) { }
 
 // Single precision :
+	/**
+	\return The minimum between the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float minf(Expression a, Expression b) { }
 
-	/*
-	TO BE DOCUMENTED :
-		::ilogb(a)
-		isfinite(a)
-		isinf(a)
-		isnan(a)
-		::j0(a)
-		::j1(a)
-		::lgamma(a)
-		::log10(a)
-		::log2(a)
-		::log1p(a)
-		::lrint(a)
-		::lround(a)
-		::rcbrt(a)
-		::rint(a)
-		::round(a)
-		::rsqrt(a)
-		::sinh(a)
-		::sinpi(a)
-		::tan(a)
-		::tanh(a)
-		::tgamma(a)
-		::trunc(a)
-		::y0(a)
-		::y1(a)
-		::acosf(a)
-		::acoshf(a)
-		::asinf(a)
-		::asinhf(a)
-		::atanf(a)
-		::atan2f(a)
-		::atanhf(a)
-		::cbrtf(a)
-		::ceilf(a)
-		::coshf(a)
-		::cospif(a)
-		::erff(a)
-		::erfcf(a)
-		::erfcinvf(a)
-		::erfcxf(a)
-		::erfinvf(a)
-		::exp10f(a)
-		::exp2f(a)
-		::floorf(a)
-		::ilogbf(a)
-		::j0f(a)
-		::j1f(a)
-		::lgammaf(a)
-		::log10f(a)
-		::log2f(a)
-		::lrintf(a)
-		::lroundf(a)
-		::rcbrtf(a)
-		::rintf(a)
-		::roundf(a)
-		::rsqrtf(a)
-		::sinhf(a)
-		::sinpif(a)
-		::tanf(a)
-		::tanhf(a)
-		::tgammaf(a)
-		::truncf(a)
-		::y0f(a)
-		::y1f(a)
-		::normcdff(a)
-		::normcdf(a)
-		::normcdfinvf(a)
-		::normcdfinv(a
-		real
-		imag
-		abs
-		absSq
-		angle
-		angleToComplex
-		piAngleToComplex
-		cast
+	/**
+	\return The maximum between the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float maxf(Expression a, Expression b) { }
 
-	// Transform functions :
-		fftshift
-		ifftshift
-		xFlip
-		yFlip
-		distributeSlice
-		distributeVector
-		distributeElement
-		diagonalVector
-		distributeElementsOnColumns
-		distributeElementsOnSlices
-		transpose
-		forceUpSymmetry
-		forceDownSymmetry
+	/**
+	\return The arc tangent of the ratio of first and second arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float atan2f(Expression a, Expression b) { }
 
-	// Layout reinterpretation functions :
-		clamp
-		repeat
-		expandf
-		expand
+	/**
+	\return The maximum numeric value of the arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float fmaxf(Expression a, Expression b) { }
 
-	// Binary functions : 
-		min
-		max
-		atan2
-		fmax
-		fmin
-		fmod
-		hypot
-		jn
-		ldexp
-		pow
-		remainder
-		yn
-		atan2f
-		fmaxf
-		fminf
-		fmodf
-		hypotf
-		jnf
-		ldexpf
-		powf
-		remainderf
-		ynf
-		toComplex
-		toFloatComplex
-		toDoubleComplex
+	/**
+	\return The minimum numeric value of the arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float fminf(Expression a, Expression b) { }
 
-	// Shuffle functions :
-		shuffleIndex
-		shuffleRows
-		shuffleColumns
-		shuffleSlices
-	*/
+	/**
+	\return The floating-point remainder of a / b.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float fmodf(Expression a, Expression b) { }
+
+	/**
+	\return The square root of the sum of squares of the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float hypotf(Expression a, Expression b) { }
+
+	/**
+	\return The square root reciprocal of the sum of squares of the two arguments.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float rhypotf(Expression a, Expression b) { }
+
+	/**
+	\return The value of the Bessel function of the first kind of order n for the argument.
+	\param n Expression, order, casted to int.
+	\param a Expression, argument.
+	**/
+	float jnf(Expression a, Expression b) { }
+
+	/**
+	\return a*2^b.
+	\param a Expression.
+	\param b Expression, casted to int.
+	**/
+	float ldexpf(Expression a, Expression b) { }
+	
+	/**
+	\return The value of first argument to the power of second argument.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float powf(Expression a, Expression b) { }
+
+	/**
+	\return The double-precision floating-point remainder in the division of the first argument by the second.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	float remainderf(Expression a, Expression b) { }
+
+	/**
+	\return The value of the Bessel function of the second kind of order n for the argument.
+	\param n Expression, order, casted to int.
+	\param a Expression, argument.
+	**/
+	float ynf(Expression a, Expression b) { }
+
+// Specials : 
+	/**
+	\return The complex number a + i*b.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	Complex<T> toComplex(Expression a, Expression b) { }
+
+	/**
+	\return The complex number a + i*b, force output to single precision.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	Complex<float> toFloatComplex(Expression a, Expression b) { }
+
+	/**
+	\return The complex number a + i*b, force output to double precision.
+	\param a Real expression.
+	\param b Real expression.
+	**/
+	Complex<double> toDoubleComplex(Expression a, Expression b) { }
+
+// Shuffle functions :
+	/**
+	\return Shuffled argument elemenents for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shuffleIndex(Expression index, Expression data) { }
+
+	/**
+	\return Shuffled argument rows for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shuffleRows(Expression index, Expression data) { }
+
+	/**
+	\return Shuffled argument columns for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shuffleColumns(Expression index, Expression data) { }
+
+	/**
+	\return Shuffled argument slices for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shuffleSlices(Expression index, Expression data) { }
 
 /**
 	@}
