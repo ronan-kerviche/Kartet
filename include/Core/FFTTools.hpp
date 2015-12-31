@@ -54,8 +54,8 @@ namespace Kartet
 	__host__ FFTContext::FFTContext(const Accessor<TIn,l>& input, const Accessor<TOut,l>& output, const PlaneFlag& _planeFlag)
 	 :	operation(getOperation<TIn,TOut>()),
 		planeFlag(_planeFlag),
-		inputLayout(input.getLayout()),
-		outputLayout(output.getLayout())
+		inputLayout(input.layout()),
+		outputLayout(output.layout())
 	{
 		setup();
 	}

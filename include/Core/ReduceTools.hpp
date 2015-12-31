@@ -445,9 +445,9 @@ namespace Kartet
 				//std::cout << "Large reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut to the block size layout :
-				blockSize.x = std::min(Layout::StaticContainer<void>::numThreads, reductionBlockLayout.numRows());
-				blockSize.y = std::min(Layout::StaticContainer<void>::numThreads/blockSize.x, reductionBlockLayout.numColumns());
-				blockSize.z = std::min(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y), reductionBlockLayout.numSlices());
+				blockSize.x = std::min(static_cast<index_t>(Layout::StaticContainer<void>::numThreads), reductionBlockLayout.numRows());
+				blockSize.y = std::min(static_cast<index_t>(Layout::StaticContainer<void>::numThreads/blockSize.x), reductionBlockLayout.numColumns());
+				blockSize.z = std::min(static_cast<index_t>(Layout::StaticContainer<void>::numThreads/(blockSize.x*blockSize.y)), reductionBlockLayout.numSlices());
 			
 				// The number of steps to do depends on the previous cut :
 				blockSteps.x = (reductionBlockLayout.numRows() + blockSize.x - 1) / blockSize.x;
@@ -469,9 +469,9 @@ namespace Kartet
 				//std::cout << "Small reduction mode  : " << reductionBlockLayout << std::endl;
 
 				// Cut the block size to fit an integer number of blocks :
-				blockSize.x = std::max( std::max(blockSize.x - blockSize.x % reductionBlockLayout.numRows(), reductionBlockLayout.numRows() % blockSize.x), static_cast<index_t>(1));
-				blockSize.y = std::max( std::max(blockSize.y - blockSize.y % reductionBlockLayout.numColumns(), reductionBlockLayout.numColumns() % blockSize.y), static_cast<index_t>(1));
-				blockSize.z = std::max( std::max(blockSize.z - blockSize.z % reductionBlockLayout.numSlices(), reductionBlockLayout.numSlices() % blockSize.z), static_cast<index_t>(1));
+				blockSize.x = std::max( static_cast<index_t>(std::max(blockSize.x - blockSize.x % reductionBlockLayout.numRows(), reductionBlockLayout.numRows() % blockSize.x)), static_cast<index_t>(1));
+				blockSize.y = std::max( static_cast<index_t>(std::max(blockSize.y - blockSize.y % reductionBlockLayout.numColumns(), reductionBlockLayout.numColumns() % blockSize.y)), static_cast<index_t>(1));
+				blockSize.z = std::max( static_cast<index_t>(std::max(blockSize.z - blockSize.z % reductionBlockLayout.numSlices(), reductionBlockLayout.numSlices() % blockSize.z)), static_cast<index_t>(1));
 			
 				// The number of steps to do also depends on the previous cut :
 				blockSteps.x = (reductionBlockLayout.numRows() + blockSize.x - 1) / blockSize.x;

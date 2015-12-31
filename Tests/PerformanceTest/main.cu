@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 			A = A+B;
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Addition : " << std::endl;
+		std::cout << "Addition                                  : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 			thrust::transform(devPtrA, devPtrA + A.numElements(), devPtrB, devPtrB, thrust::plus<T>());
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[THRUST] Addition : " << std::endl;
+		std::cout << "[THRUST] Addition                         : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 			A = A*l+B;
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Affine Expression : " << std::endl;
+		std::cout << "Affine Expression                         : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 			A = sin(A*l+B);
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Expression : " << std::endl;
+		std::cout << "Expression                                : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 			v += reduceContext.sum(A);
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Reduction sum : " << v << std::endl;
+		std::cout << "Reduction sum                             : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 			v += thrust::reduce(devPtrA, devPtrA + A.numElements(), 0.0, thrust::plus<T>());
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[THRUST] Reduction sum : " << v << std::endl;
+		std::cout << "[THRUST] Reduction sum                    : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 			v += reduceContext.sum(A.layout(), A*l);
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Expression Reduction sum : " << v << std::endl;
+		std::cout << "Expression Reduction sum                  : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[THRUST] Expression Reduction sum : " << v << std::endl;
+		std::cout << "[THRUST] Expression Reduction sum         : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s (but uses two more I/O operations)" << std::endl;
 		std::cout << std::endl;
@@ -164,7 +164,7 @@ int main(int argc, char** argv)
 			reduceContext.sumBlock(A.layout(), A*A, C);
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "Expression Reduction multi-sum : " << std::endl;
+		std::cout << "Expression Reduction multi-sum            : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
 		}
 		timer.stop();
 		t = timer.getElapsedTime_s();
-		std::cout << "[THRUST] Expression Reduction multi-sum : " << std::endl;
+		std::cout << "[THRUST] Expression Reduction multi-sum   : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;

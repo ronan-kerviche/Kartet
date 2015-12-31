@@ -2210,7 +2210,7 @@ namespace Kartet
 	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitColumns(index_t jBegin, index_t c) const
 	{
 		std::vector< Accessor<T,l> > pages;
-		Layout tmp = this->getLayout();
+		Layout tmp = this->layout();
 		tmp.setOffset(0);
 		const std::vector<Layout> pagesLayout = tmp.splitLayoutColumns(jBegin, c);
 
@@ -2233,7 +2233,7 @@ namespace Kartet
 	__host__  std::vector< Accessor<T,l> > Accessor<T,l>::splitSlices(index_t kBegin, index_t s) const
 	{
 		std::vector< Accessor<T,l> > pages;
-		Layout tmp = this->getLayout();
+		Layout tmp = this->layout();
 		tmp.setOffset(0);
 		const std::vector<Layout> pagesLayout = tmp.splitLayoutSlices(kBegin, s);
 
@@ -2260,7 +2260,7 @@ namespace Kartet
 	__host__ std::vector< Accessor<T,l> > Accessor<T,l>::splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const
 	{
 		std::vector< Accessor<T,l> > pages;
-		Layout tmp = this->getLayout();
+		Layout tmp = this->layout();
 		tmp.setOffset(0);
 		const std::vector<Layout> pagesLayout = tmp.splitLayoutSubArrays(iBegin, jBegin, kBegin, r, c, s);
 

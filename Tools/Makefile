@@ -15,6 +15,7 @@
 # CUDA_INCLUDE_PATH	: Path to CUDA headers directory.
 # CUDA_LIB_PATH		: Path to CUDA libraries.
 # KARTET_OPTIONS	: Options for the library
+#     -D KARTET_USE_64BITS_INDEXING		Use 64 bits indexing, slower operation (2x) but enable large arrays (>2e9 elements).
 #     -D KARTET_USE_ATLAS			Use ATLAS (requires -llapack -lf77blas -lcblas -latlas).
 #     -D KARTET_USE_CBLAS			Use CBLAS only (requires -lcblas, ignored if KARTET_USE_ATLAS).
 #     -D KARTET_USE_FFTW			Use FFTW (v3, requires -lfftw3 -lfftw3f).
