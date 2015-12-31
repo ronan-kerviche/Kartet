@@ -189,6 +189,7 @@ namespace Kartet
 		InvalidContext,
 		InvalidLocation,
 		InvalidDirection,
+		InsufficientIndexingDepth,
 		NullPointer,
 		NotSupported,
 		// Others :
@@ -336,6 +337,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( InvalidContext )
 			EXCEPTION_MESSAGE( InvalidLocation )
 			EXCEPTION_MESSAGE( InvalidDirection )
+			EXCEPTION_MESSAGE( InsufficientIndexingDepth )
 			EXCEPTION_MESSAGE( NullPointer )
 			EXCEPTION_MESSAGE( NotSupported )
 			EXCEPTION_MESSAGE( NoException )

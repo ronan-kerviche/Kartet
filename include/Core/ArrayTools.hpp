@@ -1220,6 +1220,7 @@ namespace Kartet
 
 	If not NULL, the destination will be written with the type code following the layout (single integer).
 	
+	\throw InsufficientIndexingDepth If the stream refers to data wider than the available indexing depth.
 	\return The Layout built from the stream.
 	**/
 	__host__ inline Layout Layout::readFromStream(std::istream& stream, int* typeIndex)
@@ -1243,15 +1244,19 @@ namespace Kartet
 		stream.read(reinterpret_cast<char*>(typeIndex), sizeof(int)); if(!stream.good()) throw InvalidInputStream;
 
 		// Read the sizes :
-		index_t	r = 0,
-			c = 0,
-			s = 0;
-		stream.read(reinterpret_cast<char*>(&r), sizeof(index_t)); if(!stream.good()) throw InvalidInputStream;
-		stream.read(reinterpret_cast<char*>(&c), sizeof(index_t)); if(!stream.good()) throw InvalidInputStream;
-		stream.read(reinterpret_cast<char*>(&s), sizeof(index_t)); if(stream.fail()) throw InvalidInputStream; // Do not test for EOF after this read.
+		index64_t r = 0,
+			  c = 0,
+			  s = 0;
+		stream.read(reinterpret_cast<char*>(&r), sizeof(index64_t)); if(!stream.good()) throw InvalidInputStream;
+		stream.read(reinterpret_cast<char*>(&c), sizeof(index64_t)); if(!stream.good()) throw InvalidInputStream;
+		stream.read(reinterpret_cast<char*>(&s), sizeof(index64_t)); if(stream.fail()) throw InvalidInputStream; // Do not test for EOF after this read.
+
+		// Cast to the index_t : 
+		if(r>=std::numeric_limits<index_t>::max() || c>=std::numeric_limits<index_t>::max() || s>=std::numeric_limits<index_t>::max())
+			throw InsufficientIndexingDepth;
 
 		// Return :
-		return Layout(r, c, s);
+		return Layout(static_cast<index_t>(r), static_cast<index_t>(c), static_cast<index_t>(s));
 	}
 
 	/**
@@ -1293,9 +1298,12 @@ namespace Kartet
 		stream.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
 	
 		// Write the size :
-		stream.write(reinterpret_cast<char*>(&nRows), sizeof(index_t));
-		stream.write(reinterpret_cast<char*>(&nColumns), sizeof(index_t));
-		stream.write(reinterpret_cast<char*>(&nSlices), sizeof(index_t));	
+		index64_t _nRows = nRows,
+			  _nColumns = nColumns,
+			  _nSlices = nSlices;
+		stream.write(reinterpret_cast<char*>(&_nRows), sizeof(index64_t));
+		stream.write(reinterpret_cast<char*>(&_nColumns), sizeof(index64_t));
+		stream.write(reinterpret_cast<char*>(&_nSlices), sizeof(index64_t));
 	}
 
 	/**
@@ -1825,7 +1833,7 @@ namespace Kartet
 				maxSize = conversion ? (sourceTypeSize + sizeof(T)) : sizeof(T),
 				numBufferElements = std::min(static_cast<size_t>(lt.numElements())*maxSize, maxBufferSize)/maxSize;
 		
-		StreamInputToolBox<T> toolbox(stream, lt, sourceTypeIndex, sourceTypeSize, numBufferElements);
+		StreamInputToolBox<T> toolbox(stream, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
 		singleScan(toolbox);
 	}
 

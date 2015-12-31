@@ -129,6 +129,8 @@ namespace Kartet
 		struct TernaryExpression;
 
 	/// Prefered indexing type.
+	typedef signed long long index64_t;
+	typedef signed int index32_t;
 	#ifdef KARTET_USE_64BITS_INDEXING
 		typedef signed long long index_t;
 	#else
