@@ -384,7 +384,7 @@ namespace Kartet
 			typedef typename StaticIf<preferRealOutput, typename TypeInfo<Type2>::BaseType, Type2 >::TValue		Type3;
 			typedef typename StaticIf<preferComplexOutput, typename TypeInfo<Type3>::ComplexType, Type3 >::TValue	Type4;
 
-			typedef typename StaticIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue		Type5;
+			typedef typename StaticIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue	Type5;
 		public :
 			static const int arity = 	(SameTypes<T1,void>::test) ? 0 : (
 							(SameTypes<T2,void>::test) ? 1 : (
@@ -396,7 +396,7 @@ namespace Kartet
 } // Namespace Kartet
 
 // Nullary Standard Maths Operators :
-	#define STANDARD_NULLARY_OPERATOR_OBJECT(objName, operation, outputType) \
+	#define STANDARD_NULLARY_OPERATOR_OBJECT(objName, outputType, ...) \
 	namespace Kartet \
 	{ \
 		struct objName \
@@ -409,7 +409,7 @@ namespace Kartet
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
-				return operation ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
@@ -424,12 +424,12 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_NULLARY_OPERATOR_DEFINITION( objName, funcName, outputType, operation) \
-		STANDARD_NULLARY_OPERATOR_OBJECT( objName, operation, outputType) \
+	#define STANDARD_NULLARY_OPERATOR_DEFINITION( objName, funcName, outputType, ...) \
+		STANDARD_NULLARY_OPERATOR_OBJECT( objName, outputType, __VA_ARGS__) \
 		STANDARD_NULLARY_FUNCTION_INTERFACE( funcName, objName)
 
 // Unary Standard Maths Operators :
-	#define STANDARD_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define STANDARD_UNARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T> \
@@ -439,12 +439,12 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
 
-	#define C2R_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define C2R_UNARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T> \
@@ -454,12 +454,12 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
 
-	#define R2C_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define R2C_UNARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T> \
@@ -469,12 +469,12 @@ namespace Kartet
 			\
 			__host__ __device__ inline static ReturnType apply(const T& a) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
 
-	#define CAST_UNARY_OPERATOR(objName, operation) \
+	#define CAST_UNARY_OPERATOR(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename TOut> \
@@ -487,7 +487,7 @@ namespace Kartet
 				\
 				__host__ __device__ inline static ReturnType apply(const T& a) \
 				{ \
-					return static_cast<TOut>(operation) ; \
+					return static_cast<TOut>(__VA_ARGS__) ; \
 				} \
 			}; \
 		}; \
@@ -537,24 +537,24 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_UNARY_OPERATOR_DEFINITION(objName, funcName, operation) \
-		STANDARD_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define STANDARD_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		STANDARD_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
-	#define C2R_UNARY_OPERATOR_DEFINITION(objName, funcName, operation) \
-		C2R_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define C2R_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		C2R_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
-	#define R2C_UNARY_OPERATOR_DEFINITION(objName, funcName, operation) \
-		R2C_UNARY_OPERATOR_OBJECT(objName, operation) \
+	#define R2C_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		R2C_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
-	#define CAST_UNARY_OPERATOR_DEFINITION(objName, funcName, operation) \
-		CAST_UNARY_OPERATOR(objName, operation) \
+	#define CAST_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		CAST_UNARY_OPERATOR(objName, __VA_ARGS__) \
 		CAST_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
 // Standard Transform Operators :
-	#define STANDARD_TRANSFORM_OPERATOR_OBJECT(objName, operations) \
+	#define STANDARD_TRANSFORM_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		struct objName \
@@ -567,7 +567,7 @@ namespace Kartet
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
-				operations \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
@@ -594,12 +594,12 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_TRANSFORM_OPERATOR_DEFINITION( objName, funcName, operation) \
-		STANDARD_TRANSFORM_OPERATOR_OBJECT( objName, operation) \
+	#define STANDARD_TRANSFORM_OPERATOR_DEFINITION( objName, funcName, ...) \
+		STANDARD_TRANSFORM_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_TRANSFORM_FUNCTION_INTERFACE( funcName, objName)
 
 // Standard Layout Reinterpretation Operators :
-	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT(objName, operations) \
+	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		struct objName \
@@ -613,7 +613,7 @@ namespace Kartet
 				UNUSED_PARAMETER(i) \
 				UNUSED_PARAMETER(j) \
 				UNUSED_PARAMETER(k) \
-				operations \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
@@ -652,12 +652,12 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, operation) \
-		STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT( objName, operation) \
+	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, ...) \
+		STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_LAYOUT_REINTERPRETATION_FUNCTION_INTERFACE( funcName, objName)
 
 // Binary Operators Tools :
-	#define STANDARD_BINARY_OPERATOR_OBJECT(objName, operation) \
+	#define STANDARD_BINARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T1, typename T2> \
@@ -667,12 +667,12 @@ namespace Kartet
 			 \
 			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
 
-	#define COMPARISON_BINARY_OPERATOR_OBJECT(objName, operation) \
+	#define COMPARISON_BINARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T1, typename T2> \
@@ -682,12 +682,12 @@ namespace Kartet
 			 \
 			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
 
-	#define R2C_BINARY_OPERATOR_OBJECT(objName, operation) \
+	#define R2C_BINARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename T1, typename T2> \
@@ -697,7 +697,7 @@ namespace Kartet
 			 \
 			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
 			{ \
-				return (operation) ; \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
@@ -784,20 +784,20 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_BINARY_OPERATOR_DEFINITION( objName, funcName, operation) \
-		STANDARD_BINARY_OPERATOR_OBJECT( objName, operation) \
+	#define STANDARD_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		STANDARD_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
 
-	#define COMPARISON_BINARY_OPERATOR_DEFINITION( objName, funcName, operation) \
-		COMPARISON_BINARY_OPERATOR_OBJECT( objName, operation) \
+	#define COMPARISON_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		COMPARISON_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
 
-	#define R2C_BINARY_OPERATOR_DEFINITION( objName, funcName, operation) \
-		R2C_BINARY_OPERATOR_OBJECT( objName, operation) \
+	#define R2C_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		R2C_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
 
 // Shuffle Operator Tools (can make use of v variable from the index data) :
-	#define STANDARD_SHUFFLE_FUNCTION_OBJECT(objName, operations) \
+	#define STANDARD_SHUFFLE_FUNCTION_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
 		template<typename TIndex> \
@@ -813,7 +813,7 @@ namespace Kartet
 				UNUSED_PARAMETER(k) \
 				typedef typename ExpressionEvaluation<TIndex>::ReturnType IndexType; \
 				const IndexType v = ExpressionEvaluation<TIndex>::evaluate(index, l, i, j, k); \
-				operations \
+				__VA_ARGS__ \
 			} \
 		}; \
 	}
@@ -876,34 +876,34 @@ namespace Kartet
 		} \
 	}
 
-	#define STANDARD_SHUFFLE_FUNCTION_DEFINITION( objName, funcName, operation) \
-		STANDARD_SHUFFLE_FUNCTION_OBJECT( objName, operation) \
+	#define STANDARD_SHUFFLE_FUNCTION_DEFINITION( objName, funcName, ...) \
+		STANDARD_SHUFFLE_FUNCTION_OBJECT( objName, __VA_ARGS__) \
 		SHUFFLE_FUNCTION_INTERFACE( funcName, objName)
 
 // Standard operators : 
 	// Unary : 
-		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Minus,		operator-,	-a)
-		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Not,		operator!,	!a)
-		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_BinaryCompl,	operator~,	~a)
+		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Minus,		operator-,	return -a;)
+		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Not,		operator!,	return !a;)
+		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_BinaryCompl,	operator~,	return ~a;)
 
 	// Binary :
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Plus, 		operator+, 	a+b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Minus, 		operator-, 	a-b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Times, 		operator*, 	a*b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Divide, 		operator/, 	a/b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Modulo, 		operator%, 	a%b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryAnd, 	operator&, 	a&b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryOr, 	operator|, 	a|b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_And, 		operator&&, 	a && b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Or, 		operator||, 	a || b )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Xor, 		operator^, 	a^b )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Plus, 		operator+, 	return a+b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Minus, 		operator-, 	return a-b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Times, 		operator*, 	return a*b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Divide, 		operator/, 	return a/b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Modulo, 		operator%, 	return a%b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryAnd, 	operator&, 	return a&b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryOr, 	operator|, 	return a|b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_And, 		operator&&, 	return a && b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Or, 		operator||, 	return a || b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Xor, 		operator^, 	return a^b; )
 
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Equal, 		operator==, 	a==b )
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Different, 	operator!=, 	a!=b )
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_GreaterStrict, 	operator>, 	a>b )
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_GreaterOrEqual, 	operator>=, 	a>=b )
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerStrict, 	operator<, 	a<b )
-		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerOrEqual, 	operator<=, 	a<=b )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Equal, 		operator==, 	return a==b; )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Different, 	operator!=, 	return a!=b; )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_GreaterStrict, 	operator>, 	return a>b; )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_GreaterOrEqual, 	operator>=, 	return a>=b; )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerStrict, 	operator<, 	return a<b; )
+		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_SmallerOrEqual, 	operator<=, 	return a<=b; )
 
 // Unary and Binary functions :
 	#include "Core/ArrayFunctions.hpp"
