@@ -388,7 +388,7 @@ namespace Kartet
 		else // if(lc>r) // The new slices are not monolithic
 		{
 			// Test if it is possible to retract or expand the number of columns : 
-			if(c!=nColumns && c>1 && nColumns>1 && nColumns*sColumns!=sSlices)
+			if(c!=nColumns && c>1 && nColumns>1 && s!=1 && nColumns*sColumns!=sSlices)
 				throw InvalidLayoutReinterpretation;
 			else
 				ls = c*lc;
