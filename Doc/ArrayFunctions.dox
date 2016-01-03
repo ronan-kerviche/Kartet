@@ -890,13 +890,13 @@ namespace Kartet
 
 	/**
 	\return Distribute the elements of the argument on the columns of the output expression.
-	\param a Expression.
+	\param a Expression, must be monolithic.
 	**/
 	T distributeElementsOnColumns(Expression a) { }
 
 	/**
 	\return Distribute the elements of the argument on the slices of the output expression.
-	\param a Expression.
+	\param a Expression, must be monolithic.
 	**/
 	T distributeElementsOnSlices(Expression a) { }
 

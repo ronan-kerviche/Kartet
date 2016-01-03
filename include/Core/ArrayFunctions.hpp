@@ -207,7 +207,7 @@
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		i=j=k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonal,				diagonal,			j=i; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	i=j; j=0; )
-	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	i=k; k=0; k=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnSlices,	distributeElementsOnSlices,	i=k; j=0; k=0; )
 	// Following can be extremly slow on GPU :
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_transpose,				transpose,			const index_t _s = i; i = j; j = _s; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_forceUpSymmetry,			forceUpSymmetry,		const index_t _i=i, _j=j; i=::max(_i,_j); j=::min(_i,_j); )
