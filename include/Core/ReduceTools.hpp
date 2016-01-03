@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    ReduceTools.hpp
+	\brief   Reduction context implementations.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_REDUCE_TOOLS__
 #define __KARTET_REDUCE_TOOLS__
 
@@ -223,6 +230,9 @@ namespace Kartet
 #endif
 
 // Implementation :
+	/**
+	\brief ReduceContext constructor.
+	**/
 	__host__ inline ReduceContext::ReduceContext(void)
 	 : 	fillNumBlocks(128),
 		maxMemory(16384),
@@ -249,6 +259,14 @@ namespace Kartet
 		#endif
 	}
 
+	/**
+	\brief Generic global reduction operation.
+	\tparam Op Reduction operator.
+	\param layout Layout of the data to be reduced.
+	\param expr Expression or data to be reduced.
+	\param defaultValue Default value used as initialization.
+	\return The result of the reduction operation.
+	**/
 	template<template<typename,typename> class Op, typename TOut, typename TExpr>
 	__host__ TOut ReduceContext::reduce(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue)
 	{
@@ -327,6 +345,12 @@ namespace Kartet
 	}
 
 	// Specific tools :
+		/**
+		\brief Compute the minimum of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return The minimum of an expression.
+		**/
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::min(const Layout& layout, const TExpr& expr)
 		{
@@ -334,12 +358,23 @@ namespace Kartet
 			return reduce<BinOp_min, ReturnType>(layout, expr, std::numeric_limits<ReturnType>::max());
 		}
 
+		/**
+		\brief Compute the minimum of an accessor.
+		\param accessor Data accessor.
+		\return The minimum of an accessor.
+		**/
 		template<typename T, Location l>
 		__host__ T ReduceContext::min(const Accessor<T,l>& accessor)
 		{
 			return min(accessor.layout(), accessor);
 		}
 
+		/**
+		\brief Compute the maximum of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return The maximum of an expression.
+		**/
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::max(const Layout& layout, const TExpr& expr)
 		{
@@ -348,12 +383,23 @@ namespace Kartet
 			return reduce<BinOp_max, ReturnType>(layout, expr, defaultValue);
 		}
 
+		/**
+		\brief Compute the maximum of an accessor.
+		\param accessor Data accessor.
+		\return The maximum of an accessor.
+		**/
 		template<typename T, Location l>
 		__host__ T ReduceContext::max(const Accessor<T,l>& accessor)
 		{
 			return max(accessor.layout(), accessor);
 		}
 
+		/**
+		\brief Compute the sum of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return The sum of an expression.
+		**/
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::sum(const Layout& layout, const TExpr& expr)
 		{
@@ -361,24 +407,46 @@ namespace Kartet
 			return reduce<BinOp_Plus, ReturnType>(layout, expr, complexCopy<ReturnType>(0));
 		}
 
+		/**
+		\brief Compute the sum of an accessor.
+		\param accessor Data accessor.
+		\return The sum of an accessor.
+		**/
 		template<typename T, Location l>
 		__host__ T ReduceContext::sum(const Accessor<T,l>& accessor)
 		{
 			return sum(accessor.layout(), accessor);
 		}
 
+		/**
+		\brief Compute the arithmetic mean of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return The average of an expression.
+		**/
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::mean(const Layout& layout, const TExpr& expr)
 		{
 			return sum(layout, expr) / layout.numElements();
 		}
 
+		/**
+		\brief Compute the arithmetic mean of an accessor.
+		\param accessor Data accessor.
+		\return The arithmetic mean of an accessor.
+		**/
 		template<typename T, Location l>
 		__host__ T ReduceContext::mean(const Accessor<T,l>& accessor)
 		{
 			return sum(accessor.layout(), accessor) / accessor.numElements();
 		}
 
+		/**
+		\brief Compute the product of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return The product of an expression.
+		**/
 		template<typename TExpr>
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::prod(const Layout& layout, const TExpr& expr)
 		{
@@ -386,30 +454,57 @@ namespace Kartet
 			return reduce<BinOp_Times, ReturnType>(layout, expr, complexCopy<ReturnType>(1));
 		}
 
+		/**
+		\brief Compute the product of an accessor.
+		\param accessor Data accessor.
+		\return The product of an accessor.
+		**/
 		template<typename T, Location l>
 		__host__ T ReduceContext::prod(const Accessor<T,l>& accessor)
 		{
 			return prod(accessor.layout(), accessor);
 		}
 
+		/**
+		\brief Compute logical and between all the elements of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return True if all elements are.
+		**/
 		template<typename TExpr>
 		__host__ bool ReduceContext::all(const Layout& layout, const TExpr& expr)
 		{
 			return reduce<BinOp_And, bool>(layout, expr, true);
 		}
 
+		/**
+		\brief Compute logical and between all the elements of an accessor.
+		\param accessor Data accessor.
+		\return True if all elements are.
+		**/
 		template<typename T, Location l>
 		__host__ bool ReduceContext::all(const Accessor<T,l>& accessor)
 		{
 			return all(accessor.layout(), accessor);
 		}
 
+		/**
+		\brief Compute logical or between all the elements of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\return True if any element is.
+		**/
 		template<typename TExpr>
 		__host__ bool ReduceContext::any(const Layout& layout, const TExpr& expr)
 		{
 			return reduce<BinOp_Or, bool>(layout, expr, false);
 		}
 
+		/**
+		\brief Compute logical or between all the elements of an accessor.
+		\param accessor Data accessor.
+		\return True if any element is.
+		**/
 		template<typename T, Location l>
 		__host__ bool ReduceContext::any(const Accessor<T,l>& accessor)
 		{
@@ -417,6 +512,19 @@ namespace Kartet
 		}
 
 	// Binning-like operations :
+	/**
+	\brief Generic block reduction operation.
+	\tparam Op Reduction operator.
+	\param layout Layout of the data to be reduced.
+	\param expr Expression or data to be reduced.
+	\param defaultValue Default value used as initialization.
+	\param output Resulting data (written).
+
+	The function assume all the blocks to be of identical sizes. It requires the output layout to be smaller than the input layout and that all output dimensions divide the input dimensions.
+	The operator is a binary operator, usually defined via the library's macros.
+
+	\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+	**/
 	template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
 	__host__ void ReduceContext::reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
 	{
@@ -545,6 +653,13 @@ namespace Kartet
 	}
 
 	// Specific tools :
+		/**
+		\brief Compute the minimum per block of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
@@ -552,12 +667,25 @@ namespace Kartet
 			reduceBlock<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
 		}
 
+		/**
+		\brief Compute the minimum per block of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			minBlock(accessor.layout(), accessor, output);
 		}
 
+		/**
+		\brief Compute the maximum per block of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
@@ -566,12 +694,25 @@ namespace Kartet
 			reduceBlock<BinOp_max>(layout, expr, defaultValue, output);
 		}
 
+		/**
+		\brief Compute the maximum per block of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			maxBlock(accessor.layout(), accessor, output);
 		}
 
+		/**
+		\brief Compute the sum per block of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
@@ -579,12 +720,25 @@ namespace Kartet
 			reduceBlock<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
 		}
 
+		/**
+		\brief Compute the sum per block of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			sumBlock(accessor.layout(), accessor, output);
 		}
 
+		/**
+		\brief Compute the product per block of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
@@ -592,30 +746,62 @@ namespace Kartet
 			reduceBlock<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
 		}
 
+		/**
+		\brief Compute the product per block of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			prodBlock(accessor.layout(), accessor, output);
 		}
 
+		/**
+		\brief Compute the logical and between all elements in all the blocks of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			reduceBlock<BinOp_And>(layout, expr, true, output);
 		}
 
+		/**
+		\brief Compute the logical and between all elements in all the blocks of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			allBlock(accessor.layout(), accessor, output);
 		}
 
+		/**
+		\brief Compute the logical or between all elements in all the blocks of an expression.
+		\param layout Layout of the expression.
+		\param expr Expression.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename TExpr, typename TOut, Location l>
 		__host__ void ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			reduceBlock<BinOp_Or>(layout, expr, false, output);
 		}
 
+		/**
+		\brief Compute the logical or between all elements in all the blocks of an accessor.
+		\param accessor Input data.
+		\param output Resulting data (written).
+		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		**/
 		template<typename T, typename TOut, Location l>
 		__host__ void ReduceContext::anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{

@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    BLAS.hpp
+	\brief   BLAS Context definition.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_BLAS__
 #define __KARTET_BLAS__
 
@@ -60,32 +67,66 @@
 
 namespace Kartet
 {
+	/**
+	\related Kartet::BLASContext
+	\brief Operations applied to matrices.
+	**/
 	enum MatrixOperation
 	{
+		/// No operation.
 		OpNo = 'N',
+		/// Transpose.
 		OpTr = 'T',
+		/// Hermitian transpose.
 		OpHr = 'C'
 	};
 
+	/**
+	\related Kartet::BLASContext
+	\brief Fill modes.
+	**/
 	enum MatrixFillMode
 	{
+		/// Upper triangle filled.
 		MatrixFillUp = 'U',
+		/// Lower triangle filled.
 		MatrixFillLow = 'L'
 	};
 
+	/**
+	\related Kartet::BLASContext
+	\brief Diagonal types.
+	**/
 	enum MatrixDiagType
 	{
+		/// Diagonal is not unitary.
 		MatrixDiagNonUnit = 'N',
+		/// Diagonal is unitary.
 		MatrixDiagUnit = 'U'
 	};
 
+	/**
+	\related Kartet::BLASContext
+	\brief Operation side.
+	**/
 	enum MatrixSideMode
 	{
+		/// Left side operation.
 		MatrixLeftSide = 'L',
+		/// Right side operation.
 		MatrixRightSide = 'R'
 	};
 
 // BLASContext :
+	/**
+	\brief BLAS Context.
+
+	When compiled for device code (with NVCC), the library will use CuBLAS. In all the binary, the library can perform BLAS operations on the host side with any of the following defines : 
+	\code	
+	-D KARTET_USE_CBLAS
+	-D KARTET_USE_ATLAS
+	\endcode
+	**/
 	class BLASContext
 	{
 		private :

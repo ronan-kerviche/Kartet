@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    ArrayOperators.hpp
+	\brief   Array classes operators implementations and macros.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_ARRAY_OPERATORS__
 #define __KARTET_ARRAY_OPERATORS__
 
@@ -240,6 +247,58 @@ namespace Kartet
 		return assign(a);
 	}
 
+	#define ACCESSOR_COMPOUND_ASSIGNMENT( operatorName, ... ) \
+		template<typename T, Location l> \
+		template<typename TExpr> \
+		Accessor<T,l>& Accessor<T,l>:: operatorName (const TExpr& expr) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ expr; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		Accessor<T,l>& Accessor<T,l>:: operatorName (const Accessor<T,l>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		template<Location l2> \
+		Accessor<T,l>& Accessor<T,l>:: operatorName (const Accessor<T,l2>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		Accessor<T,l>& Accessor<T,l>:: operatorName (const Array<T,l>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		template<Location l2> \
+		Accessor<T,l>& Accessor<T,l>:: operatorName (const Array<T,l2>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		}
+
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator+=,  + )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator-=,  - )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator*=,  * )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator/=,  / )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator%=,  % )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator&=,  & )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator|=,  | )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator^=,  ^ )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator<<=, << )
+		ACCESSOR_COMPOUND_ASSIGNMENT( operator>>=, >> )
+
+	#undef ACCESSOR_COMPOUND_ASSIGNMENT
+
 	/**
 	\brief Assignment operator.
 	\param expr Expression.
@@ -305,6 +364,58 @@ namespace Kartet
 		assign(a);
 		return (*this);
 	}
+
+	#define ARRAY_COMPOUND_ASSIGNMENT( operatorName, ... ) \
+		template<typename T, Location l> \
+		template<typename TExpr> \
+		Array<T,l>& Array<T,l>:: operatorName (const TExpr& expr) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ expr; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		Array<T,l>& Array<T,l>:: operatorName (const Accessor<T,l>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		template<Location l2> \
+		Array<T,l>& Array<T,l>:: operatorName (const Accessor<T,l2>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		Array<T,l>& Array<T,l>:: operatorName (const Array<T,l>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		} \
+		 \
+		template<typename T, Location l> \
+		template<Location l2> \
+		Array<T,l>& Array<T,l>:: operatorName (const Array<T,l2>& a) \
+		{ \
+			(*this) = (*this) __VA_ARGS__ a; \
+			return (*this); \
+		}
+
+		ARRAY_COMPOUND_ASSIGNMENT( operator+=,  + )
+		ARRAY_COMPOUND_ASSIGNMENT( operator-=,  - )
+		ARRAY_COMPOUND_ASSIGNMENT( operator*=,  * )
+		ARRAY_COMPOUND_ASSIGNMENT( operator/=,  / )
+		ARRAY_COMPOUND_ASSIGNMENT( operator%=,  % )
+		ARRAY_COMPOUND_ASSIGNMENT( operator&=,  & )
+		ARRAY_COMPOUND_ASSIGNMENT( operator|=,  | )
+		ARRAY_COMPOUND_ASSIGNMENT( operator^=,  ^ )
+		ARRAY_COMPOUND_ASSIGNMENT( operator<<=, << )
+		ARRAY_COMPOUND_ASSIGNMENT( operator>>=, >> )
+
+	#undef ARRAY_COMPOUND_ASSIGNMENT
 
 // Masked assignements : 
 	template<typename T, Location l>
@@ -897,6 +1008,8 @@ namespace Kartet
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_And, 		operator&&, 	return a && b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Or, 		operator||, 	return a || b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Xor, 		operator^, 	return a^b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_LeftShift,	operator<<,	return a << b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_RightShift,	operator>>,	return a >> b; )
 
 		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Equal, 		operator==, 	return a==b; )
 		COMPARISON_BINARY_OPERATOR_DEFINITION( 	BinOp_Different, 	operator!=, 	return a!=b; )

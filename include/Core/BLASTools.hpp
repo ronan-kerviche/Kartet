@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    BLASTools.hpp
+	\brief   BLAS Context implementation.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_BLAS_TOOLS__
 #define __KARTET_BLAS_TOOLS__
 
@@ -60,6 +67,10 @@ namespace Kartet
 	#define TEST_EXCEPTION(x)			{if(x!=CUBLAS_STATUS_SUCCESS) throw static_cast<Exception>(CuBLASExceptionOffset + x);}
 
 // BLAS :
+	/**
+	\brief BLASContext constructor.
+	\param initDevice If true, will also initialize device.
+	**/
 	__host__ inline BLASContext::BLASContext(bool initDevice)
 	#ifdef __CUDACC__
 	 : 	handle(NULL)
@@ -90,21 +101,37 @@ namespace Kartet
 	}
 
 	#ifdef __CUDACC__
+	/**
+	\return The corresponding CuBLAS operation.
+	\param op Operation.
+	**/
 	__host__ inline cublasOperation_t BLASContext::getCuBLASOperation(const MatrixOperation& op)
 	{
 		return (op==OpTr) ? CUBLAS_OP_T : ((op==OpHr) ? CUBLAS_OP_C : CUBLAS_OP_N);
 	}
 
+	/**
+	\return The corresponding CuBLAS fill mode.
+	\param m Fill mode.
+	**/
 	__host__ inline cublasFillMode_t BLASContext::getCuBLASFillMode(const MatrixFillMode& m)
 	{
 		return (m==MatrixFillUp) ? CUBLAS_FILL_MODE_UPPER : CUBLAS_FILL_MODE_LOWER;
 	}
 
+	/**
+	\return The corresponding CuBLAS diagonal type.
+	\param t Diagonal type.
+	**/
 	__host__ inline cublasDiagType_t BLASContext::getCuBLASDiagType(const MatrixDiagType& t)
 	{
 		return (t==MatrixDiagUnit) ? CUBLAS_DIAG_UNIT : CUBLAS_DIAG_NON_UNIT;
 	}
 
+	/**
+	\return The corresponding CuBLAS side mode.
+	\param s Side mode.
+	**/
 	__host__ inline cublasSideMode_t BLASContext::getCuBLASSideMode(const MatrixSideMode& s)
 	{
 		return (s==MatrixRightSide) ? CUBLAS_SIDE_RIGHT : CUBLAS_SIDE_LEFT;
@@ -112,27 +139,52 @@ namespace Kartet
 	#endif
 
 	#ifdef KARTET_ADD_CBLAS_INTERFACE
+	/**
+	\return The corresponding CBLAS operation.
+	\param op Operation.
+	**/
 	__host__ inline CBLAS_TRANSPOSE BLASContext::getCBLASOperation(const MatrixOperation& op)
 	{
 		return (op==OpTr) ? CblasTrans : ((op==OpHr) ? CblasConjTrans : CblasNoTrans);
 	}
 
+	/**
+	\return The corresponding CBLAS fill mode.
+	\param m Fill mode
+	**/
 	__host__ inline CBLAS_UPLO BLASContext::getCBLASFillMode(const MatrixFillMode& m)
 	{
 		return (m==MatrixFillUp) ? CblasUpper : CblasLower;
 	}
 
+	/**
+	\return The corresponding CBLAS diagonal type.
+	\param t Diagonal type.
+	**/
 	__host__ inline CBLAS_DIAG BLASContext::getCBLASDiagType(const MatrixDiagType& t)
 	{
 		return (t==MatrixDiagUnit) ? CblasUnit : CblasNonUnit;
 	}
 
+	/**
+	\return The corresponding CBLAS side mode.
+	\param s Side mode.
+	**/
 	__host__ inline CBLAS_SIDE BLASContext::getCBLASSideMode(const MatrixSideMode& s)
 	{
 		return (s==MatrixRightSide) ? CblasRight : CblasLeft;
 	}
 	#endif
 
+	/**
+	\brief Test if a product is valid.
+	\param A Left side layout. 
+	\param opa Left side operation.
+	\param B Right side layout.
+	\param opb Right side layout.
+	\param C Output layout.
+	\return True if the sizes are valid.
+	**/
 	__host__ inline bool BLASContext::isProductValid(const Layout& A, MatrixOperation opa, const Layout& B, MatrixOperation opb, const Layout& C)
 	{
 		index_t aR = 0,
@@ -167,11 +219,26 @@ namespace Kartet
 		return (aR==cR) && (aC==bR) && (bC==cC);
 	}
 
+	/**
+	\brief Test if a product is valid.
+	\param A Left side layout.
+	\param B Right side layout.
+	\param C Output layout.
+	\return True if the sizes are valid.
+	**/
 	__host__ inline bool BLASContext::isProductValid(const Layout& A, const Layout& B, const Layout& C)
 	{
 		return BLASContext::isProductValid(A, OpNo, B, OpNo, C);
 	}
 
+	/**
+	\brief Get the output layout.
+	\param A Left side layout.
+	\param opa Left side operation.
+	\param B Right side layout.
+	\param opb Right side layout.
+	\return The output layout.
+	**/
 	__host__ inline Layout BLASContext::getProductLayout(const Layout& A, MatrixOperation opa, const Layout& B, MatrixOperation opb)
 	{
 		index_t aR = 0,
@@ -210,12 +277,24 @@ namespace Kartet
 		return Layout(aR, bC);
 	}
 
+	/**
+	\brief Get the output layout.
+	\param A Left side layout.
+	\param B Right side layout.
+	\return The output layout.
+	**/
 	__host__ inline Layout BLASContext::getProductLayout(const Layout& A, const Layout& B)
 	{
 		return getProductLayout(A, OpNo, B, OpNo);
 	}
 
 // Functions : 
+	/**
+	\return The index of the absolute maximum value.
+	\param x Input data, must be monolithic.
+
+	\f$ = \mbox{argmax}_k\{|x_k|\} \f$
+	**/
 	template<typename T, Location l>
 	__host__ int BLASContext::Iamax(const Accessor<T,l>& x)
 	{
@@ -259,6 +338,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\return The index of the absolute minimum value.
+	\param x Input data, must be monolithic.
+
+	\f$ = \mbox{argmin}_k\{|x_k|\} \f$
+	**/
 	template<typename T, Location l>
 	__host__ int BLASContext::Iamin(const Accessor<T,l>& x)
 	{
@@ -285,6 +370,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\return The absolute sum of the data.
+	\param x Input data, must be monolithic.
+
+	\f$ = \sum_k |x_k| \f$
+	**/
 	template<typename T, Location l>
 	__host__ typename TypeInfo<T>::BaseType BLASContext::asum(const Accessor<T,l>& x)
 	{
@@ -327,6 +418,18 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\return The dot product between the two vectors.
+	\param x Left side, must be monolithic.
+	\param y Right side, must be monolithic.
+	\param conjugate If true, performs an Hermitian dot product.
+
+	Real : 
+	\f$ = \sum_k x_k y_k \f$
+
+	Hermitian :
+	\f$ = \sum_k x_k y_k^* \f$
+	**/
 	template<typename T, Location l>
 	__host__ T BLASContext::dot(const Accessor<T,l>& x, const Accessor<T,l>& y, bool conjugate)
 	{
@@ -379,6 +482,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\return The L2 norm of the vector.
+	\param x Input data, must be monolithic.
+
+	\f$ = \sqrt{\sum_k x_k^2} \f$
+	**/
 	template<typename T, Location l>
 	__host__ typename TypeInfo<T>::BaseType BLASContext::nrm2(const Accessor<T,l>& x)
 	{
@@ -422,6 +531,17 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Compute the generic matrix-vector multiplication.
+	\param alpha Scalar.
+	\param A matrix.
+	\param op Operation.
+	\param x Vector.
+	\param beta Scalar.
+	\param y Output vector.
+
+	\f$ y = \alpha A^{\mbox{op}} x + \beta y \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::gemv(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
 	{
@@ -497,6 +617,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Compute the generic matrix-vector multiplication.
+		\param A matrix.
+		\param op Operation.
+		\param x Vector.
+		\param y Output vector.
+
+		\f$ y = A^{\mbox{op}} x\f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::gemv(const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -505,6 +634,14 @@ namespace Kartet
 			gemv(alpha, A, op, x, beta, y);
 		}
 
+		/**
+		\brief Compute the generic matrix-vector multiplication.
+		\param A matrix.
+		\param x Vector.
+		\param y Output vector.
+
+		\f$ y = A x \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::gemv(const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -513,6 +650,20 @@ namespace Kartet
 			gemv(alpha, A, OpNo, x, beta, y);
 		}
 
+	/**
+	\brief Compute the rank one update.
+	\param alpha Scalar.
+	\param x Left side vector.
+	\param y Right side vector.
+	\param A output matrix.
+	\param conjugate If true then performs hermitian rank one update.
+
+	If conjugate is false : 
+	\f$ A = \alpha x y^{\intercal} + A \f$
+	
+	If conjugate is true : 
+	\f$ A = \alpha x y^{H} + A \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	void BLASContext::ger(const TAlpha& alpha, const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
 	{
@@ -592,6 +743,19 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Compute the rank one update.
+		\param x Left side vector.
+		\param y Right side vector.
+		\param A output matrix.
+		\param conjugate If true then performs hermitian rank one update.
+
+		If conjugate is false : 
+		\f$ A = \alpha x y^{\intercal} + A \f$
+	
+		If conjugate is true : 
+		\f$ A = \alpha x y^{H} + A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void ger(const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
 		{
@@ -599,6 +763,17 @@ namespace Kartet
 			ger(alpha, x, y, A, conjugate);
 		}
 
+	/**
+	\brief Symmetric matrix-vector product.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Symmetric matrix.
+	\param x Vector.
+	\param beta Scalar.
+	\param y Output vector.
+
+	\f$ y = \alpha A x + \beta y \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::symv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
 	{
@@ -664,6 +839,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric matrix-vector product.
+		\param uplo Fill mode.
+		\param A Symmetric matrix.
+		\param x Vector.
+		\param y Output vector.
+
+		\f$ y =  A x \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::symv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -672,6 +856,15 @@ namespace Kartet
 			symv(alpha, uplo, A, x, beta, y);
 		}
 	
+	/**
+	\brief Symmetric rank one update.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Symmetric matrix (input and output).
+	\param x Vector.
+
+	\f$ A = \alpha x x^\intercal + A \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::syr(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
@@ -738,6 +931,14 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric rank one update.
+		\param uplo Fill mode.
+		\param A Symmetric matrix (input and output).
+		\param x Vector.
+
+		\f$ A = x x^\intercal + A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syr(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
@@ -745,6 +946,16 @@ namespace Kartet
 			syr(alpha, uplo, A, x);
 		}
 
+	/**
+	\brief Symmetric rank two update.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Symmetric matrix (and output).
+	\param x First vector.
+	\param y Second vector.
+
+	\f$ A = \alpha(xy^\intercal + yx^\intercal) + A \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::syr2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
@@ -805,6 +1016,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric rank two update.
+		\param uplo Fill mode.
+		\param A Symmetric matrix (and output).
+		\param x First vector.
+		\param y Second vector.
+
+		\f$ A = (xy^\intercal + yx^\intercal) + A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syr2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -812,6 +1032,16 @@ namespace Kartet
 			syr2(alpha, uplo, A, x, y);
 		}
 
+	/**
+	\brief Triangular matrix-vector product.
+	\param uplo Fill mode.
+	\param diag Diagonal type.
+	\param A Triangular matrix.
+	\param op Operation.
+	\param x Input/output vector.
+
+	\f$ x' = A^{\mbox{op}} x \f$
+	**/
 	template<typename T, Location l>
 	__host__ void BLASContext::trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
 	{
@@ -854,6 +1084,16 @@ namespace Kartet
 		}
 	}
 
+	/**
+	\brief Solve triangular system.
+	\param uplo Fill mode.
+	\param diag Diagonal type.
+	\param A Triangular matrix.
+	\param op Operation.
+	\param x Input/output vector.
+
+	\f$ x = A^{\mbox{op}} x' \f$
+	**/
 	template<typename T, Location l>
 	__host__ void BLASContext::trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
 	{
@@ -896,6 +1136,17 @@ namespace Kartet
 		}
 	}
 
+	/**
+	\brief Hermitian matrix-vector multiplication.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Hermitian matrix.
+	\param x Vector.
+	\param beta Scalar.
+	\param y Output vector.
+
+	\f$ y = \alpha A x + \beta y \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
 	{
@@ -947,6 +1198,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian matrix-vector multiplication.
+		\param uplo Fill mode.
+		\param A Hermitian matrix.
+		\param x Vector.
+		\param y Output vector.
+
+		\f$ y = A x + y \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -955,6 +1215,15 @@ namespace Kartet
 			hemv(alpha, uplo, A, x, beta, y);
 		}
 
+	/**
+	\brief Hermitian rank one update.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A An hermitian matrix (input and output).
+	\param x Vector.
+
+	\f$ A = \alpha x x^{\mbox{H}} + A \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::her(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
@@ -1002,6 +1271,14 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian rank one update.
+		\param uplo Fill mode.
+		\param A An hermitian matrix (input and output).
+		\param x Vector.
+
+		\f$ A = x x^{\mbox{H}} + A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::her(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
@@ -1009,6 +1286,16 @@ namespace Kartet
 			her(alpha, uplo, A, x);
 		}
 
+	/**
+	\brief Hermitian rank two update.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A An hermitian matrix (input and output).
+	\param x First vector.
+	\param y Second vector.
+
+	\f$ A = \alpha x y^{\mbox{H}} + \alpha^* y x^{\mbox{H}} + A \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::her2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
@@ -1057,6 +1344,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian rank two update.
+		\param uplo Fill mode.
+		\param A An hermitian matrix (input and output).
+		\param x First vector.
+		\param y Second vector.
+
+		\f$ A = x y^{\mbox{H}} + \alpha^* y x^{\mbox{H}} + A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::her2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
@@ -1064,6 +1360,18 @@ namespace Kartet
 			her2(alpha, uplo, A, x, y);
 		}
 
+	/**
+	\brief Generic matrix-matrix product.
+	\param alpha Scalar.
+	\param A Left side matrix.
+	\param opa Operation on left side.
+	\param B Right side matrix.
+	\param opb Operation on right side.
+	\param beta Scalar.
+	\param C Output matrix.
+	
+	\f$ C = \alpha A^{\mbox{opa}} B^{\mbox{opb}} + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, const Accessor<T,l>& C)
 	{
@@ -1140,6 +1448,16 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Generic matrix-matrix product.
+		\param A Left side matrix.
+		\param opa Operation on left side.
+		\param B Right side matrix.
+		\param opb Operation on right side.
+		\param C Output matrix.
+	
+		\f$ C = A^{\mbox{opa}} B^{\mbox{opb}}\f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 		{
@@ -1148,6 +1466,14 @@ namespace Kartet
 			gemm(alpha, A, opa, B, opb, beta, C);
 		}
 
+		/**
+		\brief Generic matrix-matrix product.
+		\param A Left side matrix.
+		\param B Right side matrix.
+		\param C Output matrix.
+	
+		\f$ C = A B \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
@@ -1156,6 +1482,21 @@ namespace Kartet
 			gemm(alpha, A, OpNo, B, OpNo, beta, C);
 		}
 
+	/**
+	\brief Symmetric matrix product.
+	\param side Operation side.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Symmetric matrix.
+	\param B Matrix.
+	\param beta Scalar.
+	\param C Output matrix.
+
+	If side is left : 
+	\f$ C = \alpha A B + \beta C \f$
+	If side is right : 
+	\f$ C = \alpha B A + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
 	{
@@ -1234,6 +1575,19 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric matrix product.
+		\param side Operation side.
+		\param uplo Fill mode.
+		\param A Symmetric matrix.
+		\param B Matrix.
+		\param C Output matrix.
+
+		If side is left : 
+		\f$ C = A B \f$
+		If side is right : 
+		\f$ C = B A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
@@ -1242,6 +1596,17 @@ namespace Kartet
 			symm(side, alpha, uplo, A, B, beta, C);
 		}
 
+	/**
+	\brief Symmetric rank-k update.
+	\param alpha Scalar.
+	\param A Matrix.
+	\param opa Operation on matrix A.
+	\param beta Scalar.
+	\param uplo Output fill mode.
+	\param C Output matrix.
+
+	\f$ C = \alpha A^{\mbox{opa}} {A^{\mbox{opa}}}^\intercal + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
@@ -1320,6 +1685,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric rank-k update.
+		\param A Matrix.
+		\param opa Operation on matrix A.
+		\param uplo Output fill mode.
+		\param C Output matrix.
+
+		\f$ C = A^{\mbox{opa}} {A^{\mbox{opa}}}^\intercal \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1328,6 +1702,14 @@ namespace Kartet
 			syrk(alpha, A, opa, beta, uplo, C);
 		}
 
+		/**
+		\brief Symmetric rank-k update.
+		\param A Matrix.
+		\param uplo Output fill mode.
+		\param C Output matrix.
+
+		\f$ C = A A^\intercal \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1336,6 +1718,18 @@ namespace Kartet
 			syrk(alpha, A, OpNo, beta, uplo, C);
 		}
 
+	/**
+	\brief Symmetric rank-2k update.
+	\param op Operation on both input.
+	\param alpha Scalar.
+	\param A Left side matrix.
+	\param B Right side matrix.
+	\param beta Scalar.
+	\param uplo Output fill mode.
+	\param C Output matrix.
+	
+	\f$ C = \alpha (A^{\mbox{op}} {B^{\mbox{op}}}^\intercal + B^{\mbox{op}} {A^{\mbox{op}}}^\intercal) + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
@@ -1420,6 +1814,16 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Symmetric rank-2k update.
+		\param op Operation on both input.
+		\param A Left side matrix.
+		\param B Right side matrix.
+		\param uplo Output fill mode.
+		\param C Output matrix.
+	
+		\f$ C = A^{\mbox{op}} {B^{\mbox{op}}}^\intercal + B^{\mbox{op}} {A^{\mbox{op}}}^\intercal \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1428,6 +1832,15 @@ namespace Kartet
 			syr2k(op, alpha, A, B, beta, uplo, C);
 		}
 
+		/**
+		\brief Symmetric rank-2k update.
+		\param A Left side matrix.
+		\param B Right side matrix.
+		\param uplo Output fill mode.
+		\param C Output matrix.
+	
+		\f$ C = A B^\intercal + B A^\intercal \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1436,6 +1849,22 @@ namespace Kartet
 			syr2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
+	/**
+	\brief Triangular matrix-matrix multiplication.
+	\param side Operation side.
+	\param alpha Scalar.
+	\param uplo Side mode of the triangular matrix.
+	\param diag Diagonal mode of the triangular matrix.
+	\param A Triangular matrix.
+	\param opa Operation on matrix A.
+	\param B Second matrix.
+	\param C Output matrix.
+
+	If side is set to left : 
+	\f$ C = \alpha A^{\mbox{opa}} B \f$
+	If side is set to right : 
+	\f$ C = \alpha B A^{\mbox{opa}} \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
 	{
@@ -1507,6 +1936,21 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Triangular matrix-matrix multiplication.
+		\param side Operation side.
+		\param uplo Side mode of the triangular matrix.
+		\param diag Diagonal mode of the triangular matrix.
+		\param A Triangular matrix.
+		\param opa Operation on matrix A.
+		\param B Second matrix.
+		\param C Output matrix.
+
+		If side is set to left : 
+		\f$ C = A^{\mbox{opa}} B \f$
+		If side is set to right : 
+		\f$ C = B A^{\mbox{opa}} \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
@@ -1514,6 +1958,20 @@ namespace Kartet
 			trmm(side, alpha, uplo, diag, A, opa, B, C);
 		}
 		
+		/**
+		\brief Triangular matrix-matrix multiplication.
+		\param side Operation side.
+		\param uplo Side mode of the triangular matrix.
+		\param diag Diagonal mode of the triangular matrix.
+		\param A Triangular matrix.
+		\param B Second matrix.
+		\param C Output matrix.
+
+		If side is set to left : 
+		\f$ C = A B \f$
+		If side is set to right : 
+		\f$ C = B A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
@@ -1521,6 +1979,21 @@ namespace Kartet
 			trmm(side, alpha, uplo, diag, A, OpNo, B, C);
 		}
 		
+	/**
+	\brief Solve triangular system with multiple left hand side.
+	\param side Side mode.
+	\param uplo Fill mode.
+	\param diag Diagonal type.
+	\param A Triangular matrix.
+	\param opa Operation on the matrix A.
+	\param alpha Scalar.
+	\param B Input left hand side, output right hand side.
+
+	If side is set to left : 
+	\f$ \alpha B = A^{\mbox{op}} B' \f$
+	If side is set to right : 
+	\f$ \alpha B = B' A^{\mbox{op}} \f$
+	**/
 	template<typename T, Location l, typename TAlpha>
 	__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, const Accessor<T,l>& B)
 	{
@@ -1590,6 +2063,20 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Solve triangular system with multiple left hand side.
+		\param side Side mode.
+		\param uplo Fill mode.
+		\param diag Diagonal type.
+		\param A Triangular matrix.
+		\param opa Operation on the matrix A.
+		\param B Input left hand side, output right hand side.
+
+		If side is set to left : 
+		\f$ B = A^{\mbox{op}} B' \f$
+		If side is set to right : 
+		\f$ B = B' A^{\mbox{op}} \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B)
 		{
@@ -1597,6 +2084,19 @@ namespace Kartet
 			trsm(side, uplo, diag, A, opa, alpha, B);
 		}
 
+		/**
+		\brief Solve triangular system with multiple left hand side.
+		\param side Side mode.
+		\param uplo Fill mode.
+		\param diag Diagonal type.
+		\param A Triangular matrix.
+		\param B Input left hand side, output right hand side.
+
+		If side is set to left : 
+		\f$ B = A B' \f$
+		If side is set to right : 
+		\f$ B = B' A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B)
 		{
@@ -1604,6 +2104,21 @@ namespace Kartet
 			trsm(side, uplo, diag, A, OpNo, alpha, B);
 		}
 
+	/**
+	\brief Hermitian matrix-matrix product.
+	\param side Side of the operation.
+	\param alpha Scalar.
+	\param uplo Fill mode.
+	\param A Hermitian matrix.
+	\param B Matrix.
+	\param beta Scalar.
+	\param C Output matrix.
+
+	If side is set to left : 
+	\f$ C = \alpha A B + \beta C \f$
+	If side is set to right : 
+	\f$ C = \alpha B A + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
 	{
@@ -1659,6 +2174,19 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian matrix-matrix product.
+		\param side Side of the operation.
+		\param uplo Fill mode.
+		\param A Hermitian matrix.
+		\param B Matrix.
+		\param C Output matrix.
+
+		If side is set to left : 
+		\f$ C = A B \f$
+		If side is set to right : 
+		\f$ C = B A \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
@@ -1667,6 +2195,17 @@ namespace Kartet
 			hemm(side, alpha, uplo, A, B, beta, C);
 		}
 
+	/**
+	\brief Hermitian rank-k update.
+	\param alpha Scalar.
+	\param A Matrix.
+	\param opa Operation applied to matrix A.
+	\param beta Scalar.
+	\param uplo Fill mode.
+	\param C Output matrix.
+
+	\f$ C = \alpha A^{\mbox{opa}} {A^{\mbox{opa}}}^+ + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
@@ -1722,6 +2261,15 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian rank-k update.
+		\param A Matrix.
+		\param opa Operation applied to matrix A.
+		\param uplo Fill mode.
+		\param C Output matrix.
+
+		\f$ C = A^{\mbox{opa}} {A^{\mbox{opa}}}^+ \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1730,6 +2278,14 @@ namespace Kartet
 			herk(alpha, A, opa, beta, uplo, C);
 		}
 
+		/**
+		\brief Hermitian rank-k update.
+		\param A Matrix.
+		\param uplo Fill mode.
+		\param C Output matrix.
+
+		\f$ C = A A^+ \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1738,6 +2294,18 @@ namespace Kartet
 			herk(alpha, A, OpNo, beta, uplo, C);
 		}		
 
+	/**
+	\brief Hermitian rank-2 update.
+	\param op Operation.
+	\param alpha Scalar.
+	\param A First matrix.
+	\param B Second matrix.
+	\param beta Scalar.
+	\param uplo Fill mode.
+	\param C Output matrix.
+
+	\f$ C = \alpha A^{\mbox{op}} {B^{\mbox{op}}}^+ + \alpha^* B^{\mbox{op}} {A^{\mbox{op}}}^+ + \beta C \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
 	{
@@ -1800,6 +2368,16 @@ namespace Kartet
 		}
 	}
 
+		/**
+		\brief Hermitian rank-2 update.
+		\param op Operation.
+		\param A First matrix.
+		\param B Second matrix.
+		\param uplo Fill mode.
+		\param C Output matrix.
+
+		\f$ C = A^{\mbox{op}} {B^{\mbox{op}}}^+ + \alpha^* B^{\mbox{op}} {A^{\mbox{op}}}^+ \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1808,6 +2386,15 @@ namespace Kartet
 			her2k(op, alpha, A, B, beta, uplo, C);
 		}
 
+		/**
+		\brief Hermitian rank-2 update.
+		\param A First matrix.
+		\param B Second matrix.
+		\param uplo Fill mode.
+		\param C Output matrix.
+
+		\f$ C = A B^+ + B A^+ \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
 		{
@@ -1816,6 +2403,18 @@ namespace Kartet
 			her2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
+	/**
+	\brief Matrix-matrix addition transposition.
+	\param alpha Scalar.
+	\param A Left side matrix.
+	\param opa Operation on matrix A.
+	\param beta Scalar.
+	\param B Right side matrix.
+	\param opb Operation on Matrix B.
+	\param C Output matrix.
+
+	\f$ C = \alpha A^{\mbox{opa}} + \beta B^{\mbox{opb}} \f$
+	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ void BLASContext::geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 	{
@@ -1857,22 +2456,52 @@ namespace Kartet
 		#endif
 	}
 
+		/**
+		\brief Matrix-matrix addition transposition.
+		\param A Left side matrix.
+		\param opa Operation on matrix A.
+		\param B Right side matrix.
+		\param opb Operation on Matrix B.
+		\param C Output matrix.
+
+		\f$ C = A^{\mbox{opa}} + B^{\mbox{opb}} \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
-				beta = complexCopy<T>(0);
+				beta = complexCopy<T>(1);
 			geam(alpha, A, opa, beta, B, opb, C);
 		}
 
+		/**
+		\brief Matrix-matrix addition transposition.
+		\param A Left side matrix.
+		\param B Right side matrix.
+		\param C Output matrix.
+
+		\f$ C = A + B \f$
+		**/
 		template<typename T, Location l>
 		__host__ void BLASContext::geam(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
-				beta = complexCopy<T>(0);
+				beta = complexCopy<T>(1);
 			geam(alpha, A, OpNo, beta, B, OpNo, C);
 		}
 
+	/**
+	\brief Diagonal matrix-matrix product.
+	\param side Side mode.
+	\param A First matrix.
+	\param x Vector used as diagonal matrix.
+	\param C Output matrix.
+	
+	If side is set to left : 
+	\f$ C = A \mbox{diag}(x) \f$
+	If side is set to right : 
+	\f$ C = \mbox{diag}(x) A \f$
+	**/
 	template<typename T, Location l>
 	__host__ void BLASContext::dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& C)
 	{

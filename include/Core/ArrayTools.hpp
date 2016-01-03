@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    ArrayTools.hpp
+	\brief   Array classes implementations.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_ARRAY_TOOLS__
 #define __KARTET_ARRAY_TOOLS__
 
@@ -1347,16 +1354,21 @@ namespace Kartet
 	}
 
 	/**
+	\related Kartet::Layout
 	\brief Write layout to ostream object (std::cout, std::cerr, etc.).
 	\param os std::ostream object to write to.
 	\param layout Layout object.
 
 	Example : 
+	\code
 	Layout l(3, 5, 7);
-	std;;cout << l << std::endl;
+	std::cout << l << std::endl;
+	\endcode
 
 	Output (strides are replaced by an underscore if elements are contiguous, and not printed if the layout is monolithic) : 
+	\code
 	['rows', 'columns', 'slices', 'sColumns', 'sSlices', 'offset']
+	\endcode
 
 	\return Reference to the modified std::ostream, for chain.
 	**/
@@ -2307,6 +2319,7 @@ namespace Kartet
 	}
 
 	/**
+	\related Kartet::Accessor
 	\brief Output accessor data on stream.
 	\param os Output stream (std::cout, std::cerr, etc.)
 	\param A Accessor object.
@@ -2316,8 +2329,8 @@ namespace Kartet
 	Kartet::Array<int> a(4, 4);
 	a = Kartet::IndexI() + Kartet::IndexJ();
 	std::cout << "Array data : " << a << std::endl;
-	std::cout << "Second vector : " << a.vector(1) << std::endl;
-	std::cout << "Last two vectors : " << a.vectors(2,2) << std::endl;
+	std::cout << "Second vector : " << a.column(1) << std::endl;
+	std::cout << "Last two vectors : " << a.columns(2,2) << std::endl;
 	\endcode
 
 	\return Output stream object for follow-up.

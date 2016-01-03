@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    Reduce.hpp
+	\brief   Reduction context definitions.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_REDUCE__
 #define __KARTET_REDUCE__
 
@@ -36,6 +43,20 @@
 
 namespace Kartet
 {
+	/**
+	\brief Reduction context class.
+
+	The reduction process is carried on the side of the data (see Kartet::Location).
+
+	A simple example : 
+	\code
+	Kartet::ReduceContext reduce;
+	Kartet::Array<float> A(8, 8);
+	A = Kartet::IndexI() + Kartet::IndexJ();
+	std::cout << "A = " << A << std::endl;
+	std::cout << "sum(A) = " << reduce.sum(A) << std::endl;
+	\endcode
+	**/
 	class ReduceContext
 	{
 		private :

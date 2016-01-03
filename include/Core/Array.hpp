@@ -312,11 +312,13 @@ namespace Kartet
 
 	/**
 	\brief Accessor to array data.
-	\param T Type of the array (either a primitive type or a complex type).
-	\param l Location of the data (see Kartet::Location).
+	\tparam T Type of the array (either a primitive type or a complex type).
+	\tparam l Location of the data (see Kartet::Location).
 
 	Defines a virtual array tied to some portion memory. Can be used to modify temporarily the layout of an array or access parts of it (R/W).
 	Can also be used as a proxy to memory space not managed by the library (no release will be performed).
+
+	See also \ref OperatorsGroup and \ref FunctionsGroup for available functions.
 	**/
 	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Accessor : public Layout
@@ -397,6 +399,30 @@ namespace Kartet
 				template<Location l2>
 				Accessor<T,l>& operator=(const Array<T,l2>& a);
 
+			// Compound assignment operator :
+				#define ACCESSOR_COMPOUND_ASSIGNMENT( operatorName ) \
+					template<typename TExpr> \
+					Accessor<T,l>& operatorName (const TExpr& expr); \
+					Accessor<T,l>& operatorName (const Accessor<T,l>& a); \
+					template<Location l2> \
+					Accessor<T,l>& operatorName (const Accessor<T,l2>& a); \
+					Accessor<T,l>& operatorName (const Array<T,l>& a); \
+					template<Location l2> \
+					Accessor<T,l>& operatorName (const Array<T,l2>& a);
+
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator+= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator-= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator*= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator/= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator%= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator&= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator|= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator^= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator<<= )
+				ACCESSOR_COMPOUND_ASSIGNMENT( operator>>= )
+
+				#undef ACCESSOR_COMPOUND_ASSIGNMENT
+
 			// Masked assignment : 
 				template<typename TExprMask, typename TExpr>
 				Accessor<T,l>& maskedAssignment(const TExprMask& exprMask, const TExpr& expr, cudaStream_t stream=NULL);
@@ -411,10 +437,10 @@ namespace Kartet
 
 	/**
 	\brief Array class.
-	\param T Type of the array (either a primitive type or a complex type).
-	\param l Location of the data (see Kartet::Location).
+	\tparam T Type of the array (either a primitive type or a complex type).
+	\tparam l Location of the data (see Kartet::Location).
 
-	Main array class.
+	Main array class. See also \ref OperatorsGroup and \ref FunctionsGroup for available functions.
 	**/
 	template<typename T, Location l=KARTET_DEFAULT_LOCATION>
 	class Array : public Accessor<T, l>
@@ -435,122 +461,146 @@ namespace Kartet
 			__host__ ~Array(void);
 
 			// From Accessor<T,l>::Layout
-			using Accessor<T,l>::Layout::numElements;
-			using Accessor<T,l>::Layout::numElementsPerSlice;
-			using Accessor<T,l>::Layout::numElementsPerFragment;
-			using Accessor<T,l>::Layout::numRows;
-			using Accessor<T,l>::Layout::numColumns;
-			using Accessor<T,l>::Layout::numSlices;
-			using Accessor<T,l>::Layout::numFragments;
-			using Accessor<T,l>::Layout::width;
-			using Accessor<T,l>::Layout::height;
-			using Accessor<T,l>::Layout::depth;
-			using Accessor<T,l>::Layout::columnsStride;
-			using Accessor<T,l>::Layout::slicesStride;
-			using Accessor<T,l>::Layout::offset;
-			using Accessor<T,l>::Layout::setOffset;
-			#ifdef __CUDACC__
-			using Accessor<T,l>::Layout::dimensions;
-			using Accessor<T,l>::strides;
-			#endif
-			using Accessor<T,l>::Layout::isMonolithic;
-			using Accessor<T,l>::Layout::isSliceMonolithic;
-			using Accessor<T,l>::Layout::reinterpretLayout;
-			using Accessor<T,l>::Layout::flatten;
-			using Accessor<T,l>::Layout::stretch;
-			using Accessor<T,l>::Layout::vectorize;
-			using Accessor<T,l>::Layout::splitLayoutColumns;
-			using Accessor<T,l>::Layout::splitLayoutSlices;
-			using Accessor<T,l>::Layout::splitLayoutSubArrays;
-			using Accessor<T,l>::Layout::sameLayoutAs;
-			using Accessor<T,l>::Layout::sameSliceLayoutAs;
-			#ifdef __CUDACC__
-			using Accessor<T,l>::Layout::getI;
-			using Accessor<T,l>::Layout::getJ;
-			using Accessor<T,l>::Layout::getK;
-			#endif
-			using Accessor<T,l>::Layout::getINorm;
-			using Accessor<T,l>::Layout::getJNorm;
-			using Accessor<T,l>::Layout::getKNorm;
-			using Accessor<T,l>::Layout::getINormIncl;
-			using Accessor<T,l>::Layout::getJNormIncl;
-			using Accessor<T,l>::Layout::getKNormIncl;
-			using Accessor<T,l>::Layout::getIClamped;
-			using Accessor<T,l>::Layout::getJClamped;
-			using Accessor<T,l>::Layout::getKClamped;
-			using Accessor<T,l>::Layout::getIWrapped;
-			using Accessor<T,l>::Layout::getJWrapped;
-			using Accessor<T,l>::Layout::getKWrapped;
-			using Accessor<T,l>::Layout::getIndex;
-			using Accessor<T,l>::Layout::getPosition;
-			using Accessor<T,l>::Layout::getPositionFFTShift;
-			using Accessor<T,l>::Layout::getPositionFFTInverseShift;
-			using Accessor<T,l>::Layout::getPositionClampedToEdge;
-			using Accessor<T,l>::Layout::getPositionWarped;
-			using Accessor<T,l>::Layout::isInside;
-			using Accessor<T,l>::Layout::isRowValid;
-			using Accessor<T,l>::Layout::isColumnValid;
-			using Accessor<T,l>::Layout::isSliceValid;
-			using Accessor<T,l>::Layout::unpackIndex;
-			using Accessor<T,l>::Layout::unpackPosition;
-			using Accessor<T,l>::Layout::moveToNext;
-			#ifdef __CUDACC__
-			using Accessor<T,l>::Layout::blockSize;
-			using Accessor<T,l>::Layout::numBlocks;
-			#endif
-			using Accessor<T,l>::Layout::singleScan;
-			using Accessor<T,l>::Layout::dualScan;
-			using Accessor<T,l>::Layout::columnLayout;
-			using Accessor<T,l>::Layout::sliceLayout;
-			using Accessor<T,l>::Layout::monolithicLayout;
+				using Accessor<T,l>::Layout::numElements;
+				using Accessor<T,l>::Layout::numElementsPerSlice;
+				using Accessor<T,l>::Layout::numElementsPerFragment;
+				using Accessor<T,l>::Layout::numRows;
+				using Accessor<T,l>::Layout::numColumns;
+				using Accessor<T,l>::Layout::numSlices;
+				using Accessor<T,l>::Layout::numFragments;
+				using Accessor<T,l>::Layout::width;
+				using Accessor<T,l>::Layout::height;
+				using Accessor<T,l>::Layout::depth;
+				using Accessor<T,l>::Layout::columnsStride;
+				using Accessor<T,l>::Layout::slicesStride;
+				using Accessor<T,l>::Layout::offset;
+				using Accessor<T,l>::Layout::setOffset;
+				#ifdef __CUDACC__
+				using Accessor<T,l>::Layout::dimensions;
+				using Accessor<T,l>::strides;
+				#endif
+				using Accessor<T,l>::Layout::isMonolithic;
+				using Accessor<T,l>::Layout::isSliceMonolithic;
+				using Accessor<T,l>::Layout::reinterpretLayout;
+				using Accessor<T,l>::Layout::flatten;
+				using Accessor<T,l>::Layout::stretch;
+				using Accessor<T,l>::Layout::vectorize;
+				using Accessor<T,l>::Layout::splitLayoutColumns;
+				using Accessor<T,l>::Layout::splitLayoutSlices;
+				using Accessor<T,l>::Layout::splitLayoutSubArrays;
+				using Accessor<T,l>::Layout::sameLayoutAs;
+				using Accessor<T,l>::Layout::sameSliceLayoutAs;
+				#ifdef __CUDACC__
+				using Accessor<T,l>::Layout::getI;
+				using Accessor<T,l>::Layout::getJ;
+				using Accessor<T,l>::Layout::getK;
+				#endif
+				using Accessor<T,l>::Layout::getINorm;
+				using Accessor<T,l>::Layout::getJNorm;
+				using Accessor<T,l>::Layout::getKNorm;
+				using Accessor<T,l>::Layout::getINormIncl;
+				using Accessor<T,l>::Layout::getJNormIncl;
+				using Accessor<T,l>::Layout::getKNormIncl;
+				using Accessor<T,l>::Layout::getIClamped;
+				using Accessor<T,l>::Layout::getJClamped;
+				using Accessor<T,l>::Layout::getKClamped;
+				using Accessor<T,l>::Layout::getIWrapped;
+				using Accessor<T,l>::Layout::getJWrapped;
+				using Accessor<T,l>::Layout::getKWrapped;
+				using Accessor<T,l>::Layout::getIndex;
+				using Accessor<T,l>::Layout::getPosition;
+				using Accessor<T,l>::Layout::getPositionFFTShift;
+				using Accessor<T,l>::Layout::getPositionFFTInverseShift;
+				using Accessor<T,l>::Layout::getPositionClampedToEdge;
+				using Accessor<T,l>::Layout::getPositionWarped;
+				using Accessor<T,l>::Layout::isInside;
+				using Accessor<T,l>::Layout::isRowValid;
+				using Accessor<T,l>::Layout::isColumnValid;
+				using Accessor<T,l>::Layout::isSliceValid;
+				using Accessor<T,l>::Layout::unpackIndex;
+				using Accessor<T,l>::Layout::unpackPosition;
+				using Accessor<T,l>::Layout::moveToNext;
+				#ifdef __CUDACC__
+				using Accessor<T,l>::Layout::blockSize;
+				using Accessor<T,l>::Layout::numBlocks;
+				#endif
+				using Accessor<T,l>::Layout::singleScan;
+				using Accessor<T,l>::Layout::dualScan;
+				using Accessor<T,l>::Layout::columnLayout;
+				using Accessor<T,l>::Layout::sliceLayout;
+				using Accessor<T,l>::Layout::monolithicLayout;
 
 			// From Accessor<T,l>
-			using Accessor<T,l>::location;
-			using Accessor<T,l>::dataPtr;
-			using Accessor<T,l>::size;
-			#ifdef __CUDACC__
-			using Accessor<T,l>::data;
-			using Accessor<T,l>::dataInSlice;
-			using Accessor<T,l>::dataFFTShift;
-			using Accessor<T,l>::dataFFTInverseShift;
-			#endif
-			using Accessor<T,l>::getData;
-			using Accessor<T,l>::setData;
-			using Accessor<T,l>::readFromStream;
-			using Accessor<T,l>::readFromFile;
-			using Accessor<T,l>::writeToStream;
-			using Accessor<T,l>::writeToFile;
-			using Accessor<T,l>::layout;
-			using Accessor<T,l>::element;
-			using Accessor<T,l>::elements;
-			using Accessor<T,l>::column;
-			using Accessor<T,l>::endColumn;
-			using Accessor<T,l>::columns;
-			using Accessor<T,l>::slice;
-			using Accessor<T,l>::endSlice;
-			using Accessor<T,l>::slices;
-			using Accessor<T,l>::subArray;
-			using Accessor<T,l>::flattened;
-			using Accessor<T,l>::stretched;
-			using Accessor<T,l>::vectorized;
-			using Accessor<T,l>::splitColumns;
-			using Accessor<T,l>::splitSlices;
-			using Accessor<T,l>::splitSubArrays;
-			using Accessor<T,l>::assign;
-			using Accessor<T,l>::maskedAssignment;
+				using Accessor<T,l>::location;
+				using Accessor<T,l>::dataPtr;
+				using Accessor<T,l>::size;
+				#ifdef __CUDACC__
+				using Accessor<T,l>::data;
+				using Accessor<T,l>::dataInSlice;
+				using Accessor<T,l>::dataFFTShift;
+				using Accessor<T,l>::dataFFTInverseShift;
+				#endif
+				using Accessor<T,l>::getData;
+				using Accessor<T,l>::setData;
+				using Accessor<T,l>::readFromStream;
+				using Accessor<T,l>::readFromFile;
+				using Accessor<T,l>::writeToStream;
+				using Accessor<T,l>::writeToFile;
+				using Accessor<T,l>::layout;
+				using Accessor<T,l>::element;
+				using Accessor<T,l>::elements;
+				using Accessor<T,l>::column;
+				using Accessor<T,l>::endColumn;
+				using Accessor<T,l>::columns;
+				using Accessor<T,l>::slice;
+				using Accessor<T,l>::endSlice;
+				using Accessor<T,l>::slices;
+				using Accessor<T,l>::subArray;
+				using Accessor<T,l>::flattened;
+				using Accessor<T,l>::stretched;
+				using Accessor<T,l>::vectorized;
+				using Accessor<T,l>::splitColumns;
+				using Accessor<T,l>::splitSlices;
+				using Accessor<T,l>::splitSubArrays;
+				using Accessor<T,l>::assign;
+				using Accessor<T,l>::maskedAssignment;
 
 			// Specifics :
-			Accessor<T,l>& accessor(void);
-			const Accessor<T,l>& accessor(void) const;
+				Accessor<T,l>& accessor(void);
+				const Accessor<T,l>& accessor(void) const;
 
-			template<typename TExpr>
-			Array<T,l>& operator=(const TExpr& expr);
-			Array<T,l>& operator=(const Accessor<T,l>& a);
-			template<Location l2>
-			Array<T,l>& operator=(const Accessor<T,l2>& a);
-			Array<T,l>& operator=(const Array<T,l>& a);
-			template<Location l2>
-			Array<T,l>& operator=(const Array<T,l2>& a);
+				template<typename TExpr>
+				Array<T,l>& operator=(const TExpr& expr);
+				Array<T,l>& operator=(const Accessor<T,l>& a);
+				template<Location l2>
+				Array<T,l>& operator=(const Accessor<T,l2>& a);
+				Array<T,l>& operator=(const Array<T,l>& a);
+				template<Location l2>
+				Array<T,l>& operator=(const Array<T,l2>& a);
+
+			// Compound assignment operator :
+				#define ARRAY_COMPOUND_ASSIGNMENT( operatorName ) \
+					template<typename TExpr> \
+					Array<T,l>& operatorName (const TExpr& expr); \
+					Array<T,l>& operatorName (const Accessor<T,l>& a); \
+					template<Location l2> \
+					Array<T,l>& operatorName (const Accessor<T,l2>& a); \
+					Array<T,l>& operatorName (const Array<T,l>& a); \
+					template<Location l2> \
+					Array<T,l>& operatorName (const Array<T,l2>& a);
+
+				ARRAY_COMPOUND_ASSIGNMENT( operator+= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator-= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator*= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator/= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator%= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator&= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator|= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator^= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator<<= )
+				ARRAY_COMPOUND_ASSIGNMENT( operator>>= )
+
+				#undef ARRAY_COMPOUND_ASSIGNMENT
 
 			__host__ static Array<T,l>* buildFromStream(std::istream& stream, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
 			__host__ static Array<T,l>* buildFromFile(const std::string& filename, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
