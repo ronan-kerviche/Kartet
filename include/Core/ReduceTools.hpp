@@ -524,9 +524,10 @@ namespace Kartet
 	The operator is a binary operator, usually defined via the library's macros.
 
 	\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+	\return The output accessor.
 	**/
 	template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
-	__host__ void ReduceContext::reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
+	__host__ Accessor<TOut,l>& ReduceContext::reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, Accessor<TOut,l>& output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		StaticAssert<ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide>(); // The expression must be on the same side than the output.
@@ -650,6 +651,8 @@ namespace Kartet
 				output.moveToNext(io, jo, ko);
 			}
 		}
+		// Return output accessor : 
+		return output;
 	}
 
 	// Specific tools :
@@ -659,12 +662,13 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::minBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceBlock<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
+			return reduceBlock<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
 		}
 
 		/**
@@ -672,11 +676,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::minBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			minBlock(accessor.layout(), accessor, output);
+			return minBlock(accessor.layout(), accessor, output);
 		}
 
 		/**
@@ -685,13 +690,14 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 			ReturnType defaultValue = std::numeric_limits<ReturnType>::is_integer ? std::numeric_limits<ReturnType>::min() : -std::numeric_limits<ReturnType>::max();
-			reduceBlock<BinOp_max>(layout, expr, defaultValue, output);
+			return reduceBlock<BinOp_max>(layout, expr, defaultValue, output);
 		}
 
 		/**
@@ -699,11 +705,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::maxBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			maxBlock(accessor.layout(), accessor, output);
+			return maxBlock(accessor.layout(), accessor, output);
 		}
 
 		/**
@@ -712,12 +719,13 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceBlock<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
+			return reduceBlock<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
 		}
 
 		/**
@@ -725,11 +733,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::sumBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			sumBlock(accessor.layout(), accessor, output);
+			return sumBlock(accessor.layout(), accessor, output);
 		}
 
 		/**
@@ -738,12 +747,13 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			reduceBlock<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
+			return reduceBlock<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
 		}
 
 		/**
@@ -751,11 +761,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::prodBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			prodBlock(accessor.layout(), accessor, output);
+			return prodBlock(accessor.layout(), accessor, output);
 		}
 
 		/**
@@ -764,11 +775,12 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::allBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
-			reduceBlock<BinOp_And>(layout, expr, true, output);
+			return reduceBlock<BinOp_And>(layout, expr, true, output);
 		}
 
 		/**
@@ -776,11 +788,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::allBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			allBlock(accessor.layout(), accessor, output);
+			return allBlock(accessor.layout(), accessor, output);
 		}
 
 		/**
@@ -789,11 +802,12 @@ namespace Kartet
 		\param expr Expression.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ void ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
 		{
-			reduceBlock<BinOp_Or>(layout, expr, false, output);
+			return reduceBlock<BinOp_Or>(layout, expr, false, output);
 		}
 
 		/**
@@ -801,11 +815,12 @@ namespace Kartet
 		\param accessor Input data.
 		\param output Resulting data (written).
 		\throw Kartet::InvalidOperation If the input and output layouts are not congruent.
+		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ void ReduceContext::anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
+		__host__ Accessor<TOut,l>& ReduceContext::anyBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
 		{
-			anyBlock(accessor.layout(), accessor, output);
+			return anyBlock(accessor.layout(), accessor, output);
 		}
 } // namespace Kartet
 

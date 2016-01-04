@@ -48,13 +48,25 @@ namespace Kartet
 
 	The reduction process is carried on the side of the data (see Kartet::Location).
 
-	A simple example : 
+	A simple example of global reduction : 
 	\code
 	Kartet::ReduceContext reduce;
 	Kartet::Array<float> A(8, 8);
 	A = Kartet::IndexI() + Kartet::IndexJ();
 	std::cout << "A = " << A << std::endl;
 	std::cout << "sum(A) = " << reduce.sum(A) << std::endl;
+	\endcode
+
+	An example of block reduction : 
+	\code
+	Kartet::ReduceContext reduce;
+	Kartet::Array<float> A(8, 8), B(2, 2);
+	A = Kartet::IndexI() + Kartet::IndexJ();
+	Kartet::ReduceContext reduce;
+	reduce.sumBlock(A, B); 			// Will reduce each 4x4 block to a single value.
+	// B = reduce.sumBlock(A, B) - 48;	// We could use the output directly.
+	std::cout << "A = " << A << std::endl;
+	std::cout << "B = " << B << std::endl;
 	\endcode
 	**/
 	class ReduceContext
@@ -102,31 +114,31 @@ namespace Kartet
 			__host__ bool any(const Accessor<T,l>& accessor);
 
 			template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
-			__host__ void reduceBlock(const Layout& layout, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& minBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& minBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& maxBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& maxBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& sumBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& sumBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& prodBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& prodBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& allBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& allBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ void anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& anyBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ void anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
+			__host__ Accessor<TOut,l>& anyBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
 	};
 
 } // namespace Kartet

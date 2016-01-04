@@ -334,7 +334,6 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
-
 		return res;
 	}
 
@@ -366,7 +365,6 @@ namespace Kartet
 		#else
 			throw NotSupported;
 		#endif
-
 		return res;
 	}
 
@@ -478,7 +476,6 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
-
 		return res;
 	}
 
@@ -527,7 +524,6 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
-
 		return res;
 	}
 
@@ -539,11 +535,12 @@ namespace Kartet
 	\param x Vector.
 	\param beta Scalar.
 	\param y Output vector.
+	\return Accessor to result.
 
 	\f$ y = \alpha A^{\mbox{op}} x + \beta y \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::gemv(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
+	__host__ Accessor<T,l>& BLASContext::gemv(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -615,6 +612,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return y;
 	}
 
 		/**
@@ -623,15 +621,16 @@ namespace Kartet
 		\param op Operation.
 		\param x Vector.
 		\param y Output vector.
+		\return Accessor to result.
 
 		\f$ y = A^{\mbox{op}} x\f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::gemv(const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::gemv(const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			gemv(alpha, A, op, x, beta, y);
+			return gemv(alpha, A, op, x, beta, y);
 		}
 
 		/**
@@ -639,15 +638,16 @@ namespace Kartet
 		\param A matrix.
 		\param x Vector.
 		\param y Output vector.
+		\return Accessor to result.
 
 		\f$ y = A x \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::gemv(const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::gemv(const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			gemv(alpha, A, OpNo, x, beta, y);
+			return gemv(alpha, A, OpNo, x, beta, y);
 		}
 
 	/**
@@ -657,6 +657,7 @@ namespace Kartet
 	\param y Right side vector.
 	\param A output matrix.
 	\param conjugate If true then performs hermitian rank one update.
+	\return Accessor to result.
 
 	If conjugate is false : 
 	\f$ A = \alpha x y^{\intercal} + A \f$
@@ -665,7 +666,7 @@ namespace Kartet
 	\f$ A = \alpha x y^{H} + A \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	void BLASContext::ger(const TAlpha& alpha, const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
+	Accessor<T,l>& BLASContext::ger(const TAlpha& alpha, const Accessor<T,l>& x, const Accessor<T,l>& y, Accessor<T,l>& A, bool conjugate)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -741,6 +742,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return A;
 	}
 
 		/**
@@ -749,6 +751,7 @@ namespace Kartet
 		\param y Right side vector.
 		\param A output matrix.
 		\param conjugate If true then performs hermitian rank one update.
+		\return Accessor to result.
 
 		If conjugate is false : 
 		\f$ A = \alpha x y^{\intercal} + A \f$
@@ -757,10 +760,10 @@ namespace Kartet
 		\f$ A = \alpha x y^{H} + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void ger(const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
+		__host__ Accessor<T,l>& ger(const Accessor<T,l>& x, const Accessor<T,l>& y, Accessor<T,l>& A, bool conjugate)
 		{
 			const T alpha = complexCopy<T>(1);
-			ger(alpha, x, y, A, conjugate);
+			return ger(alpha, x, y, A, conjugate);
 		}
 
 	/**
@@ -771,11 +774,12 @@ namespace Kartet
 	\param x Vector.
 	\param beta Scalar.
 	\param y Output vector.
+	\return Accessor to result.
 
 	\f$ y = \alpha A x + \beta y \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::symv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
+	__host__ Accessor<T,l>& BLASContext::symv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -837,6 +841,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return y;
 	}
 
 		/**
@@ -845,15 +850,16 @@ namespace Kartet
 		\param A Symmetric matrix.
 		\param x Vector.
 		\param y Output vector.
+		\return Accessor to result.
 
 		\f$ y =  A x \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::symv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::symv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			symv(alpha, uplo, A, x, beta, y);
+			return symv(alpha, uplo, A, x, beta, y);
 		}
 	
 	/**
@@ -862,11 +868,12 @@ namespace Kartet
 	\param uplo Fill mode.
 	\param A Symmetric matrix (input and output).
 	\param x Vector.
+	\return Accessor to result.
 
 	\f$ A = \alpha x x^\intercal + A \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::syr(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
+	__host__ Accessor<T,l>& BLASContext::syr(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -929,6 +936,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return A;
 	}
 
 		/**
@@ -936,14 +944,15 @@ namespace Kartet
 		\param uplo Fill mode.
 		\param A Symmetric matrix (input and output).
 		\param x Vector.
+		\return Accessor to result.
 
 		\f$ A = x x^\intercal + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syr(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
+		__host__ Accessor<T,l>& BLASContext::syr(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
 			const T alpha = complexCopy<T>(1);
-			syr(alpha, uplo, A, x);
+			return syr(alpha, uplo, A, x);
 		}
 
 	/**
@@ -953,11 +962,12 @@ namespace Kartet
 	\param A Symmetric matrix (and output).
 	\param x First vector.
 	\param y Second vector.
+	\return Accessor to result.
 
 	\f$ A = \alpha(xy^\intercal + yx^\intercal) + A \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::syr2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+	__host__ Accessor<T,l>& BLASContext::syr2(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -1014,6 +1024,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return A;
 	}
 
 		/**
@@ -1022,14 +1033,15 @@ namespace Kartet
 		\param A Symmetric matrix (and output).
 		\param x First vector.
 		\param y Second vector.
+		\return Accessor to result.
 
 		\f$ A = (xy^\intercal + yx^\intercal) + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syr2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::syr2(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1);
-			syr2(alpha, uplo, A, x, y);
+			return syr2(alpha, uplo, A, x, y);
 		}
 
 	/**
@@ -1039,11 +1051,12 @@ namespace Kartet
 	\param A Triangular matrix.
 	\param op Operation.
 	\param x Input/output vector.
+	\return Accessor to result.
 
 	\f$ x' = A^{\mbox{op}} x \f$
 	**/
 	template<typename T, Location l>
-	__host__ void BLASContext::trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
+	__host__ Accessor<T,l>& BLASContext::trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -1082,6 +1095,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return x;
 	}
 
 	/**
@@ -1091,11 +1105,12 @@ namespace Kartet
 	\param A Triangular matrix.
 	\param op Operation.
 	\param x Input/output vector.
+	\return Accessor to result.
 
 	\f$ x = A^{\mbox{op}} x' \f$
 	**/
 	template<typename T, Location l>
-	__host__ void BLASContext::trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x)
+	__host__ Accessor<T,l>& BLASContext::trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -1134,6 +1149,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return x;
 	}
 
 	/**
@@ -1144,11 +1160,12 @@ namespace Kartet
 	\param x Vector.
 	\param beta Scalar.
 	\param y Output vector.
+	\return Accessor to result.
 
 	\f$ y = \alpha A x + \beta y \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y)
+	__host__ Accessor<T,l>& BLASContext::hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1196,6 +1213,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return y;
 	}
 
 		/**
@@ -1204,15 +1222,16 @@ namespace Kartet
 		\param A Hermitian matrix.
 		\param x Vector.
 		\param y Output vector.
+		\return Accessor to result.
 
 		\f$ y = A x + y \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			hemv(alpha, uplo, A, x, beta, y);
+			return hemv(alpha, uplo, A, x, beta, y);
 		}
 
 	/**
@@ -1221,11 +1240,12 @@ namespace Kartet
 	\param uplo Fill mode.
 	\param A An hermitian matrix (input and output).
 	\param x Vector.
+	\return Accessor to result.
 
 	\f$ A = \alpha x x^{\mbox{H}} + A \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::her(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
+	__host__ Accessor<T,l>& BLASContext::her(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1269,6 +1289,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return A;
 	}
 
 		/**
@@ -1276,14 +1297,15 @@ namespace Kartet
 		\param uplo Fill mode.
 		\param A An hermitian matrix (input and output).
 		\param x Vector.
+		\return Accessor to result.
 
 		\f$ A = x x^{\mbox{H}} + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::her(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x)
+		__host__ Accessor<T,l>& BLASContext::her(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x)
 		{
 			const T alpha = complexCopy<T>(1);
-			her(alpha, uplo, A, x);
+			return her(alpha, uplo, A, x);
 		}
 
 	/**
@@ -1293,11 +1315,12 @@ namespace Kartet
 	\param A An hermitian matrix (input and output).
 	\param x First vector.
 	\param y Second vector.
+	\return Accessor to result.
 
 	\f$ A = \alpha x y^{\mbox{H}} + \alpha^* y x^{\mbox{H}} + A \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::her2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+	__host__ Accessor<T,l>& BLASContext::her2(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -1342,6 +1365,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return A;
 	}
 
 		/**
@@ -1350,14 +1374,15 @@ namespace Kartet
 		\param A An hermitian matrix (input and output).
 		\param x First vector.
 		\param y Second vector.
+		\return Accessor to result.
 
 		\f$ A = x y^{\mbox{H}} + \alpha^* y x^{\mbox{H}} + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::her2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
+		__host__ Accessor<T,l>& BLASContext::her2(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y)
 		{
 			const T alpha = complexCopy<T>(1);
-			her2(alpha, uplo, A, x, y);
+			return her2(alpha, uplo, A, x, y);
 		}
 
 	/**
@@ -1369,11 +1394,12 @@ namespace Kartet
 	\param opb Operation on right side.
 	\param beta Scalar.
 	\param C Output matrix.
+	\return Accessor to result.
 	
 	\f$ C = \alpha A^{\mbox{opa}} B^{\mbox{opb}} + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1446,6 +1472,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -1455,15 +1482,16 @@ namespace Kartet
 		\param B Right side matrix.
 		\param opb Operation on right side.
 		\param C Output matrix.
+		\return Accessor to result.
 	
 		\f$ C = A^{\mbox{opa}} B^{\mbox{opb}}\f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			gemm(alpha, A, opa, B, opb, beta, C);
+			return gemm(alpha, A, opa, B, opb, beta, C);
 		}
 
 		/**
@@ -1471,15 +1499,16 @@ namespace Kartet
 		\param A Left side matrix.
 		\param B Right side matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 	
 		\f$ C = A B \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			gemm(alpha, A, OpNo, B, OpNo, beta, C);
+			return gemm(alpha, A, OpNo, B, OpNo, beta, C);
 		}
 
 	/**
@@ -1491,6 +1520,7 @@ namespace Kartet
 	\param B Matrix.
 	\param beta Scalar.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	If side is left : 
 	\f$ C = \alpha A B + \beta C \f$
@@ -1498,7 +1528,7 @@ namespace Kartet
 	\f$ C = \alpha B A + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1573,6 +1603,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -1582,6 +1613,7 @@ namespace Kartet
 		\param A Symmetric matrix.
 		\param B Matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		If side is left : 
 		\f$ C = A B \f$
@@ -1589,11 +1621,11 @@ namespace Kartet
 		\f$ C = B A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			symm(side, alpha, uplo, A, B, beta, C);
+			return symm(side, alpha, uplo, A, B, beta, C);
 		}
 
 	/**
@@ -1604,11 +1636,12 @@ namespace Kartet
 	\param beta Scalar.
 	\param uplo Output fill mode.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	\f$ C = \alpha A^{\mbox{opa}} {A^{\mbox{opa}}}^\intercal + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1683,6 +1716,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -1691,15 +1725,16 @@ namespace Kartet
 		\param opa Operation on matrix A.
 		\param uplo Output fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A^{\mbox{opa}} {A^{\mbox{opa}}}^\intercal \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			syrk(alpha, A, opa, beta, uplo, C);
+			return syrk(alpha, A, opa, beta, uplo, C);
 		}
 
 		/**
@@ -1707,15 +1742,16 @@ namespace Kartet
 		\param A Matrix.
 		\param uplo Output fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A A^\intercal \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syrk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::syrk(const Accessor<T,l>& A, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			syrk(alpha, A, OpNo, beta, uplo, C);
+			return syrk(alpha, A, OpNo, beta, uplo, C);
 		}
 
 	/**
@@ -1727,11 +1763,12 @@ namespace Kartet
 	\param beta Scalar.
 	\param uplo Output fill mode.
 	\param C Output matrix.
+	\return Accessor to result.
 	
 	\f$ C = \alpha (A^{\mbox{op}} {B^{\mbox{op}}}^\intercal + B^{\mbox{op}} {A^{\mbox{op}}}^\intercal) + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1812,6 +1849,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -1821,15 +1859,16 @@ namespace Kartet
 		\param B Right side matrix.
 		\param uplo Output fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 	
 		\f$ C = A^{\mbox{op}} {B^{\mbox{op}}}^\intercal + B^{\mbox{op}} {A^{\mbox{op}}}^\intercal \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			syr2k(op, alpha, A, B, beta, uplo, C);
+			return syr2k(op, alpha, A, B, beta, uplo, C);
 		}
 
 		/**
@@ -1838,15 +1877,16 @@ namespace Kartet
 		\param B Right side matrix.
 		\param uplo Output fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 	
 		\f$ C = A B^\intercal + B A^\intercal \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			syr2k(OpNo, alpha, A, B, beta, uplo, C);
+			return syr2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
 	/**
@@ -1859,6 +1899,7 @@ namespace Kartet
 	\param opa Operation on matrix A.
 	\param B Second matrix.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	If side is set to left : 
 	\f$ C = \alpha A^{\mbox{opa}} B \f$
@@ -1866,7 +1907,7 @@ namespace Kartet
 	\f$ C = \alpha B A^{\mbox{opa}} \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -1934,6 +1975,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -1945,6 +1987,7 @@ namespace Kartet
 		\param opa Operation on matrix A.
 		\param B Second matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		If side is set to left : 
 		\f$ C = A^{\mbox{opa}} B \f$
@@ -1952,10 +1995,10 @@ namespace Kartet
 		\f$ C = B A^{\mbox{opa}} \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1);
-			trmm(side, alpha, uplo, diag, A, opa, B, C);
+			return trmm(side, alpha, uplo, diag, A, opa, B, C);
 		}
 		
 		/**
@@ -1966,6 +2009,7 @@ namespace Kartet
 		\param A Triangular matrix.
 		\param B Second matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		If side is set to left : 
 		\f$ C = A B \f$
@@ -1973,10 +2017,10 @@ namespace Kartet
 		\f$ C = B A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1);
-			trmm(side, alpha, uplo, diag, A, OpNo, B, C);
+			return trmm(side, alpha, uplo, diag, A, OpNo, B, C);
 		}
 		
 	/**
@@ -1988,6 +2032,7 @@ namespace Kartet
 	\param opa Operation on the matrix A.
 	\param alpha Scalar.
 	\param B Input left hand side, output right hand side.
+	\return Accessor to result.
 
 	If side is set to left : 
 	\f$ \alpha B = A^{\mbox{op}} B' \f$
@@ -1995,7 +2040,7 @@ namespace Kartet
 	\f$ \alpha B = B' A^{\mbox{op}} \f$
 	**/
 	template<typename T, Location l, typename TAlpha>
-	__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, const Accessor<T,l>& B)
+	__host__ Accessor<T,l>& BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, Accessor<T,l>& B)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
@@ -2061,6 +2106,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return B;
 	}
 
 		/**
@@ -2071,6 +2117,7 @@ namespace Kartet
 		\param A Triangular matrix.
 		\param opa Operation on the matrix A.
 		\param B Input left hand side, output right hand side.
+		\return Accessor to result.
 
 		If side is set to left : 
 		\f$ B = A^{\mbox{op}} B' \f$
@@ -2078,10 +2125,10 @@ namespace Kartet
 		\f$ B = B' A^{\mbox{op}} \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B)
+		__host__ Accessor<T,l>& BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, Accessor<T,l>& B)
 		{
 			const T alpha = complexCopy<T>(1);
-			trsm(side, uplo, diag, A, opa, alpha, B);
+			return trsm(side, uplo, diag, A, opa, alpha, B);
 		}
 
 		/**
@@ -2091,6 +2138,7 @@ namespace Kartet
 		\param diag Diagonal type.
 		\param A Triangular matrix.
 		\param B Input left hand side, output right hand side.
+		\return Accessor to result.
 
 		If side is set to left : 
 		\f$ B = A B' \f$
@@ -2098,10 +2146,10 @@ namespace Kartet
 		\f$ B = B' A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B)
+		__host__ Accessor<T,l>& BLASContext::trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, Accessor<T,l>& B)
 		{
 			const T alpha = complexCopy<T>(1);
-			trsm(side, uplo, diag, A, OpNo, alpha, B);
+			return trsm(side, uplo, diag, A, OpNo, alpha, B);
 		}
 
 	/**
@@ -2113,6 +2161,7 @@ namespace Kartet
 	\param B Matrix.
 	\param beta Scalar.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	If side is set to left : 
 	\f$ C = \alpha A B + \beta C \f$
@@ -2120,7 +2169,7 @@ namespace Kartet
 	\f$ C = \alpha B A + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -2172,6 +2221,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -2181,6 +2231,7 @@ namespace Kartet
 		\param A Hermitian matrix.
 		\param B Matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		If side is set to left : 
 		\f$ C = A B \f$
@@ -2188,11 +2239,11 @@ namespace Kartet
 		\f$ C = B A \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			hemm(side, alpha, uplo, A, B, beta, C);
+			return hemm(side, alpha, uplo, A, B, beta, C);
 		}
 
 	/**
@@ -2203,11 +2254,12 @@ namespace Kartet
 	\param beta Scalar.
 	\param uplo Fill mode.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	\f$ C = \alpha A^{\mbox{opa}} {A^{\mbox{opa}}}^+ + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -2259,6 +2311,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -2267,15 +2320,16 @@ namespace Kartet
 		\param opa Operation applied to matrix A.
 		\param uplo Fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A^{\mbox{opa}} {A^{\mbox{opa}}}^+ \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			herk(alpha, A, opa, beta, uplo, C);
+			return herk(alpha, A, opa, beta, uplo, C);
 		}
 
 		/**
@@ -2283,15 +2337,16 @@ namespace Kartet
 		\param A Matrix.
 		\param uplo Fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A A^+ \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::herk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::herk(const Accessor<T,l>& A, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			herk(alpha, A, OpNo, beta, uplo, C);
+			return herk(alpha, A, OpNo, beta, uplo, C);
 		}		
 
 	/**
@@ -2303,11 +2358,12 @@ namespace Kartet
 	\param beta Scalar.
 	\param uplo Fill mode.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	\f$ C = \alpha A^{\mbox{op}} {B^{\mbox{op}}}^+ + \alpha^* B^{\mbox{op}} {A^{\mbox{op}}}^+ + \beta C \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TYPE_MUST_BE_COMPLEX
@@ -2366,6 +2422,7 @@ namespace Kartet
 				throw NotSupported;
 			#endif
 		}
+		return C;
 	}
 
 		/**
@@ -2375,15 +2432,16 @@ namespace Kartet
 		\param B Second matrix.
 		\param uplo Fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A^{\mbox{op}} {B^{\mbox{op}}}^+ + \alpha^* B^{\mbox{op}} {A^{\mbox{op}}}^+ \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			her2k(op, alpha, A, B, beta, uplo, C);
+			return her2k(op, alpha, A, B, beta, uplo, C);
 		}
 
 		/**
@@ -2392,15 +2450,16 @@ namespace Kartet
 		\param B Second matrix.
 		\param uplo Fill mode.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A B^+ + B A^+ \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(0);
-			her2k(OpNo, alpha, A, B, beta, uplo, C);
+			return her2k(OpNo, alpha, A, B, beta, uplo, C);
 		}
 
 	/**
@@ -2412,11 +2471,12 @@ namespace Kartet
 	\param B Right side matrix.
 	\param opb Operation on Matrix B.
 	\param C Output matrix.
+	\return Accessor to result.
 
 	\f$ C = \alpha A^{\mbox{opa}} + \beta B^{\mbox{opb}} \f$
 	**/
 	template<typename T, Location l, typename TAlpha, typename TBeta>
-	__host__ void BLASContext::geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C)
 	{
 		StaticAssert<l==DeviceSide>();
 		ALLOWED_TYPES_VERIFICATION
@@ -2454,6 +2514,7 @@ namespace Kartet
 		#else
 			throw NotSupported;
 		#endif
+		return C;
 	}
 
 		/**
@@ -2463,15 +2524,16 @@ namespace Kartet
 		\param B Right side matrix.
 		\param opb Operation on Matrix B.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A^{\mbox{opa}} + B^{\mbox{opb}} \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(1);
-			geam(alpha, A, opa, beta, B, opb, C);
+			return geam(alpha, A, opa, beta, B, opb, C);
 		}
 
 		/**
@@ -2479,15 +2541,16 @@ namespace Kartet
 		\param A Left side matrix.
 		\param B Right side matrix.
 		\param C Output matrix.
+		\return Accessor to result.
 
 		\f$ C = A + B \f$
 		**/
 		template<typename T, Location l>
-		__host__ void BLASContext::geam(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C)
+		__host__ Accessor<T,l>& BLASContext::geam(const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C)
 		{
 			const T alpha = complexCopy<T>(1),
 				beta = complexCopy<T>(1);
-			geam(alpha, A, OpNo, beta, B, OpNo, C);
+			return geam(alpha, A, OpNo, beta, B, OpNo, C);
 		}
 
 	/**
@@ -2496,6 +2559,7 @@ namespace Kartet
 	\param A First matrix.
 	\param x Vector used as diagonal matrix.
 	\param C Output matrix.
+	\return Accessor to result.
 	
 	If side is set to left : 
 	\f$ C = A \mbox{diag}(x) \f$
@@ -2503,7 +2567,7 @@ namespace Kartet
 	\f$ C = \mbox{diag}(x) A \f$
 	**/
 	template<typename T, Location l>
-	__host__ void BLASContext::dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& C)
+	__host__ Accessor<T,l>& BLASContext::dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& C)
 	{
 		StaticAssert<l==DeviceSide>();
 		ALLOWED_TYPES_VERIFICATION
@@ -2524,6 +2588,7 @@ namespace Kartet
 		#else
 			throw NotSupported;
 		#endif
+		return C;
 	}
 
 // Clean :
