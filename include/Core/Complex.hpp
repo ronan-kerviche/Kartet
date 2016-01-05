@@ -428,43 +428,43 @@ namespace Kartet
 	#undef COMPARISON_OPERATOR
 
 	#define SPECIAL_ReFUNCTION( function, CxOperation, ReOperationSigned, ReOperationUnsigned ) \
-		__host__ __device__ int function (const int& r) \
+		__host__ __device__ inline int function (const int& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
-		__host__ __device__ unsigned int function (const unsigned int& r) \
+		__host__ __device__ inline unsigned int function (const unsigned int& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationUnsigned ; \
 		} \
 		 \
-		__host__ __device__ signed long long function (const signed long long& r) \
+		__host__ __device__ inline signed long long function (const signed long long& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
-		__host__ __device__ unsigned long long function (const unsigned long long& r) \
+		__host__ __device__ inline unsigned long long function (const unsigned long long& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationUnsigned ; \
 		} \
 		 \
-		__host__ __device__ float function (const float& r) \
+		__host__ __device__ inline float function (const float& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
-		__host__ __device__ double function (const double& r) \
+		__host__ __device__ inline double function (const double& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
-		__host__ long double function (const long double& r) \
+		__host__ inline long double function (const long double& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
@@ -477,13 +477,13 @@ namespace Kartet
 			return CxOperation ; \
 		} \
 		 \
-		__host__ __device__ float function (const cuFloatComplex& z) \
+		__host__ __device__ inline float function (const cuFloatComplex& z) \
 		{ \
 			UNUSED_PARAMETER(z) \
 			return CxOperation ; \
 		} \
 		 \
-		__host__ __device__ double function (const cuDoubleComplex& z) \
+		__host__ __device__ inline double function (const cuDoubleComplex& z) \
 		{ \
 			UNUSED_PARAMETER(z) \
 			return CxOperation ; \
@@ -497,43 +497,43 @@ namespace Kartet
 	#undef SPECIAL_FUNCTION
 
 	#define SPECIAL_CxFUNCTION( function, CxOperation, ReOperation ) \
-		__host__ __device__ int function (const int& r) \
+		__host__ __device__ inline int function (const int& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ __device__ unsigned int function (const unsigned int& r) \
+		__host__ __device__ inline unsigned int function (const unsigned int& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ __device__ signed long long function (const signed long long& r) \
+		__host__ __device__ inline signed long long function (const signed long long& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ __device__ unsigned long long function (const unsigned long long& r) \
+		__host__ __device__ inline unsigned long long function (const unsigned long long& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ __device__ float function (const float& r) \
+		__host__ __device__ inline float function (const float& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ __device__ double function (const double& r) \
+		__host__ __device__ inline double function (const double& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
 		} \
 		 \
-		__host__ long double function (const long double& r) \
+		__host__ inline long double function (const long double& r) \
 		{ \
 			UNUSED_PARAMETER(r) \
 			return ReOperation ; \
@@ -546,13 +546,13 @@ namespace Kartet
 			return Complex<T> CxOperation ; \
 		} \
 		 \
-		__host__ __device__ Complex<float> function (const cuFloatComplex& z) \
+		__host__ __device__ inline Complex<float> function (const cuFloatComplex& z) \
 		{ \
 			UNUSED_PARAMETER(z) \
 			return Complex<float> CxOperation ; \
 		} \
 		 \
-		__host__ __device__ Complex<double> function (const cuDoubleComplex& z) \
+		__host__ __device__ inline Complex<double> function (const cuDoubleComplex& z) \
 		{ \
 			UNUSED_PARAMETER(z) \
 			return Complex<double> CxOperation ; \
