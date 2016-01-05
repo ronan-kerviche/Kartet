@@ -52,8 +52,8 @@ namespace Kartet
 	#define IF_CX_DOUBLE				if(IsSame<T, cuDoubleComplex>::value || IsSame<T, Complex<double> >::value)
 	#define FCST(x)					const float _##x = real(x);
 	#define DCST(x)					const double _##x = real(x);
-	#define CCST(x)					const cuFloatComplex _##x = {real(x), imag(x)};
-	#define ZCST(x)					const cuDoubleComplex _##x = {real(x), imag(x)};
+	#define CCST(x)					const cuFloatComplex _##x = {static_cast<float>(real(x)), static_cast<float>(imag(x))};
+	#define ZCST(x)					const cuDoubleComplex _##x = {static_cast<double>(real(x)), static_cast<double>(imag(x))};
 	#define FPTR(x)					reinterpret_cast<float*>(x)
 	#define DPTR(x)					reinterpret_cast<double*>(x)
 	#define CPTR(x)					reinterpret_cast<cuFloatComplex*>(x)

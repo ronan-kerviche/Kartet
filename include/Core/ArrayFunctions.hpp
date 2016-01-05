@@ -260,7 +260,7 @@
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_remainderf,		remainderf,		return ::remainderf(a,b); )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ynf,			ynf,			return ::ynf(a,b); )
 
-	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_Complex,			complex,		return Complex<ReturnType>(a, b); )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_Complex,			complex,		return ReturnType(a, b); )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexF,			complexf,		return Complex<float>(a, b); )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexD,			complexd,		return Complex<double>(a, b); )
 
