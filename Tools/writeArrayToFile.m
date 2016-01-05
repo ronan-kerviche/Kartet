@@ -12,39 +12,26 @@ function writeArrayToFile(A, arg)
 	cName = class(A);
 	isComplex = ~isreal(A);
 
-	if(isComplex)
-		% Force :
-		A = double(A);
-	end
-
 	% This list should match the list in TypeTools.hpp (note that void is at index 0 and is omitted)
-	types = {	struct('typename', 'uint8', 'isComplex', false), ...		% bool
-			struct('typename', 'uint8', 'isComplex', false), ...		% unsigned char
-			struct('typename', 'int8', 'isComplex', false), ...		% char
-			struct('typename', 'int8', 'isComplex', false), ...		% signed char
-			struct('typename', 'uint16', 'isComplex', false), ...		% unsigned short
-			struct('typename', 'int16', 'isComplex', false), ...		% short
-			struct('typename', 'int16', 'isComplex', false), ...		% signed short
-			struct('typename', 'uint32', 'isComplex', false), ...		% unsigned int
-			struct('typename', 'int32', 'isComplex', false), ...		% int
-			struct('typename', 'int32', 'isComplex', false), ...		% signed int
-			struct('typename', 'uint32', 'isComplex', false), ...		% unsigned long
-			struct('typename', 'int32', 'isComplex', false), ...		% long
-			struct('typename', 'uint32', 'isComplex', false), ...		% signed long
-			struct('typename', 'uint64', 'isComplex', false), ...		% unsigned long long
-			struct('typename', 'int64', 'isComplex', false), ...		% long long
-			struct('typename', 'int64', 'isComplex', false), ...		% signed long long
-			struct('typename', 'single', 'isComplex', false), ...		% float
-			struct('typename', 'double', 'isComplex', false), ...		% double
-			struct('typename', 'NOTSUPPORTED', 'isComplex', false), ...	% (long double)
-			struct('typename', 'single', 'isComplex', true), ...		% complex<float>
-			struct('typename', 'double', 'isComplex', true), ...		% complex<double>
+	types = {	struct('typename', 'uint8'), ...		% bool
+			struct('typename', 'int8'), ...			% char
+			struct('typename', 'uint8'), ...		% unsigned char
+			struct('typename', 'int16'), ...		% short
+			struct('typename', 'uint16'), ...		% unsigned short
+			struct('typename', 'int32'), ...		% int
+			struct('typename', 'uint32'), ...		% unsigned int
+			struct('typename', 'int64'), ...		% long long
+			struct('typename', 'uint64'), ...		% unsigned long long
+			struct('typename', 'single'), ...		% float
+			struct('typename', 'double'), ...		% double
+			struct('typename', 'NOTSUPPORTED'), ...		% (long double)
 			};
 	for typeId=1:numel(types)
-		if(strcmpi(types{typeId}.typename,cName) && types{typeId}.isComplex==isComplex)
+		if(strcmpi(types{typeId}.typename,cName))
 			break;
 		end
 	end
+	assert(typeId<numel(types) || strcmpi(types{numel(types)}.typename,cName), sprintf('Array type ''%s''is not supported.', cName));
 	
 	% Open the file, if needed :
 	if(isstr(arg))
@@ -56,10 +43,11 @@ function writeArrayToFile(A, arg)
 	assert(fileId>=0, 'Bad File ID.');
 
 	% This header should match the header in Array.hpp :
-	fwrite(fileId, 'KARTET01', 'char*1');
+	fwrite(fileId, 'KARTET02', 'char*1');
 
 	% Write the remaining header parts :
 	fwrite(fileId, typeId, '*int32');
+	fwrite(fileId, uint8(isComplex), '*uint8');
 	fwrite(fileId, size(A,1), '*int64');
 	fwrite(fileId, size(A,2), '*int64');
 	fwrite(fileId, size(A,3), '*int64');

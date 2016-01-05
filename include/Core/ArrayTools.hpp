@@ -37,6 +37,7 @@
 #define __KARTET_ARRAY_TOOLS__
 
 	#include <cmath>
+	#include <limits>
 
 namespace Kartet
 {
@@ -1224,13 +1225,14 @@ namespace Kartet
 	\brief Read Layout from input stream.
 	\param stream Input stream.
 	\param typeIndex Output, type code.
+	\param isComplex Output, true if the layout is for complex data.
 
 	If not NULL, the destination will be written with the type code following the layout (single integer).
 	
 	\throw InsufficientIndexingDepth If the stream refers to data wider than the available indexing depth.
 	\return The Layout built from the stream.
 	**/
-	__host__ inline Layout Layout::readFromStream(std::istream& stream, int* typeIndex)
+	__host__ inline Layout Layout::readFromStream(std::istream& stream, int* typeIndex, bool* isComplex)
 	{
 		if(!stream.good())
 			throw InvalidInputStream;
@@ -1245,10 +1247,15 @@ namespace Kartet
 			throw InvalidStreamHeader;
 	
 		// Read the type :
-		int dummyType;
+		int dummyTypeIndex;
 		if(typeIndex==NULL)
-			typeIndex = &dummyType;
+			typeIndex = &dummyTypeIndex;
 		stream.read(reinterpret_cast<char*>(typeIndex), sizeof(int)); if(!stream.good()) throw InvalidInputStream;
+
+		bool dummyIsComplex;
+		if(isComplex==NULL)
+			isComplex = &dummyIsComplex;
+		stream.read(reinterpret_cast<char*>(isComplex), sizeof(bool)); if(!stream.good()) throw InvalidInputStream;
 
 		// Read the sizes :
 		index64_t r = 0,
@@ -1270,19 +1277,20 @@ namespace Kartet
 	\brief Read Layout from a file.
 	\param filename Filename to load.
 	\param typeIndex Output, type code.
+	\param isComplex Output, true if the layout is for complex data.
 
 	If not NULL, the destination will be written with the type code following the layout (single integer).
 	
 	\return The Layout built from the file.
 	**/
-	__host__ inline Layout Layout::readFromFile(const std::string& filename, int* typeIndex)
+	__host__ inline Layout Layout::readFromFile(const std::string& filename, int* typeIndex, bool* isComplex)
 	{
 		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 
 		if(!file.is_open())
 			throw InvalidInputStream;
 
-		Layout layout = readFromStream(file, typeIndex);
+		Layout layout = readFromStream(file, typeIndex, isComplex);
 		file.close();
 
 		return layout;
@@ -1291,9 +1299,10 @@ namespace Kartet
 	/**
 	\brief Write Layout to the output stream.
 	\param stream Stream to write.
-	\param typeIndex Type code.
+	\param typeIndex Type index.
+	\param isComplex True if the data is complex.
 	**/
-	__host__ inline void Layout::writeToStream(std::ostream& stream, int typeIndex)
+	__host__ inline void Layout::writeToStream(std::ostream& stream, const int typeIndex, const bool isComplex)
 	{
 		if(!stream.good())
 			throw InvalidOutputStream;
@@ -1302,30 +1311,32 @@ namespace Kartet
 		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::streamHeaderLength()-1);
 		
 		// Write the type :	
-		stream.write(reinterpret_cast<char*>(&typeIndex), sizeof(int));
+		stream.write(reinterpret_cast<const char*>(&typeIndex), sizeof(int));
+		stream.write(reinterpret_cast<const char*>(&isComplex), sizeof(bool));
 	
-		// Write the size :
+		// Write the sizes :
 		index64_t _nRows = nRows,
 			  _nColumns = nColumns,
 			  _nSlices = nSlices;
-		stream.write(reinterpret_cast<char*>(&_nRows), sizeof(index64_t));
-		stream.write(reinterpret_cast<char*>(&_nColumns), sizeof(index64_t));
-		stream.write(reinterpret_cast<char*>(&_nSlices), sizeof(index64_t));
+		stream.write(reinterpret_cast<const char*>(&_nRows), sizeof(index64_t));
+		stream.write(reinterpret_cast<const char*>(&_nColumns), sizeof(index64_t));
+		stream.write(reinterpret_cast<const char*>(&_nSlices), sizeof(index64_t));
 	}
 
 	/**
 	\brief Write Layout to the file.
 	\param filename Filename to write to.
-	\param typeIndex Type code.
+	\param typeIndex Type index.
+	\param isComplex True if the data is complex.
 	**/
-	__host__ inline void Layout::writeToFile(const std::string& filename, int typeIndex)
+	__host__ inline void Layout::writeToFile(const std::string& filename, const int typeIndex, const bool isComplex)
 	{
 		std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
 
 		if(!file.is_open())
 			throw InvalidOutputStream;
 
-		writeToStream(file, typeIndex);
+		writeToStream(file, typeIndex, isComplex);
 		file.close();
 	}
 
@@ -1338,7 +1349,7 @@ namespace Kartet
 	template<typename T>
 	__host__ inline void Layout::writeToStream(std::ostream& stream)
 	{
-		writeToStream(stream, GetIndex<TypesSortedByAccuracy, T>::value);
+		writeToStream(stream, GetTypeIndex<T>::index, Traits<T>::isComplex);
 	}
 
 	/**
@@ -1350,7 +1361,7 @@ namespace Kartet
 	template<typename T>
 	__host__ inline void Layout::writeToFile(const std::string& filename)
 	{
-		writeToFile(filename, GetIndex<TypesSortedByAccuracy, T>::value);
+		writeToFile(filename, GetTypeIndex<T>::index, Traits<T>::isComplex);
 	}
 
 	/**
@@ -1722,17 +1733,19 @@ namespace Kartet
 			std::istream& 		stream;
 			const Location		destinationLocation;
 			const int		sourceTypeIndex;
-			const bool		conversion;
+			const bool		sourceIsComplex,
+						conversion;
 			const size_t		sourceTypeSize,
 						numBufferElements;
 			char			*bufferRead,
 						*bufferCast;
 
-			__host__ StreamInputToolBox(std::istream& _stream, const Location _destinationLocation, const int _sourceTypeIndex, const size_t _sourceTypeSize, const size_t _numBufferElements)
+			__host__ StreamInputToolBox(std::istream& _stream, const Location _destinationLocation, const int _sourceTypeIndex, const bool _sourceIsComplex, const size_t _sourceTypeSize, const size_t _numBufferElements)
 			 :	stream(_stream),
 				destinationLocation(_destinationLocation),
 				sourceTypeIndex(_sourceTypeIndex),
-				conversion(_sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value),				
+				sourceIsComplex(_sourceIsComplex),
+				conversion(_sourceTypeIndex!=GetTypeIndex<T>::index || sourceIsComplex!=Traits<T>::isComplex),
 				sourceTypeSize(_sourceTypeSize),
 				numBufferElements(_numBufferElements),
 				bufferRead(NULL),
@@ -1789,7 +1802,7 @@ namespace Kartet
 						if(conversion)
 						{
 							char* castPtr = (destinationLocation==HostSide) ? reinterpret_cast<char*>(ptr + offset + offsetCopied) : bufferCast;
-							dynamicCopy(reinterpret_cast<T*>(castPtr), bufferRead, sourceTypeIndex, currentCopyNumElements);
+							dynamicCopy(reinterpret_cast<T*>(castPtr), bufferRead, sourceTypeIndex, sourceIsComplex, currentCopyNumElements);
 							tmpSrc = castPtr;
 						}
 						else
@@ -1819,12 +1832,12 @@ namespace Kartet
 	\param maxBufferSize In the case of a conversion, the 
 	\param skipHeader Skip header read if True. The data read must be of the same type. No conversion will be performed.
 	\param sourceTypeIndex Force the data type of the input stream (useful if the header is skipped).
-	\throw Kartet::InvalidOperation If maxBufferSize is insufficient or if the source type is different than the accessor type and the conversion is disabled.
+	\throw Kartet::InvalidOperation If the input data is complex but not this accessor or if maxBufferSize is insufficient or if the source type is different than the accessor type and the conversion is disabled.
 	\throw Kartet::InvalidInputStream If the stream cannot be read.
 	\throw Kartet::IncompatibleLayout If the layouts of the source and the accessor are not compatible.
 	**/
 	template<typename T, Location l>
-	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader, int sourceTypeIndex)
+	__host__ void Accessor<T,l>::readFromStream(std::istream& stream, bool convert, const size_t maxBufferSize, const bool skipHeader, int sourceTypeIndex, bool sourceIsComplex)
 	{
 		if(maxBufferSize<sizeof(T))
 			throw InvalidOperation;
@@ -1833,19 +1846,21 @@ namespace Kartet
 		
 		Layout lt = layout();
 		if(!skipHeader)
-			lt = Layout::readFromStream(stream, &sourceTypeIndex);
+			lt = Layout::readFromStream(stream, &sourceTypeIndex, &sourceIsComplex);
 		if(!lt.sameLayoutAs(*this))
 			throw IncompatibleLayout;
+		if(!Traits<T>::isComplex && sourceIsComplex)
+			throw InvalidOperation;
 	
-		const bool conversion = (sourceTypeIndex!=GetIndex<TypesSortedByAccuracy, T>::value);
+		const bool conversion = (sourceTypeIndex!=GetTypeIndex<T>::index);
 		if(!convert && conversion)
 			throw InvalidOperation;
 		
-		const size_t 	sourceTypeSize = sizeOfType(sourceTypeIndex),
+		const size_t 	sourceTypeSize = sizeOf(sourceTypeIndex) * (sourceIsComplex ? 2 : 1),
 				maxSize = conversion ? (sourceTypeSize + sizeof(T)) : sizeof(T),
 				numBufferElements = std::min(static_cast<size_t>(lt.numElements())*maxSize, maxBufferSize)/maxSize;
 		
-		StreamInputToolBox<T> toolbox(stream, l, sourceTypeIndex, sourceTypeSize, numBufferElements);
+		StreamInputToolBox<T> toolbox(stream, l, sourceTypeIndex, sourceIsComplex, sourceTypeSize, numBufferElements);
 		singleScan(toolbox);
 	}
 
@@ -2338,7 +2353,8 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ std::ostream& operator<<(std::ostream& os, const Accessor<T,l>& A)
 	{
-		typedef typename StaticIf<SameTypes<T, char>::test || SameTypes<T, unsigned char>::test, int, T>::TValue CastType;
+		// Prevent printing characters : 
+		typedef typename StaticIf<IsSame<T, char>::value || IsSame<T, unsigned char>::value, int, T>::Type CastType;
 
 		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
 		const int precision = 4,

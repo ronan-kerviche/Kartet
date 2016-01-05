@@ -168,157 +168,157 @@ namespace Kartet
 			__host__ int Iamin(const Accessor<T,l>& x);
 
 			template<typename T, Location l>
-			__host__ typename TypeInfo<T>::BaseType asum(const Accessor<T,l>& x);
+			__host__ typename Traits<T>::BaseType asum(const Accessor<T,l>& x);
 
 			template<typename T, Location l>
 			__host__ T dot(const Accessor<T,l>& x, const Accessor<T,l>& y, bool conjugate = true);
 
 			template<typename T, Location l>
-			__host__ typename TypeInfo<T>::BaseType nrm2(const Accessor<T,l>& a);
+			__host__ typename Traits<T>::BaseType nrm2(const Accessor<T,l>& a);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& gemv(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y);
+			__host__ const Accessor<T,l>& gemv(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& gemv(const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& gemv(const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& gemv(const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& gemv(const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& ger(const TAlpha& alpha, const Accessor<T,l>& x, const Accessor<T,l>& y, Accessor<T,l>& A, bool conjugate = true);
+			__host__ const Accessor<T,l>& ger(const TAlpha& alpha, const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate = true);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& ger(const Accessor<T,l>& x, const Accessor<T,l>& y, Accessor<T,l>& A, bool conjugate = true);
+				__host__ const Accessor<T,l>& ger(const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate = true);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& symv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y);
+			__host__ const Accessor<T,l>& symv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& symv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& symv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 			
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& syr(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x);
+			__host__ const Accessor<T,l>& syr(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syr(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x);
+				__host__ const Accessor<T,l>& syr(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& syr2(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
+			__host__ const Accessor<T,l>& syr2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 		
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syr2(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& syr2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 			template<typename T, Location l>
-			__host__ Accessor<T,l>& trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, Accessor<T,l>& x);
+			__host__ const Accessor<T,l>& trmv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x);
 
 			template<typename T, Location l>
-			__host__ Accessor<T,l>& trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, Accessor<T,l>& x);
+			__host__ const Accessor<T,l>& trsv(MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation op, const Accessor<T,l>& x);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, Accessor<T,l>& y);
+			__host__ const Accessor<T,l>& hemv(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const TBeta& beta, const Accessor<T,l>& y);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& hemv(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& her(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x);
+			__host__ const Accessor<T,l>& her(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& her(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x);
+				__host__ const Accessor<T,l>& her(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& her2(const TAlpha& alpha, MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
+			__host__ const Accessor<T,l>& her2(const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& her2(MatrixFillMode uplo, Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
+				__host__ const Accessor<T,l>& her2(MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& y);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& gemm(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const TBeta& beta, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& gemm(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& gemm(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& symm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& symm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& syrk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& syrk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syrk(const Accessor<T,l>& A, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& syrk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& syr2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const T& beta, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& syr2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& syr2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& trmm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, const Accessor<T,l>& C);
 		
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& trmm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha>
-			__host__ Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, Accessor<T,l>& B);
+			__host__ const Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const TAlpha& alpha, const Accessor<T,l>& B);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, Accessor<T,l>& B);
+				__host__ const Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, Accessor<T,l>& B);
+				__host__ const Accessor<T,l>& trsm(MatrixSideMode side, MatrixFillMode uplo, MatrixDiagType diag, const Accessor<T,l>& A, const Accessor<T,l>& B);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& hemm(MatrixSideMode side, const TAlpha& alpha, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& hemm(MatrixSideMode side, MatrixFillMode uplo, const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& herk(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C);
 		
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& herk(const Accessor<T,l>& A, MatrixOperation opa, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& herk(const Accessor<T,l>& A, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& herk(const Accessor<T,l>& A, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& her2k(MatrixOperation op, const TAlpha& alpha, const Accessor<T,l>& A, const Accessor<T,l>& B, const TBeta& beta, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& her2k(MatrixOperation op, const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& her2k(const Accessor<T,l>& A, const Accessor<T,l>& B, MatrixFillMode uplo, const Accessor<T,l>& C);
 
 			template<typename T, Location l, typename TAlpha, typename TBeta>
-			__host__ Accessor<T,l>& geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& geam(const Accessor<T,l>& A, MatrixOperation opa, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C);
 
 				template<typename T, Location l>
-				__host__ Accessor<T,l>& geam(const Accessor<T,l>& A, const Accessor<T,l>& B, Accessor<T,l>& C);
+				__host__ const Accessor<T,l>& geam(const Accessor<T,l>& A, const Accessor<T,l>& B, const Accessor<T,l>& C);
 
 			template<typename T, Location l>
-			__host__ Accessor<T,l>& dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& v, Accessor<T,l>& C);
+			__host__ const Accessor<T,l>& dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& v, const Accessor<T,l>& C);
 
 	};
 

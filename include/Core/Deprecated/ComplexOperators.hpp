@@ -575,7 +575,7 @@ namespace Kartet
 	// Times :
 		MIXED_SCALAR_COMPLEX_OPERATOR_DEFINITION( *, toComplex(a * c.x, a * c.y), toComplex(c.x * a, c.y * a), toComplex(c1.x*c2.x - c1.y*c2.y, c1.x*c2.y + c1.y*c2.x), ; , ; , ; )
 	// Div :
-		MIXED_SCALAR_COMPLEX_OPERATOR_DEFINITION( /, toComplex(a * c.x / n, - a * c.y / n), toComplex(c.x / a, c.y / a), toComplex((c1.x*c2.x+c1.y*c2.y)/n, (c1.x*c2.y-c1.y*c2.x)/n), float n = c.x*c.x + c.y*c.y; , ; , float n = c2.x*c2.x + c2.y*c2.y; )
+		//Require review : MIXED_SCALAR_COMPLEX_OPERATOR_DEFINITION( /, toComplex(a * c.x / n, - a * c.y / n), toComplex(c.x / a, c.y / a), toComplex((c1.x*c2.x+c1.y*c2.y)/n, (c1.y*c2.x-c1.x*c2.y)/n), float n = c.x*c.x + c.y*c.y; , ; , float n = c2.x*c2.x + c2.y*c2.y; )
 
 	#undef MIXED_SCALAR_COMPLEX_OPERATOR_DEFINITION
 	#undef MIXED_SCALAR_COMPLEX_OPERATOR

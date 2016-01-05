@@ -109,7 +109,7 @@ namespace Kartet
 		
 			// Store to this block ID :
 			if(threadId==0)
-				outputBuffer[blockId] = complexCopy<TOut>(sharedData[0]);
+				outputBuffer[blockId] = sharedData[0];
 		}
 	}
 
@@ -154,7 +154,7 @@ namespace Kartet
 	
 		// Store to the right block :
 		if(threadId==0)
-			output.data(blockIdx.x, blockIdx.y, blockIdx.z) = complexCopy<TOut>(sharedData[0]);
+			output.data(blockIdx.x, blockIdx.y, blockIdx.z) = sharedData[0];
 	}
 
 	template<template<typename,typename> class Op, typename TOut, Location l, typename TExpr>
@@ -224,7 +224,7 @@ namespace Kartet
 					kBP = blockIdx.z * numSubReductionBlocks.z + threadIdx.z/reductionBlockLayout.numSlices();
 			
 			if(output.isInside(iBP, jBP, kBP))
-				output.data(iBP, jBP, kBP) = complexCopy<TOut>(v);	
+				output.data(iBP, jBP, kBP) = v;	
 		}
 	}
 #endif
@@ -404,7 +404,7 @@ namespace Kartet
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::sum(const Layout& layout, const TExpr& expr)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			return reduce<BinOp_Plus, ReturnType>(layout, expr, complexCopy<ReturnType>(0));
+			return reduce<BinOp_Plus, ReturnType>(layout, expr, 0);
 		}
 
 		/**
@@ -451,7 +451,7 @@ namespace Kartet
 		__host__ typename ExpressionEvaluation<TExpr>::ReturnType ReduceContext::prod(const Layout& layout, const TExpr& expr)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			return reduce<BinOp_Times, ReturnType>(layout, expr, complexCopy<ReturnType>(1));
+			return reduce<BinOp_Times, ReturnType>(layout, expr, 1);
 		}
 
 		/**
@@ -527,7 +527,7 @@ namespace Kartet
 	\return The output accessor.
 	**/
 	template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
-	__host__ Accessor<TOut,l>& ReduceContext::reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, Accessor<TOut,l>& output)
+	__host__ const Accessor<TOut,l>& ReduceContext::reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		StaticAssert<ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide>(); // The expression must be on the same side than the output.
@@ -646,7 +646,7 @@ namespace Kartet
 					block.moveToNext(ib, jb, kb);
 				}
 				
-				output.data(io, jo, ko) = complexCopy<TOut>(result);
+				output.data(io, jo, ko) = result;
 
 				output.moveToNext(io, jo, ko);
 			}
@@ -665,7 +665,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::minBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 			return reduceBlock<BinOp_min>(layout, expr, std::numeric_limits<ReturnType>::max(), output);
@@ -679,7 +679,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::minBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return minBlock(accessor.layout(), accessor, output);
 		}
@@ -693,7 +693,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 			ReturnType defaultValue = std::numeric_limits<ReturnType>::is_integer ? std::numeric_limits<ReturnType>::min() : -std::numeric_limits<ReturnType>::max();
@@ -708,7 +708,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::maxBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return maxBlock(accessor.layout(), accessor, output);
 		}
@@ -722,10 +722,10 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			return reduceBlock<BinOp_Plus>(layout, expr, complexCopy<ReturnType>(0), output);
+			return reduceBlock<BinOp_Plus>(layout, expr, 0, output);
 		}
 
 		/**
@@ -736,7 +736,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::sumBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return sumBlock(accessor.layout(), accessor, output);
 		}
@@ -750,10 +750,10 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-			return reduceBlock<BinOp_Times>(layout, expr, complexCopy<ReturnType>(1), output);
+			return reduceBlock<BinOp_Times>(layout, expr, 1, output);
 		}
 
 		/**
@@ -764,7 +764,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::prodBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return prodBlock(accessor.layout(), accessor, output);
 		}
@@ -778,7 +778,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::allBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			return reduceBlock<BinOp_And>(layout, expr, true, output);
 		}
@@ -791,7 +791,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::allBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return allBlock(accessor.layout(), accessor, output);
 		}
@@ -805,7 +805,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename TExpr, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output)
 		{
 			return reduceBlock<BinOp_Or>(layout, expr, false, output);
 		}
@@ -818,7 +818,7 @@ namespace Kartet
 		\return The output accessor.
 		**/
 		template<typename T, typename TOut, Location l>
-		__host__ Accessor<TOut,l>& ReduceContext::anyBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output)
+		__host__ const Accessor<TOut,l>& ReduceContext::anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output)
 		{
 			return anyBlock(accessor.layout(), accessor, output);
 		}

@@ -57,7 +57,7 @@ namespace Kartet
 		#endif
 
 		// Make sure we are not computing complex numbers to store in a real array :
-		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
+		StaticAssert<!(Traits< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !Traits<T>::isComplex)>();
 
 		if(l==DeviceSide)
 		{
@@ -427,7 +427,7 @@ namespace Kartet
 		#endif
 
 		// Make sure we are not computing complex numbers to store in a real array :
-		StaticAssert<!(TypeInfo< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !TypeInfo<T>::isComplex)>();
+		StaticAssert<!(Traits< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !Traits<T>::isComplex)>();
 
 		if(l==DeviceSide)
 		{
@@ -457,13 +457,13 @@ namespace Kartet
 	{
 		private :
 			// Test for correct order of arguments :
-			static const StaticAssert< 	(SameTypes<T3,void>::test) ? 
+			static const StaticAssert< 	(IsSame<T3,void>::value) ? 
 							( // No third argument
-								!(SameTypes<T1,void>::test) // whatever 2nd arg is, there must be at least one.
+								!(IsSame<T1,void>::value) // whatever 2nd arg is, there must be at least one.
 							)
 							:
 							(
-								(!SameTypes<T1,void>::test) && (!SameTypes<T2,void>::test)
+								(!IsSame<T1,void>::value) && (!IsSame<T2,void>::value)
 							)
 						> 										test1;
 
@@ -472,34 +472,31 @@ namespace Kartet
 			static const StaticAssert<	!(inputMustBeReal && inputMustBeComplex) > 				test3;
 
 			// Test for type enforcing :
-			static const StaticAssert<	SameTypes<enforceT1,void>::test || SameTypes<enforceT1,T1>::test>	test4;
-			static const StaticAssert<	SameTypes<enforceT2,void>::test || SameTypes<enforceT2,T2>::test>	test5;
-			static const StaticAssert<	SameTypes<enforceT3,void>::test || SameTypes<enforceT3,T3>::test>	test6;
+			static const StaticAssert<	IsSame<enforceT1,void>::value || IsSame<enforceT1,T1>::value>		test4;
+			static const StaticAssert<	IsSame<enforceT2,void>::value || IsSame<enforceT2,T2>::value>		test5;
+			static const StaticAssert<	IsSame<enforceT3,void>::value || IsSame<enforceT3,T3>::value>		test6;
 
 			// Test validity :
-			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T1>::isComplex) >				test_ir1;
-			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T2>::isComplex) >				test_ir2;
-			static const StaticAssert<	!(inputMustBeReal && TypeInfo<T3>::isComplex) >				test_ir3;
-
-			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T1>::isComplex) >			test_ic1;
-			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T2>::isComplex) >			test_ic2;
-			static const StaticAssert<	!(inputMustBeComplex && !TypeInfo<T3>::isComplex) >			test_ic3;
+			static const StaticAssert<	!(inputMustBeReal && Traits<T1>::isComplex) >				test_ir1;
+			static const StaticAssert<	!(inputMustBeReal && Traits<T2>::isComplex) >				test_ir2;
+			static const StaticAssert<	!(inputMustBeReal && Traits<T3>::isComplex) >				test_ir3;
+			static const StaticAssert<	!(inputMustBeComplex && !Traits<T1>::isComplex) >			test_ic1;
+			static const StaticAssert<	!(inputMustBeComplex && !Traits<T2>::isComplex) >			test_ic2;
+			static const StaticAssert<	!(inputMustBeComplex && !Traits<T3>::isComplex) >			test_ic3;
 			
-			// Test for dimensionality (value, pointers, etc.) :
-
 			// Choose best output type :
-			typedef typename ResultingTypeOf2<T1,T2>::Type 								Type1;
-			typedef typename ResultingTypeOf2<Type1,T3>::Type 							Type2;
+			typedef typename ResultingType<T1,T2>::Type								Type1;
+			typedef typename ResultingType<Type1,T3>::Type								Type2;
 
 			// Force output type according to request :
-			typedef typename StaticIf<preferRealOutput, typename TypeInfo<Type2>::BaseType, Type2 >::TValue		Type3;
-			typedef typename StaticIf<preferComplexOutput, typename TypeInfo<Type3>::ComplexType, Type3 >::TValue	Type4;
+			typedef typename StaticIf<preferRealOutput, typename Traits<Type2>::BaseType, Type2 >::Type		Type3;
+			typedef typename StaticIf<preferComplexOutput, Complex<Type3>, Type3 >::Type				Type4;
 
-			typedef typename StaticIf<SameTypes<forceReturnType,void>::test, Type4, forceReturnType >::TValue	Type5;
+			typedef typename StaticIf<IsSame<forceReturnType,void>::value, Type4, forceReturnType >::Type		Type5;
 		public :
-			static const int arity = 	(SameTypes<T1,void>::test) ? 0 : (
-							(SameTypes<T2,void>::test) ? 1 : (
-							(SameTypes<T3,void>::test) ? 2 : 3));
+			static const int arity = 	(IsSame<T1,void>::value) ? 0 : (
+							(IsSame<T2,void>::value) ? 1 : (
+							(IsSame<T3,void>::value) ? 2 : 3));
 
 			typedef Type5 ReturnType;
 	};

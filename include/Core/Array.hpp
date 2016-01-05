@@ -46,9 +46,8 @@
 	#include <cstring>
 	#include "Core/LibTools.hpp"
 	#include "Core/Exceptions.hpp"
+	#include "Core/Meta.hpp"
 	#include "Core/TemplateSharedMemory.hpp"
-	#include "Core/MetaAlgorithm.hpp"
-	#include "Core/TypeTools.hpp"
 
 /**
 \def KARTET_DEFAULT_LOCATION
@@ -157,7 +156,7 @@ namespace Kartet
 			template<typename T>
 			struct StaticContainer
 			{
-				typedef StaticAssert< SameTypes<void,T>::test > TestAssertion; // Must use the void type to access the container.
+				typedef StaticAssert< IsSame<void,T>::value > TestAssertion; // Must use the void type to access the container.
 				static index_t numThreads;
 				static index_t maxZThreads;				
 				static const char streamHeader[];
@@ -283,10 +282,10 @@ namespace Kartet
 				template<class Op, typename T>
 				__host__ static void dualScan(const Layout& layoutA, T* ptrA, const Layout& layoutB, T* ptrB, const Op& op);
 
-				__host__ static inline Layout readFromStream(std::istream& stream, int* typeIndex=NULL);
-				__host__ static inline Layout readFromFile(const std::string& filename, int* typeIndex=NULL);
-				__host__ inline void writeToStream(std::ostream& stream, int typeIndex);
-				__host__ inline void writeToFile(const std::string& filename, int typeIndex);
+				__host__ static inline Layout readFromStream(std::istream& stream, int* typeIndex=NULL, bool* isComplex=NULL);
+				__host__ static inline Layout readFromFile(const std::string& filename, int* typeIndex=NULL, bool* isComplex=NULL);
+				__host__ inline void writeToStream(std::ostream& stream, const int typeIndex, const bool isComplex);
+				__host__ inline void writeToFile(const std::string& filename, const int typeIndex, const bool isComplex);
 				template<typename T>
 				__host__ inline void writeToStream(std::ostream& stream);
 				template<typename T>
@@ -302,7 +301,7 @@ namespace Kartet
 	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
 
 	template<typename T>
-	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET01";
+	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET02";
 
 	// To compute on a specific layout : 
 	#ifdef __CUDACC__
@@ -353,7 +352,7 @@ namespace Kartet
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
 				__host__                   void setData(const T* ptr, const Location lin=HostSide) const;
-				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, const bool skipHeader=false, int sourceTypeIndex=GetIndex<TypesSortedByAccuracy, T>::value);
+				__host__                   void readFromStream(std::istream& stream, bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, const bool skipHeader=false, int sourceTypeIndex=GetTypeIndex<T>::index, bool sourceIsComplex=Traits<T>::isComplex);
 				__host__                   void readFromFile(const std::string& filename, bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
 				__host__                   void writeToStream(std::ostream& stream, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
 				__host__                   void writeToFile(const std::string& filename, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE);
@@ -609,7 +608,7 @@ namespace Kartet
 } // namespace Kartet
 
 // Include sub-definitions : 
-	#include "Core/TypeTools.hpp"
+	//#include "Core/TypeTools.hpp"
 	#include "Core/ArrayTools.hpp"
 	#include "Core/ArrayExpressions.hpp"
 	#include "Core/ArrayOperators.hpp"

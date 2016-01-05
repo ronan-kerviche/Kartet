@@ -178,7 +178,7 @@ namespace Kartet
 		typedef typename Op< 	typename ExpressionEvaluation<T1>::ReturnType, 
 					typename ExpressionEvaluation<T2>::ReturnType 
 					>::ReturnType ReturnType;
-		static const Location 	location = StaticIf<ExpressionEvaluation<T1>::location!=AnySide, ExpressionEvaluation<T1>, ExpressionEvaluation<T2> >::TValue::location;
+		static const Location 	location = StaticIf<ExpressionEvaluation<T1>::location!=AnySide, ExpressionEvaluation<T1>, ExpressionEvaluation<T2> >::Type::location;
 
 		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& i, const index_t& j, const index_t& k)
 		{
@@ -379,13 +379,7 @@ namespace Kartet
 			k = array.getK();
 
 		if(array.isInside(i, j, k))
-		{
-			ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-
-			T buffer;
-			complexCopy(buffer, t);
-			array.data() = buffer;
-		}
+			array.data() = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 	}
 #endif
 
@@ -396,12 +390,7 @@ namespace Kartet
 		
 		for(index_t k=0, j=0, i=0, q=0; q<array.numElements(); q++)
 		{
-			ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-
-			T buffer;
-			complexCopy(buffer, t);
-			array.data(i, j, k) = buffer;
-
+			array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 			array.moveToNext(i, j, k);
 		}
 	}
@@ -421,13 +410,7 @@ namespace Kartet
 		{
 			const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
 			if(test)
-			{
-				ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-				
-				T buffer;
-				complexCopy(buffer, t);
-				array.data() = buffer;
-			}
+				array.data() = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 		}
 	}
 #endif
@@ -442,13 +425,7 @@ namespace Kartet
 		{
 			const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
 			if(test)
-			{
-				ReturnType t = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-
-				T buffer;
-				complexCopy(buffer, t);
-				array.data(i, j, k) = buffer;
-			}
+				array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 			array.moveToNext(i, j, k);
 		}
 	}

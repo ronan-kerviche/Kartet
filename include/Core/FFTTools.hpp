@@ -32,14 +32,6 @@
 
 namespace Kartet
 {
-// Type Lists :
-	typedef TypeList< float,
-		TypeList< double,
-		TypeList< cuFloatComplex,
-		TypeList< cuDoubleComplex,
-		Void
-		> > > > FFTKnownTypes;
-
 // FFT :
 	__host__ inline FFTContext::FFTContext(const Operation& _operation, const Layout& inputL, const Layout& outputL, const PlaneFlag& _planeFlag)
 	 :	operation(_operation),
@@ -183,17 +175,17 @@ namespace Kartet
 	template<typename TIn, typename TOut>
 	__host__ FFTContext::Operation FFTContext::getOperation(void)
 	{
-		if(SameTypes<TIn,float>::test && SameTypes<TOut,cuFloatComplex>::test)
+		if(IsSame<TIn,float>::value && IsSame<TOut,cuFloatComplex>::value)
 			return R2C;
-		else if(SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,float>::test)
+		else if(IsSame<TIn,cuFloatComplex>::value && IsSame<TOut,float>::value)
 			return C2R;
-		else if(SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,cuFloatComplex>::test)
+		else if(IsSame<TIn,cuFloatComplex>::value && IsSame<TOut,cuFloatComplex>::value)
 			return C2C;
-		else if(SameTypes<TIn,double>::test && SameTypes<TOut,cuDoubleComplex>::test)
+		else if(IsSame<TIn,double>::value && IsSame<TOut,cuDoubleComplex>::value)
 			return D2Z;
-		else if(SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,double>::test)
+		else if(IsSame<TIn,cuDoubleComplex>::value && IsSame<TOut,double>::value)
 			return Z2D;
-		else if(SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,cuDoubleComplex>::test)
+		else if(IsSame<TIn,cuDoubleComplex>::value && IsSame<TOut,cuDoubleComplex>::value)
 			return Z2Z;
 		else
 			throw InvalidOperation;
@@ -202,12 +194,12 @@ namespace Kartet
 	template<typename TIn, typename TOut>
 	__host__ bool FFTContext::checkTypes(const Operation& _operation)
 	{
-		return	((SameTypes<TIn,float>::test && SameTypes<TOut,cuFloatComplex>::test && _operation==R2C) ||
-			 (SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,float>::test && _operation==C2R) ||
-			 (SameTypes<TIn,cuFloatComplex>::test && SameTypes<TOut,cuFloatComplex>::test && _operation==C2C) ||
-			 (SameTypes<TIn,double>::test && SameTypes<TOut,cuDoubleComplex>::test && _operation==D2Z) ||
-			 (SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,double>::test && _operation==Z2D) ||
-			 (SameTypes<TIn,cuDoubleComplex>::test && SameTypes<TOut,cuDoubleComplex>::test && _operation==Z2Z));
+		return	((IsSame<TIn,float>::value && IsSame<TOut,cuFloatComplex>::value && _operation==R2C) ||
+			 (IsSame<TIn,cuFloatComplex>::value && IsSame<TOut,float>::value && _operation==C2R) ||
+			 (IsSame<TIn,cuFloatComplex>::value && IsSame<TOut,cuFloatComplex>::value && _operation==C2C) ||
+			 (IsSame<TIn,double>::value && IsSame<TOut,cuDoubleComplex>::value && _operation==D2Z) ||
+			 (IsSame<TIn,cuDoubleComplex>::value && IsSame<TOut,double>::value && _operation==Z2D) ||
+			 (IsSame<TIn,cuDoubleComplex>::value && IsSame<TOut,cuDoubleComplex>::value && _operation==Z2Z));
 	}
 
 	template<typename TIn, typename TOut, Location l>
@@ -261,9 +253,9 @@ namespace Kartet
 		else
 		{
 			#ifdef KARTET_USE_FFTW
-				if(SameTypes<TIn,float>::test || SameTypes<TIn,cuFloatComplex>::test)
+				if(IsSame<TIn,float>::value || IsSame<TIn,cuFloatComplex>::value)
 					fftwf_execute_dft(fftwHandleFloat, reinterpret_cast<fftwf_complex*>(input.getPtr()), reinterpret_cast<fftwf_complex*>(output.getPtr()));
-				else if(SameTypes<TIn,double>::test || SameTypes<TIn,cuDoubleComplex>::test)
+				else if(IsSame<TIn,double>::value || IsSame<TIn,cuDoubleComplex>::value)
 					fftw_execute_dft(fftwHandleDouble, reinterpret_cast<fftw_complex*>(input.getPtr()), reinterpret_cast<fftw_complex*>(output.getPtr()));
 			#else
 				throw NotSupported;

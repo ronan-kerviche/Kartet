@@ -114,31 +114,31 @@ namespace Kartet
 			__host__ bool any(const Accessor<T,l>& accessor);
 
 			template<template<typename,typename> class Op, typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& minBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& minBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& minBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& minBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& maxBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& maxBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& maxBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& maxBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& sumBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& sumBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& sumBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& sumBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& prodBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& prodBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& prodBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& prodBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& allBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& allBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& allBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& allBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 			template<typename TExpr, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& anyBlock(const Layout& layout, const TExpr& expr, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& anyBlock(const Layout& layout, const TExpr& expr, const Accessor<TOut,l>& output);
 			template<typename T, typename TOut, Location l>
-			__host__ Accessor<TOut,l>& anyBlock(const Accessor<T,l>& accessor, Accessor<TOut,l>& output);
+			__host__ const Accessor<TOut,l>& anyBlock(const Accessor<T,l>& accessor, const Accessor<TOut,l>& output);
 	};
 
 } // namespace Kartet

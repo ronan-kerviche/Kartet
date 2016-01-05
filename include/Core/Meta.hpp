@@ -26,102 +26,52 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
-#include <iostream>
-#include "Kartet.hpp"
+#ifndef __KARTET_META__
+#define __KARTET_META__
 
-int main(int argc, char** argv)
+namespace Kartet
 {
-	UNUSED_PARAMETER(argc)
-	UNUSED_PARAMETER(argv)
+	// Null type :
+	struct Void
+	{ };
 
-	int returnCode = 0;
-	std::cout << "================================" << std::endl;
-	std::cout << "      Kartet Syntax Example     " << std::endl;
-	std::cout << "================================" << std::endl;
-	std::cout << "Build : " << __DATE__ << ' ' << __TIME__ << std::endl;
-	srand(time(NULL));
+	// Static assertion :
+	template<bool test>
+	struct StaticAssert;
 
-	try
+	template<>
+	struct StaticAssert<true>
+	{ };
+
+	// Static tests :
+	template<bool test, typename TrueResult, typename FalseResult>
+	struct StaticIf;
+
+	template<typename TrueResult, typename FalseResult>
+	struct StaticIf<true, TrueResult, FalseResult>
 	{
-		// Creating a Layout (size of an array) :
-		const Kartet::Layout layout(5, 3);
+		typedef TrueResult Type;
+	};
 
-		// Creating arrays :
-		Kartet::Array<float> 	A(layout),
-					B(layout),
-					C(layout);
-
-		Kartet::Array< Kartet::Complex<double>, Kartet::HostSide> Cx(layout);
-
-		// Initialization, fill with ones :
-		A = 1.0f;
-		std::cout << "A = " << A << std::endl;
-
-		// Initialization with the row indices :
-		B = Kartet::IndexI();
-		std::cout << "B = " << B << std::endl;
-
-		Cx = Kartet::complex(Kartet::IndexI(), Kartet::IndexJ());
-		std::cout << "Cx = " << Cx << std::endl;
-
-		// Compute an expression :
-		C = 2.0f*(B-A);
-		std::cout << "C = " << C << std::endl;
-
-		Cx = Cx * Cx - 1.0;
-		std::cout << "Cx = " << Cx << std::endl;
-
-		// Computing over parts of the array :
-		C.column(0) = C.column(2) - C.column(1);
-		std::cout << "C = " << C << std::endl;
-		
-		// Explicit manipulations :
-		Kartet::Array<int> block(3, 3);
-		block = Kartet::cast<float>(Kartet::IndexI()!=1 && Kartet::IndexJ()!=1);
-		Kartet::Array<int> large(3*block.numRows(), 3*block.numColumns());
-		large = repeat(block);
-		std::cout << "Block = " << block << std::endl;
-		std::cout << "Large (repeat block) = " << large << std::endl;
-		large = expand(block);
-		std::cout << "Large (expand block) = " << large << std::endl;
-
-		// Random sources :
-		Kartet::UniformSource<> uniformSource;
-		uniformSource.setSeed();
-		uniformSource >> A;
-		uniformSource >> B;
-		std::cout << "A = " << A << std::endl;
-		std::cout << "B = " << B << std::endl;
-		B = yFlip(xFlip(A)); // We cannot use in place flip here, these operations will be slow when performed on device for large arrays (naive/non-coalesced memory access).
-		std::cout << "A (flipped) = " << B << std::endl;
-
-		// Reduction example :
-		Kartet::ReduceContext reduceContext;
-		const float count1 = reduceContext.sum(A.layout(), Kartet::cast<int>(A>=B));
-		std::cout << "Number of elements of A larger than B : " << count1 << std::endl;
-		
-		const float sum1 = reduceContext.sum(A.layout(), abs(A-B));
-		std::cout << "Sum over |A-B| : " << sum1 << std::endl;
-
-		// BLAS Example :
-		const Kartet::Layout matrixLayout(4,4);
-		Kartet::Array<double> M1(matrixLayout), M2(matrixLayout), M3(matrixLayout);
-		M1 = Kartet::IndexI();
-		M2 = (Kartet::IndexI() + Kartet::IndexJ())/2.0;
-		M3 = 0.0;
-
-		Kartet::BLASContext blas;
-		blas.gemm(M1,M2,M3);
-		std::cout << "M1 = " << M1 << std::endl;
-		std::cout << "M2 = " << M2 << std::endl;
-		std::cout << "M3 = " << M3 << std::endl;
-	}
-	catch(Kartet::Exception& e)
+	template<typename TrueResult, typename FalseResult>
+	struct StaticIf<false, TrueResult, FalseResult>
 	{
-		std::cout << "Exception : " << e << std::endl;
-		returnCode = -1;
-	}
+		typedef FalseResult Type;
+	};
 
-	return returnCode;
+	// Type test :
+	template<typename T1, typename T2>
+	struct IsSame
+	{
+		static const bool value = false;
+	};
+
+	template<typename T>
+	struct IsSame<T,T>
+	{
+		static const bool value = true;
+	};
 }
+
+#endif
 

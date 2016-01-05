@@ -42,24 +42,6 @@
 		#define __shared__ 
 		#define cudaStream_t void*
 
-	// Missing types :
-		#ifdef __cplusplus
-		extern "C"
-		{
-		#endif
-			typedef struct cuFloatComplex
-			{
-				float x, y;
-			} cuFloatComplex;
-	
-			typedef struct cuDoubleComplex
-			{
-				double x, y;
-			} cuDoubleComplex;
-		#ifdef __cplusplus
-		}
-		#endif
-
 	// Missing functions :
 		template<typename T>
 		T min(T a, T b)
@@ -72,7 +54,6 @@
 		{
 			return (a>=b) ? a : b;
 		}
-
 	#endif
 
 #endif

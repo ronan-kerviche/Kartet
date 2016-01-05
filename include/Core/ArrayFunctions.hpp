@@ -192,9 +192,9 @@
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			return imag(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			return abs(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			return absSq(a); )
-	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			angle,			return angle(a); )
-	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_angleToComplex,		angleToComplex,		return angleToComplex(a); )
-	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_piAngleToComplex,		piAngleToComplex,	return piAngleToComplex(a); )
+	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			arg,			return arg(a); )
+	//R2C_UNARY_OPERATOR_DEFINITION(	UnOp_angleToComplex,		angleToComplex,		return angleToComplex(a); )
+	//R2C_UNARY_OPERATOR_DEFINITION(	UnOp_piAngleToComplex,		piAngleToComplex,	return piAngleToComplex(a); )
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
 // Transform functions :
@@ -260,9 +260,9 @@
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_remainderf,		remainderf,		return ::remainderf(a,b); )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ynf,			ynf,			return ::ynf(a,b); )
 
-	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToComplex, 		toComplex,		return toComplex(a, b); )
-	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToFloatComplex, 		toFloatComplex,		return toFloatComplex(a, b); )
-	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ToDoubleComplex, 		toDoubleComplex,	return toDoubleComplex(a, b); )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_Complex,			complex,		return Complex<ReturnType>(a, b); )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexF,			complexf,		return Complex<float>(a, b); )
+	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexD,			complexd,		return Complex<double>(a, b); )
 
 // Shuffle functions :
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleIndex, 		shuffleIndex,		l.unpackIndex(v, i, j, k); )

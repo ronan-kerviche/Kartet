@@ -1,10 +1,11 @@
-function [T, R, C, S] = readLayoutFromFile(arg)
+function [T, X, R, C, S] = readLayoutFromFile(arg)
 % function A = readLayoutFromFile(arg)
 %
 % ARGUMENTS : 
 % arg		: Either the filename (as a string) or a file ID (otherwise).
 % RETURNS :
-% [T, R, C, S]	: The layout structure, T is the type index, R is the number
+% [T, R, C, S]	: The layout structure, T is the type index, X is a logical
+%		  set to true if the array is complex, R is the number
 %		  of rows, C is the number of columns, S is the number of
 %		  slices.
 
@@ -20,13 +21,14 @@ function [T, R, C, S] = readLayoutFromFile(arg)
 	header = fread(fileId, 8, 'char*1');
 	
 	% This header should match the header in Array.hpp :
-	if(strcmp(char(header.'), 'KARTET01')==0)
+	if(strcmp(char(header.'), 'KARTET02')==0)
 		fclose(fileId);
 		error('Bad header : %s', header);
 	end
 
 	% Read the sizes :
 	T = fread(fileId, 1, '*int32');
+	X = fread(fileId, 1, '*uint8')>0;
 	R = fread(fileId, 1, '*int64');
 	C = fread(fileId, 1, '*int64');
 	S = fread(fileId, 1, '*int64');

@@ -31,7 +31,6 @@
 
 // Includes :
 	#include <limits>
-	//#include <complex>
 	#ifdef __CUDACC__
 		#include <cufft.h>
 	#endif
@@ -262,6 +261,7 @@ namespace Kartet
 		}
 	}
 
+	// Not used.
 	inline size_t isComplex(int typeIndex)
 	{
 		#define SPECIAL_CXTEST( TypeName , v)	case GetIndex<TypesSortedByAccuracy, TypeName>::value :	return v;
