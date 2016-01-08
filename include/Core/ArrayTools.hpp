@@ -288,8 +288,8 @@ namespace Kartet
 
 	#ifdef __CUDACC__
 	/**
-	\brief Returns the dimensions of the array in a dim3 struct.
-	\return The dimensions of the array in a dim3 struct.
+	\brief Returns the dimensions of the array in a dim3 structure.
+	\return The dimensions of the array in a dim3 structure.
 	**/
 	__host__ __device__ inline dim3 Layout::dimensions(void) const
 	{
@@ -297,11 +297,11 @@ namespace Kartet
 	}
 	
 	/**
-	\brief Returns the strides of the array in a dim3 struct.
+	\brief Returns the strides of the array in a dim3 structure.
 	
 	Note that the first stride is guaranteed to be 1.
 
-	\return The strides of the array in a dim3 struct.
+	\return The strides of the array in a dim3 structure.
 	**/
 	__host__ __device__ inline dim3 Layout::strides(void) const
 	{
@@ -346,7 +346,7 @@ namespace Kartet
 	It is not possible to reinterpret a layout from (2,6, leading columns = 4) to (3,4) because the fragments are non contiguous.
 	It is possible to reinterpret a layout from (2,6, leading columns = 4) to (2,1,6) because the fragments are kept.
 
-	\throw InvalidLayoutReinterpretation In case of a failure.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::reinterpretLayout(index_t r, index_t c, index_t s)
 	{
@@ -407,7 +407,7 @@ namespace Kartet
 	\brief Modify the layout without changing the number of elements.
 	\param other New layout (only the number of rows, columns and slices are considered).
 
-	\throw InvalidLayoutReinterpretation In case of a failure.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::reinterpretLayout(const Layout& other)
 	{
@@ -417,9 +417,9 @@ namespace Kartet
 	/**
 	\brief Reinterpret the layout by concatenating all slices columns in-place.
 
-	The layout becomes of size (R, C*S, 1).
+	The layout becomes of size (R, C*S, 1). The original layout must be have columns stride dividing slices sride.
 
-	\throw InvalidLayoutReinterpretation In case of a failure.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::flatten(void)
 	{
@@ -429,9 +429,9 @@ namespace Kartet
 	/**
 	\brief Reinterpret the layout by concatenating all columns elements in-place.
 
-	The layout becomes of size (R*C, S, 1).
+	The layout becomes of size (R*C, S, 1). The slices of the original layout must be monolithic.
 
-	\throw InvalidLayoutReinterpretation In case of a failure.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::stretch(void)
 	{
@@ -441,13 +441,32 @@ namespace Kartet
 	/**
 	\brief Reinterpret the layout by concatenating all elements in-place.
 	
-	The layout becomes of size (R*C*S, 1, 1).
+	The layout becomes of size (R*C*S, 1, 1). The original layout must be monolithic.
 
-	\throw InvalidLayoutReinterpretation In case of a failure.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
 	**/
 	__host__ inline void Layout::vectorize(void)
 	{
 		reinterpretLayout(nRows*nColumns*nSlices, 1, 1);
+	}
+
+	/**
+	\brief Reinterpret the layout by removing the singleton dimensions.
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
+	**/
+	__host__ inline void Layout::squeeze(void)
+	{
+		index_t rcs[3] = {nRows, nColumns, nSlices};
+		for(int k=0; k<3; k++)
+		{
+			if(rcs[k]==1)
+			{
+				for(int l=k+1; l<3; l++)
+					rcs[l-1] = rcs[l];
+				rcs[2] = 1;
+			}
+		}
+		reinterpretLayout(rcs[0], rcs[1], rcs[2]);
 	}
 
 	/**
@@ -547,7 +566,7 @@ namespace Kartet
 	\param kBegin Origin slice index.
 	\param layout Block split size.
 	
-	\throw OutOfRange If the index of the origin in any dimension is invalid or the size in any dimension is strictly less than 1.
+	\throw Kartet::OutOfRange If the index of the origin in any dimension is invalid or the size in any dimension is strictly less than 1.
 	\return A vector containing all the splits (column-major ordered).
 	**/
 	__host__ inline std::vector<Layout> Layout::splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const
@@ -1229,7 +1248,7 @@ namespace Kartet
 
 	If not NULL, the destination will be written with the type code following the layout (single integer).
 	
-	\throw InsufficientIndexingDepth If the stream refers to data wider than the available indexing depth.
+	\throw Kartet::InsufficientIndexingDepth If the stream refers to data wider than the available indexing depth.
 	\return The Layout built from the stream.
 	**/
 	__host__ inline Layout Layout::readFromStream(std::istream& stream, int* typeIndex, bool* isComplex)
@@ -1832,6 +1851,7 @@ namespace Kartet
 	\param maxBufferSize In the case of a conversion, the 
 	\param skipHeader Skip header read if True. The data read must be of the same type. No conversion will be performed.
 	\param sourceTypeIndex Force the data type of the input stream (useful if the header is skipped).
+	\param sourceIsComplex True if the source is complex (useful if the header is skipped).
 	\throw Kartet::InvalidOperation If the input data is complex but not this accessor or if maxBufferSize is insufficient or if the source type is different than the accessor type and the conversion is disabled.
 	\throw Kartet::InvalidInputStream If the stream cannot be read.
 	\throw Kartet::IncompatibleLayout If the layouts of the source and the accessor are not compatible.
@@ -2066,6 +2086,51 @@ namespace Kartet
 	}
 
 	/**
+	\brief Get an accesor to a particular row.
+	\param i Row index.
+	\throw Kartet::OutOfRange If the row index is out of range.
+	\return An accessor to the specified row.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::row(index_t i) const
+	{
+		if(!isRowValid(i))
+			throw OutOfRange;
+		return Accessor<T,l>(ptr + getPosition(i,0,0), 1, numColumns(), numSlices(), columnsStride(), slicesStride(), offset()+getPosition(i,0,0));
+	}
+
+	/**
+	\brief Get an accesor to a particular row.
+	\param i Row index.
+	\throw Kartet::OutOfRange If the row index is out of range.
+	\return An accessor to the specified row.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::endRow(index_t i) const
+	{
+		return row(numRows()-1);
+	}
+
+	/**
+	\brief Get an accessor to the specified rows.
+	\param iBegin Starting index of the row.
+	\param r Number of rows.
+	\throw Kartet::InvalidNegativeStep If the number of rows is less or equal to 0.
+	\throw Kartet::OutOfRange If any row has an invalid index.
+	\return An accessor to the specified rows.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::rows(index_t iBegin, index_t r) const
+	{
+		if(r<=0)
+			throw InvalidNegativeStep;
+		if(!isRowValid(iBegin) || !isRowValid(iBegin+r-1))
+			throw OutOfRange;
+
+		return Accessor<T,l>(ptr + getPosition(iBegin,0,0), r, numColumns(), numSlices(), columnsStride(), slicesStride(), offset()+getPosition(iBegin,0,0));
+	}
+
+	/**
 	\brief Get an accesor to a particular column.
 	\param j Column index.
 	\throw Kartet::OutOfRange If the column index is out of range.
@@ -2200,6 +2265,108 @@ namespace Kartet
 	}
 
 	/**
+	\brief Get an accessor to the top left corner.
+	\param r Number of rows inward.
+	\param c Number of columns inward.
+	\throw Kartet::OutOfRange If one or both of the size are invalid.
+	\return An accessor to the specified top left corner.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::topLeftCorner(index_t r, index_t c) const
+	{
+		if(r<=0 || r>numRows() || c<=0 || c>numColumns())
+			throw OutOfRange;
+		return Accessor<T,l>(ptr, r, c, numSlices(), columnsStride(), slicesStride(), offset());
+	}
+	
+	/**
+	\brief Get an accessor to the bottom left corner.
+	\param r Number of rows inward.
+	\param c Number of columns inward.
+	\throw Kartet::OutOfRange If one or both of the size are invalid.
+	\return An accessor to the specified top left corner.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::bottomLeftCorner(index_t r, index_t c) const
+	{
+		if(r<=0 || r>numRows() || c<=0 || c>numColumns())
+			throw OutOfRange;
+		return Accessor<T,l>(ptr + getPosition(numRows()-r,0,0), r, c, numSlices(), columnsStride(), slicesStride(), offset()+getPosition(numRows()-r,0,0));
+	}
+
+	/**
+	\brief Get an accessor to the top right corner.
+	\param r Number of rows inward.
+	\param c Number of columns inward.
+	\throw Kartet::OutOfRange If one or both of the size are invalid.
+	\return An accessor to the specified top left corner.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::topRightCorner(index_t r, index_t c) const
+	{
+		if(r<=0 || r>numRows() || c<=0 || c>numColumns())
+			throw OutOfRange;
+		return Accessor<T,l>(ptr + getPosition(0,numColumns()-c,0), r, c, numSlices(), columnsStride(), slicesStride(), offset()+getPosition(0,numColumns()-c,0));
+	}
+
+	/**
+	\brief Get an accessor to the bottom right corner.
+	\param r Number of rows inward.
+	\param c Number of columns inward.
+	\throw Kartet::OutOfRange If one or both of the size are invalid.
+	\return An accessor to the specified top left corner.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::bottomRightCorner(index_t r, index_t c) const
+	{
+		if(r<=0 || r>numRows() || c<=0 || c>numColumns())
+			throw OutOfRange;
+		return Accessor<T,l>(ptr + getPosition(numRows()-r,numColumns()-c,0), r, c, numSlices(), columnsStride(), slicesStride(), offset()+getPosition(numRows()-r,numColumns()-c,0));
+	}
+
+	/**
+	\brief Get an accessor to a parallel of the main diagonal.
+	\param o Diagonal offset.
+	
+	When the offset is positive, it corresponds to diagonal under the main diagonal. When positive, it corresponds to diagonal over.
+
+	\throw Kartet::OutOfRange If the offset is invalid.
+	\return An accessor to the specified diagonal.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::diagonal(index_t o) const
+	{
+		if(o>=numRows() || -o>=numColumns())
+			throw OutOfRange;
+		
+		if(o>=0)
+			return Accessor<T,l>(ptr + getPosition(o,0,0), 1, std::max(numRows(), numColumns())-o, numSlices(), columnsStride()+1, slicesStride(), offset()+getPosition(o,0,0));
+		else
+			return Accessor<T,l>(ptr + getPosition(0,-o,0), 1, std::max(numRows(), numColumns())+o, numSlices(), columnsStride()+1, slicesStride(), offset()+getPosition(0,-o,0));
+	}
+
+	/**
+	\brief Get an accessor to a parallel of the secondary diagonal.
+	\param o Diagonal offset.
+	
+	When the offset is positive, it corresponds to diagonal under the secondary diagonal. When positive, it corresponds to diagonal over.
+
+	\throw Kartet::OutOfRange If the offset is invalid.
+	\return An accessor to the specified diagonal.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::secondaryDiagonal(index_t o) const
+	{
+		if(o>=numRows() || -o>=numColumns())
+			throw OutOfRange;
+		
+		if(o>=0)
+			return Accessor<T,l>(ptr + getPosition(numRows()-1,o,0), 1, std::max(numRows(), numColumns())-o, numSlices(), columnsStride()-1, slicesStride(), getPosition(numRows()-1,o,0));
+		else
+			return Accessor<T,l>(ptr + getPosition(numRows()+o-1,0,0), 1, std::max(numRows(), numColumns())+o, numSlices(), columnsStride()-1, slicesStride(), offset()+getPosition(numRows()+o-1,0,0));
+	}
+
+	/**
 	\brief Return the flattened version of this accessor (see Kartet::Layout::flatten()).
 	\return The flattened version of this accessor.
 	**/
@@ -2232,6 +2399,18 @@ namespace Kartet
 	{
 		Accessor<T, l> result = (*this);
 		result.vectorize();
+		return result;
+	}
+
+	/**
+	\brief Return the squeezed version of this accessor (see Kartet::Layout::squeeze()).
+	\return The squeezed version of this accessor.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::squeezed(void) const
+	{
+		Accessor<T, l> result = (*this);
+		result.squeez();
 		return result;
 	}
 

@@ -33,7 +33,6 @@
 	\date    November 1st 2009
 **/
 
-
 #ifndef __KARTET_MAIN_ARRAY__
 #define __KARTET_MAIN_ARRAY__
 
@@ -195,6 +194,7 @@ namespace Kartet
 				__host__            inline void flatten(void);
 				__host__	    inline void stretch(void);
 				__host__            inline void vectorize(void);
+				__host__	    inline void squeeze(void);
 				__host__ 	    inline std::vector<Layout> splitLayoutColumns(index_t jBegin, index_t nColumns) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSlices(index_t kBegin, index_t nSlices) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
@@ -362,6 +362,9 @@ namespace Kartet
 				__host__	           Accessor<T,l> element(index_t i, index_t j=0, index_t k=0) const;
 				__host__	           Accessor<T,l> elements(index_t p, index_t numElements) const;
 				__host__	           Accessor<T,l> elements(void) const;
+				__host__	           Accessor<T,l> row(index_t i) const; 
+				__host__	           Accessor<T,l> endRow(index_t i) const;
+				__host__	           Accessor<T,l> rows(index_t iBegin, index_t r) const;
 				__host__ 	           Accessor<T,l> column(index_t j) const;
 				__host__ 	           Accessor<T,l> endColumn(void) const;
 				__host__ 	           Accessor<T,l> columns(index_t jBegin, index_t c, index_t jStep=1) const;
@@ -370,9 +373,16 @@ namespace Kartet
 				__host__ 	           Accessor<T,l> slices(index_t kBegin, index_t s, index_t kStep=1) const;
 				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t r, index_t c) const;
 				__host__ 	           Accessor<T,l> subArray(index_t iBegin, index_t jBegin, index_t kBegin, index_t r, index_t c, index_t s) const;
+				__host__		   Accessor<T,l> topLeftCorner(index_t r, index_t c) const;
+				__host__		   Accessor<T,l> bottomLeftCorner(index_t r, index_t c) const;
+				__host__		   Accessor<T,l> topRightCorner(index_t r, index_t c) const;
+				__host__		   Accessor<T,l> bottomRightCorner(index_t r, index_t c) const;
+				__host__		   Accessor<T,l> diagonal(index_t o=0) const;
+				__host__		   Accessor<T,l> secondaryDiagonal(index_t o=0) const;
 				__host__  	           Accessor<T,l> flattened(void) const;
 				__host__  	           Accessor<T,l> stretched(void) const;
 				__host__  	           Accessor<T,l> vectorized(void) const;
+				__host__		   Accessor<T,l> squeezed(void) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitColumns(index_t jBegin, index_t c) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSlices(index_t kBegin, index_t s) const;
 				__host__ 	           std::vector< Accessor<T,l> > splitSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t r=0, index_t c=0, index_t s=0) const;

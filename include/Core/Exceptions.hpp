@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */ 
 
+/*
+	\file    Exceptions.hpp
+	\brief   Exceptions thrown by the API.
+	\author  R. Kerviche
+	\date    November 1st 2009
+*/
+
 #ifndef __KARTET_EXCEPTIONS__
 #define __KARTET_EXCEPTIONS__
 
@@ -40,11 +47,12 @@
 
 namespace Kartet
 {
+	/// \cond FALSE
 	enum Exception
 	{	
 		// Cuda Specifics :
 		// cudaSuccess, see NoExceptions
-		#define DEFINE_CUDA_EXCEPTION( x ) C##x = CudaExceptionsOffset + c##x	
+		#define DEFINE_CUDA_EXCEPTION( x ) C##x = CudaExceptionsOffset + c##x
 		CudaExceptionsOffset	= 1024,
 		#ifdef __CUDACC__
 		DEFINE_CUDA_EXCEPTION( udaErrorMissingConfiguration ), 
@@ -195,6 +203,8 @@ namespace Kartet
 		// Others :
 		NoException = 0,
 	};
+	/// \endcond
+
 } // namespace Kartet
 
 #include <iostream>

@@ -1,0 +1,311 @@
+/**
+	\file    Exceptions.dox
+	\brief   Documentation of the exceptions.
+	\author  R. Kerviche
+	\date    December 1st 2015
+**/
+
+/*
+	This file is not needed for the library to work. It mirrors the definitions in $KARTET_PATH/include/Core/Exceptions.hpp.
+*/
+
+namespace Kartet
+{
+/**
+	\addtogroup ExceptionsGroup
+	@{
+**/
+
+	/**
+	\brief List of possible exceptions.
+
+	Exceptions can be printed to stream with the standard operator : 
+	\code
+	Kartet::Exception e = Kartet::NoException;
+	std::cerr << "Exception caught : " << e << std::endl;
+	\endcode
+	**/
+	enum Exception
+	{
+		// Cuda :
+		/// Offset for Cuda Exceptions.
+		CudaExceptionsOffset,
+		/// The device function being invoked (usually via cudaLaunch()) was not previously configured via the cudaConfigureCall() function.
+		CudaErrorMissingConfiguration, 
+		/// The API call failed because it was unable to allocate enough memory to perform the requested operation. 
+		CudaErrorMemoryAllocation, 
+		/// The API call failed because the CUDA driver and runtime could not be initialized. 
+		CudaErrorInitializationError, 
+		/// An exception occurred on the device while executing a kernel. Common causes include dereferencing an invalid device pointer and accessing out of bounds shared memory. The device cannot be used until cudaThreadExit() is called. All existing device memory allocations are invalid and must be reconstructed if the program is to continue using CUDA. 
+		CudaErrorLaunchFailure,	
+		/// This indicated that a previous kernel launch failed. This was previously used for device emulation of kernel launches. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorPriorLaunchFailure, 
+		/// This indicates that the device kernel took too long to execute. This can only occur if timeouts are enabled - see the device property kernelExecTimeoutEnabled for more information. The device cannot be used until cudaThreadExit() is called. All existing device memory allocations are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorLaunchTimeout, 
+		/// This indicates that a launch did not occur because it did not have appropriate resources. Although this error is similar to cudaErrorInvalidConfiguration, this error usually indicates that the user has attempted to pass too many arguments to the device kernel, or the kernel launch specifies too many threads for the kernel's register count.
+		CudaErrorLaunchOutOfResources, 
+		/// The requested device function does not exist or is not compiled for the proper device architecture. 
+		CudaErrorInvalidDeviceFunction, 
+		/// This indicates that a kernel launch is requesting resources that can never be satisfied by the current device. Requesting more shared memory per block than the device supports will trigger this error, as will requesting too many threads or blocks. See cudaDeviceProp for more device limitations. 
+		CudaErrorInvalidConfiguration,
+		/// This indicates that the device ordinal supplied by the user does not correspond to a valid CUDA device. 
+		CudaErrorInvalidDevice, 
+		/// This indicates that one or more of the parameters passed to the API call is not within an acceptable range of values.
+		CudaErrorInvalidValue, 
+		/// This indicates that one or more of the pitch-related parameters passed to the API call is not within the acceptable range for pitch.
+		CudaErrorInvalidPitchValue, 
+		/// This indicates that the symbol name/identifier passed to the API call is not a valid name or identifier. 
+		CudaErrorInvalidSymbol, 
+		/// This indicates that the buffer object could not be mapped.
+		CudaErrorMapBufferObjectFailed, 
+		/// This indicates that the buffer object could not be unmapped.
+		CudaErrorUnmapBufferObjectFailed, 
+		/// This indicates that at least one host pointer passed to the API call is not a valid host pointer. 
+		CudaErrorInvalidHostPointer, 
+		/// This indicates that at least one device pointer passed to the API call is not a valid device pointer.
+		CudaErrorInvalidDevicePointer, 
+		/// This indicates that the texture passed to the API call is not a valid texture. 
+		CudaErrorInvalidTexture, 
+		/// This indicates that the texture binding is not valid. This occurs if you call cudaGetTextureAlignmentOffset() with an unbound texture. 
+		CudaErrorInvalidTextureBinding, 
+		/// This indicates that the channel descriptor passed to the API call is not valid. This occurs if the format is not one of the formats specified by cudaChannelFormatKind, or if one of the dimensions is invalid. 
+		CudaErrorInvalidChannelDescriptor, 
+		/// This indicates that the direction of the memcpy passed to the API call is not one of the types specified by cudaMemcpyKind. 
+		CudaErrorInvalidMemcpyDirection, 
+		/// This indicated that the user has taken the address of a constant variable, which was forbidden up until the CUDA 3.1 release. Deprecated: This error return is deprecated as of CUDA 3.1. Variables in constant memory may now have their address taken by the runtime via cudaGetSymbolAddress(). 
+		CudaErrorAddressOfConstant, 
+		/// This indicated that a texture fetch was not able to be performed. This was previously used for device emulation of texture operations. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorTextureFetchFailed, 
+		/// This indicated that a texture was not bound for access. This was previously used for device emulation of texture operations. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorTextureNotBound, 
+		/// This indicated that a synchronization operation had failed. This was previously used for some device emulation functions. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorSynchronizationError, 
+		/// This indicates that a non-float texture was being accessed with linear filtering. This is not supported by CUDA. 
+		CudaErrorInvalidFilterSetting, 
+		/// This indicates that an attempt was made to read a non-float texture as a normalized float. This is not supported by CUDA. 
+		CudaErrorInvalidNormSetting, 
+		/// Mixing of device and device emulation code was not allowed. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorMixedDeviceExecution, 
+		/// This indicated an issue with calling API functions during the unload process of the CUDA runtime in prior releases. Deprecated: This error return is deprecated as of CUDA 3.2. 
+		CudaErrorCudartUnloading, 
+		/// This indicates that an unknown internal error has occurred. 
+		CudaErrorUnknown, 
+		/// This indicates that the API call is not yet implemented. Production releases of CUDA will never return this error.
+		CudaErrorNotYetImplemented, 
+		/// This indicated that an emulated device pointer exceeded the 32-bit address range. Deprecated: This error return is deprecated as of CUDA 3.1. Device emulation mode was removed with the CUDA 3.1 release. 
+		CudaErrorMemoryValueTooLarge,
+		/// This indicates that a resource handle passed to the API call was not valid. Resource handles are opaque types like cudaStream_t and cudaEvent_t.  
+		CudaErrorInvalidResourceHandle, 
+		/// This indicates that asynchronous operations issued previously have not completed yet. This result is not actually an error, but must be indicated differently than cudaSuccess (which indicates completion). Calls that may return this value include cudaEventQuery() and cudaStreamQuery(). 
+		CudaErrorNotReady, 
+		/// This indicates that the installed NVIDIA CUDA driver is older than the CUDA runtime library. This is not a supported configuration. Users should install an updated NVIDIA display driver to allow the application to run.
+		CudaErrorInsufficientDriver, 
+		/// This indicates that the user has called cudaSetDevice(), cudaSetValidDevices(), cudaSetDeviceFlags(), cudaD3D9SetDirect3DDevice(), cudaD3D10SetDirect3DDevice, cudaD3D11SetDirect3DDevice(), * or cudaVDPAUSetVDPAUDevice() after initializing the CUDA runtime by calling non-device management operations (allocating memory and launching kernels are examples of non-device management operations). This error can also be returned if using runtime/driver interoperability and there is an existing CUcontext active on the host thread. 
+		CudaErrorSetOnActiveProcess, 
+		/// This indicates that the surface passed to the API call is not a valid surface.
+		CudaErrorInvalidSurface,
+		/// This indicates that no CUDA-capable devices were detected by the installed CUDA driver. 
+		CudaErrorNoDevice, 
+		/// This indicates that an uncorrectable ECC error was detected during execution. 
+		CudaErrorECCUncorrectable, 
+		/// This indicates that a link to a shared object failed to resolve.
+		CudaErrorSharedObjectSymbolNotFound, 
+		/// This indicates that initialization of a shared object failed. 
+		CudaErrorSharedObjectInitFailed, 
+		/// This indicates that the cudaLimit passed to the API call is not supported by the active device. 
+		CudaErrorUnsupportedLimit, 
+		/// This indicates that multiple global or constant variables (across separate CUDA source files in the application) share the same string name.
+		CudaErrorDuplicateVariableName, 
+		/// This indicates that multiple textures (across separate CUDA source files in the application) share the same string name.
+		CudaErrorDuplicateTextureName, 
+		/// This indicates that multiple surfaces (across separate CUDA source files in the application) share the same string name.
+		CudaErrorDuplicateSurfaceName, 
+		/// This indicates that all CUDA devices are busy or unavailable at the current time. Devices are often busy/unavailable due to use of cudaComputeModeExclusive or cudaComputeModeProhibited. They can also be unavailable due to memory constraints on a device that already has active CUDA work being performed. 
+		CudaErrorDevicesUnavailable, 
+		/// This indicates that the device kernel image is invalid.
+		CudaErrorInvalidKernelImage, 
+		/// This indicates that there is no kernel image available that is suitable for the device. This can occur when a user specifies code generation options for a particular CUDA source file that do not include the corresponding device configuration.
+		CudaErrorNoKernelImageForDevice, 
+		/// This indicates that the current context is not compatible with this version of the CUDA Runtime. This can only occur if you are using CUDA Runtime/Driver interoperability and have created an existing Driver context using an older API. Please see Interactions with the CUDA Driver API for more information.
+		CudaErrorIncompatibleDriverContext, 
+		/// This indicates an internal startup failure in the CUDA runtime.
+		CudaErrorStartupFailure, 
+		/// Any unhandled CUDA driver error is added to this value and returned via the runtime. Production releases of CUDA should not return such errors. 
+		CudaErrorApiFailureBase, 
+		/// This error indicates that a call to cudaDeviceEnablePeerAccess() is trying to re-enable peer addressing on from a context which has already had peer addressing enabled. 
+		CudaErrorPeerAccessAlreadyEnabled, 
+		/// This error indicates that cudaDeviceDisablePeerAccess() is trying to disable peer addressing which has not been enabled yet via cudaDeviceEnablePeerAccess(). 
+		CudaErrorPeerAccessNotEnabled, 
+		/// This indicates that a call tried to access an exclusive-thread device that is already in use by a different thread. 
+		CudaErrorDeviceAlreadyInUse, 
+		/// This indicates profiler has been disabled for this run and thus runtime APIs cannot be used to profile subsets of the program. This can happen when the application is running with external profiling tools like visual profiler. 
+		CudaErrorProfilerDisabled, 
+		/// This indicates profiler has not been initialized yet. cudaProfilerInitialize() must be called before calling cudaProfilerStart and cudaProfilerStop to initialize profiler. 
+		CudaErrorProfilerNotInitialized, 
+		/// This indicates profiler is already started. This error can be returned if cudaProfilerStart() is called multiple times without subsequent call to cudaProfilerStop(). 
+		CudaErrorProfilerAlreadyStarted, 
+		/// This indicates profiler is already stopped. This error can be returned if cudaProfilerStop() is called without starting profiler using cudaProfilerStart(). 
+		CudaErrorProfilerAlreadyStopped, 
+		/// An assert triggered in device code during kernel execution. The device cannot be used again until cudaThreadExit() is called. All existing allocations are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorAssert, 
+		/// This error indicates that the hardware resources required to enable peer access have been exhausted for one or more of the devices passed to cudaEnablePeerAccess().
+		CudaErrorTooManyPeers, 
+		/// This error indicates that the memory range passed to cudaHostRegister() has already been registered.
+		CudaErrorHostMemoryAlreadyRegistered, 
+		/// This error indicates that the pointer passed to cudaHostUnregister() does not correspond to any currently registered memory region.
+		CudaErrorHostMemoryNotRegistered, 
+		/// This error indicates that an OS call failed.
+		CudaErrorOperatingSystem, 
+		/// This error indicates that P2P access is not supported across the given devices.
+		CudaErrorPeerAccessUnsupported, 
+		/// This error indicates that a device runtime grid launch did not occur because the depth of the child grid would exceed the maximum supported number of nested grid launches.
+		CudaErrorLaunchMaxDepthExceeded, 
+		/// This error indicates that a grid launch did not occur because the kernel uses file-scoped textures which are unsupported by the device runtime. Kernels launched via the device runtime only support textures created with the Texture Object API's.
+		CudaErrorLaunchFileScopedTex, 
+		/// This error indicates that a grid launch did not occur because the kernel uses file-scoped surfaces which are unsupported by the device runtime. Kernels launched via the device runtime only support surfaces created with the Surface Object API's.
+		CudaErrorLaunchFileScopedSurf, 
+		/// This error indicates that a call to cudaDeviceSynchronize made from the device runtime failed because the call was made at grid depth greater than than either the default (2 levels of grids) or user specified device limit cudaLimitDevRuntimeSyncDepth. To be able to synchronize on launched grids at a greater depth successfully, the maximum nested depth at which cudaDeviceSynchronize will be called must be specified with the cudaLimitDevRuntimeSyncDepth limit to the cudaDeviceSetLimit api before the host-side launch of a kernel using the device runtime. Keep in mind that additional levels of sync depth require the runtime to reserve large amounts of device memory that cannot be used for user allocations.
+		CudaErrorSyncDepthExceeded, 
+		/// This error indicates that a device runtime grid launch failed because the launch would exceed the limit cudaLimitDevRuntimePendingLaunchCount. For this launch to proceed successfully, cudaDeviceSetLimit must be called to set the cudaLimitDevRuntimePendingLaunchCount to be higher than the upper bound of outstanding launches that can be issued to the device runtime. Keep in mind that raising the limit of pending device untime launches will require the runtime to reserve device memory that cannot be used for user allocations.
+		CudaErrorLaunchPendingCountExceeded, 
+		/// This error indicates the attempted operation is not permitted.
+		CudaErrorNotPermitted, 
+		/// This error indicates the attempted operation is not supported on the current system or device.
+		CudaErrorNotSupported,
+		/// Device encountered an error in the call stack during kernel execution, possibly due to stack corruption or exceeding the stack size limit. The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorHardwareStackError,
+		/// The device encountered an illegal instruction during kernel execution The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorIllegalInstruction,
+		/// The device encountered a load or store instruction on a memory address which is not aligned. The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorMisalignedAddress,
+		/// While executing a kernel, the device encountered an instruction which can only operate on memory locations in certain address spaces (global, shared, or local), but was supplied a memory address not belonging to an allowed address space. The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorInvalidAddressSpace,
+		/// The device encountered an invalid program counter. The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorInvalidPc,
+		/// The device encountered a load or store instruction on an invalid memory address. The context cannot be used, so it must be destroyed (and a new one should be created). All existing device memory allocations from this context are invalid and must be reconstructed if the program is to continue using CUDA.
+		CudaErrorIllegalAddress,
+		
+		// CuBLAS :
+		/// Offset for CuBLAS Exceptions.
+		CuBLASExceptionOffset,
+		/// CuBLAS was not (properly) initialized.
+		CuBLASNotInitialized,
+		/// CuBLAS, Memory allocation failed.
+		CuBLASAllocFailed,
+		/// Invalid value.
+		CuBLASInvalidValue,
+		/// Hardware architecture does not match code.
+		CuBLASArchMismatch,
+		/// Mapping error.
+		CuBLASMappingError,
+		/// Operation failed.
+		CuBLASExecutionFailed,
+		/// CuBLAS, internal error.
+		CuBLASInternalError,
+
+		// CuRand :
+		/// Offset for CuRand Exceptions.
+		CuRandExceptionOffset,
+		/// CuRand version does not match expected value.
+		CuRandVersionMismatch,
+		/// CuRand was not (properly) initialized.
+		CuRandNotInitialized,
+		/// CuFFT, Memory allocation failed.
+		CuRandAllocationFailed,
+		/// Type Error.
+		CuRandTypeError,
+		/// Element is out of range.
+		CuRandOutOfRange,
+		/// Invalid length.
+		CuRandLengthNotMultiple,
+		/// Double precision is required for the operation to complete.
+		CuRandDoublePrecisionRequired,
+		/// Operation could not be launched.
+		CuRandLaunchFailure,
+		/// Pre-existing failure.
+		CuRandPreexistingFailure,
+		/// CuRand initialization failed.
+		CuRandInitializationFailed,
+		/// Hardware architecture does not match code.
+		CuRandArchMismatch,
+		/// CuRand, internal error.
+		CuRandInternalError,
+
+		// CuFFT :
+		/// Offset for CuFFT Exceptions.
+		CuFFTExceptionOffset,
+		/// Invalid plan for transformed.
+		CuFFTInvalidPlan,
+		/// Memory allocation failed.
+		CuFFTAllocFailed,
+		/// Invalid transform type.
+		CuFFTInvalidType,
+		/// Invalid value.
+		CuFFTInvalidValue,
+		/// CuFFT Internal error.
+		CuFFTInternalError,
+		/// FFT Transform failed.
+		CuFFTExecFailed,
+		/// FFT Transform setup failed.
+		CuFFTSetupFailed,
+		/// FFT Transform size is invalid.
+		CuFFTInvalidSize,
+		/// Data is not properly aligned.
+		CuFFTUnalignedData,
+
+		// Kartet :
+		/// Size cannot be negative.
+		InvalidNegativeSize,
+		/// Step cannot be negative.
+		InvalidNegativeStep,
+		/// Step is invalid.
+		InvalidStep,
+		/// Size if invalid.
+		InvalidSize,
+		/// Element is out of range.
+		OutOfRange,
+		/// Memory allocation failed.
+		OutOfMemory,
+		/// Operation cannot be performed.
+		InvalidOperation,
+		/// Layout is incorrect (0-size or overlapping areas for instance).
+		InvalidLayout,
+		/// Layout is not compatible with the operation.
+		IncompatibleLayout,
+		/// Layout cannot be reinterpreted into the set of given arguments.
+		InvalidLayoutReinterpretation,
+		/// Cannot read from input stream.
+		InvalidInputStream,
+		/// Cannot write to output stream.
+		InvalidOutputStream,
+		/// Stream header does not match expection.
+		InvalidStreamHeader,
+		/// Unknown type.
+		UnknownTypeIndex,
+		/// Invalid BLAS context.
+		InvalidBLASContext,
+		/// Invalid CuRand context.
+		InvalidCuRandContext,
+		/// Invalid cuFFT context.
+		InvalidCuFFTContext,
+		/// Invalid context.
+		InvalidContext,
+		/// Invalid data location.
+		InvalidLocation,
+		/// Invalid transfer direction.
+		InvalidDirection,
+		/// Indexing is not sufficient to handle larger arrays..
+		InsufficientIndexingDepth,
+		/// Null pointer not expected.
+		NullPointer,
+		/// Operation is not supported by software/hardware. Also : temporary exception, missing feature.
+		NotSupported,
+
+		// Others :
+		/// No error.
+		NoException = 0,
+	};
+/**
+	@}
+**/
+}

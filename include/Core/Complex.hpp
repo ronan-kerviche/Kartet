@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    Complex.hpp
+	\brief   Complex implementation.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_COMPLEX__
 #define __KARTET_COMPLEX__
 
@@ -62,66 +69,126 @@ namespace Kartet
 	struct ResultingType;
 
 	// Complex : 
+	/**
+	\brief Complex class.
+	
+	Usual operators are also defined and implemented. Kartet::Complex<float> and Kartet::Complex<double> are binary compatible respectively with cuFloatComplex and cuDoubleComplex.
+
+	Example : 
+	\code
+	Kartet::Complex<float>	z1(-3.0f, 2),
+				z2(4, 1.0);
+	std::cout << (z1*2+3*z2)*z2 << std::endl;
+	std::cout << abs(z1) << std::endl;
+	std::cout << conj(z1)/z2 << std::endl;
+	\endcode
+	**/
 	template<typename T>
 	struct Complex
 	{
 		// Data : 
 		typedef T BaseType;
-		T x, y;
+		
+			/// Real part.
+		T 	x, 
+			/// Imaginary part.
+			y; 
 
 		// Constructors : 
+		/**
+		\brief Default constructor to zero.
+		**/
 		__host__ __device__ Complex(void)
 		 : x(0), y(0)
 		{ }
 
+		/**
+		\brief Copy constructor.
+		\param z Original complex.
+		**/
 		__host__ __device__ Complex(const Complex<T>& z)
 		 : x(z.x), y(z.y)
 		{ }
 
+		/**
+		\brief Copy constructor.
+		\param z Original complex.
+		**/
 		template<typename T2>
 		__host__ __device__ Complex(const Complex<T2>& z)
 		 : x(z.x), y(z.y)
 		{ }
 
+		/**
+		\brief Constructor.
+		\param _x Real part.
+		\param _y Imaginary part.
+		**/
 		template<typename T2>
 		__host__ __device__ Complex(const T2& _x, const T2& _y=0)
 		 : x(_x), y(_y)
 		{ }
 
+		/**
+		\brief Constructor.
+		\param _x Real part.
+		\param _y Imaginary part.
+		**/
 		template<typename T2, typename T3>
 		__host__ __device__ Complex(const T2& _x, const T3& _y=0)
 		 : x(_x), y(_y)
 		{ }
 
+		/**
+		\brief Copy constructor.
+		\param z Original complex.
+		**/
 		__host__ __device__ Complex(const cuFloatComplex& z)
 		 : x(z.x), y(z.y)
 		{ }
 
+		/**
+		\brief Copy constructor.
+		\param z Original complex.
+		**/
 		__host__ __device__ Complex(const cuDoubleComplex& z)
 		 : x(z.x), y(z.y)
 		{ }
 
 		// Member functions : 
+		/**
+		\return Constant reference to the real part.
+		**/
 		__host__ __device__ const T& real(void) const
 		{
 			return x;
 		}
 
+		/**
+		\return Reference to the real part.
+		**/
 		__host__ __device__ T& real(void)
 		{
 			return x;
 		}
 
+		/**
+		\return Constant reference to the imaginary part.
+		**/
 		__host__ __device__ const T& imag(void) const
 		{
 			return y;
 		}
 
+		/**
+		\return Reference to the imaginary part.
+		**/
 		__host__ __device__ T& imag(void)
 		{
 			return y;
 		}
 
+		/// \cond FALSE
 		#define COUMPOUND_ASSIGNMENT( operator, CxOperation, ReOperation ) \
 			__host__ __device__ Complex<T>& operator (const Complex<T>& z) \
 			{ \
@@ -160,21 +227,104 @@ namespace Kartet
 			COUMPOUND_ASSIGNMENT( operator-=,	x-=z.x; y-=z.y;,										x-=r; )
 			COUMPOUND_ASSIGNMENT( operator*=,	const T _x = x; x=_x*z.x-y*z.y; y=_x*z.y+y*z.x;,						x*=r; y*=r;)
 			COUMPOUND_ASSIGNMENT( operator/=,	const T _x = x; x=(_x*z.x+y*z.y)/(z.x*z.x + z.y*z.y); y=(y*z.x-_x*z.y)/(z.x*z.x + z.y*z.y);,	x/=r; y/=r;)
-
 		#undef COUMPOUND_ASSIGNMENT
+		/// \endcond
 
+		/**
+		\return The inverse of the complex.
+		**/
+		Complex<T> operator-(void) const
+		{
+			return Complex<T>(-x, -y);
+		}
+
+		/**
+		\return The imaginary unit.
+		**/
 		static Complex<T> i(void)
 		{
 			return Complex<T>(0, 1);
 		}
 
+		/**
+		\return The imaginary unit.
+		**/
 		static Complex<T> j(void)
 		{
 			return Complex<T>(0, 1);
 		}
 	};
 
-	// Operators : 
+	// Operators :
+		/**
+		\fn Complex<T> operator+(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return The sum of left and right side.
+
+		\fn Complex<T> operator-(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return The difference of left and right side.
+
+		\fn Complex<T> operator*(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return The product of left and right side.
+
+		\fn Complex<T> operator/(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return The quotient of left by right side.
+
+		\fn bool operator==(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return True if the two sides are equal.
+
+		\fn bool operator!=(const T1& a, const T2& b)
+		\related Kartet::Complex
+		\param a Left side.
+		\param b Right side.
+		\return True if the two sides are different.
+
+		\fn template<typename T> T real(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The real part of the complex.
+		
+		\fn template<typename T> T imag(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The imaginary part of the complex.
+
+		\fn template<typename T> T abs(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The absolute value of the complex (L2 norm).
+		
+		\fn template<typename T> T absSq(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The absolute value squared of the complex (L2 norm squared).
+
+		\fn template<typename T> T arg(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The argument (angle) of the complex, within \f$ [-\pi; +\pi] \f$.
+
+		\fn template<typename T> Complex<T> conj(const Complex<T>& z)
+		\related Kartet::Complex
+		\param z Complex.
+		\return The conjugate of the complex.
+		**/
+
+	/// \cond FALSE 
 	#define COMPLEX_OPERATOR( operator, CxCxOperation, CxReOperation ) \
 		template<typename T> \
 		__host__ __device__ Complex<T> operator (const Complex<T>& z1, const Complex<T>& z2) \
@@ -295,6 +445,8 @@ namespace Kartet
 		{ \
 			return Complex<typename ResultingType<T,long double>::Type> CxReOperation ;\
 		}
+
+		
 
 		COMPLEX_OPERATOR(operator+, (z1.x+z2.x, z1.y+z2.y), 										(z.x + r, z.y) )
 		COMPLEX_OPERATOR(operator-, (z1.x-z2.x, z1.y-z2.y), 										(z.x - r, z.y) )
@@ -423,6 +575,8 @@ namespace Kartet
 			return CxReOperation ;\
 		}
 
+		
+
 		COMPARISON_OPERATOR( operator==, (z1.x==z2.x && z1.y==z2.y), (z.x==r && z.y==0) )
 		COMPARISON_OPERATOR( operator!=, (z1.x!=z2.x || z1.y!=z2.y), (z.x!=r || z.y!=0) )
 	#undef COMPARISON_OPERATOR
@@ -489,12 +643,13 @@ namespace Kartet
 			return CxOperation ; \
 		}
 		
+		
 		SPECIAL_ReFUNCTION( real, 	z.x, 				r,			r)
 		SPECIAL_ReFUNCTION( imag, 	z.y, 				0,			0)
 		SPECIAL_ReFUNCTION( abs, 	::sqrt(z.x*z.x+z.y*z.y), 	r<0 ? -r : r,		r)
 		SPECIAL_ReFUNCTION( absSq, 	z.x*z.x+z.y*z.y, 		r*r,			r*r)
 		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.y), 		r<0 ? -K_PI : K_PI,	K_PI)
-	#undef SPECIAL_FUNCTION
+	#undef SPECIAL_ReFUNCTION
 
 	#define SPECIAL_CxFUNCTION( function, CxOperation, ReOperation ) \
 		__host__ __device__ inline int function (const int& r) \
@@ -558,22 +713,37 @@ namespace Kartet
 			return Complex<double> CxOperation ; \
 		}
 		
-		SPECIAL_CxFUNCTION( conj, (z.x, -z.y), r)
 		
-	#undef SPECIAL_FUNCTION
+		SPECIAL_CxFUNCTION( conj, (z.x, -z.y), r)
+	#undef SPECIAL_CxFUNCTION
+	/// \endcond
 
+	/**
+	\return Complex number from polar representation.
+	\related Kartet::Complex
+	\param r Radius.
+	\param theta Angle.
+	**/
 	template<typename T>
 	__host__ __device__ Complex<T> polar(const T& r, const T& theta)
 	{
 		return Complex<T>(r*::cos(theta), r*::sin(theta));
 	}
 
+	/**
+	\brief Print complex number in a stream.
+	\related Kartet::Complex
+	\param os Stream.
+	\param z Complex.
+	\return Reference to modified stream.
+	**/
 	template<typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Complex<T>& z)
 	{
 		os << '(' << z.x << ", " << z.y << ')';
 		return os;
 	}
+
 } // namespace Kartet
 
 #endif

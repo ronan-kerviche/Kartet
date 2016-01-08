@@ -2,7 +2,7 @@
 	\file    Groups.dox
 	\brief   Groups Documentation.
 	\author  R. Kerviche
-	\date    December 1st 201
+	\date    December 1st 2015
 **/
 
 /**
@@ -15,4 +15,10 @@
 	\defgroup FunctionsGroup Functions
 
 	This page groups all the functions on accessors/arrays. 
+**/
+
+/**
+	\defgroup ExceptionsGroup Exceptions
+
+	This page lists the exceptions.
 **/
