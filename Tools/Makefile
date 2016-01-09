@@ -41,6 +41,9 @@
 # NVCC generates intermediate PTX (VM specified by -arch) and closer SASS (-code) from the sources. 
 # PTX can be transformed into SASS by the driver without having the CUDA SDK installed.
 
+# Note on FFTW3's error: identifier "__float128" is undefined
+# Passing -D__INTEL_COMPILER solve the problem for NVCC.
+
 # First, test :
 ifeq ($(KARTET_PATH),)
 #$(error Undefined variable KARTET_PATH)
@@ -94,7 +97,7 @@ HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
 CC_INCLUDE	= -I$(KARTET_PATH)/include/ $(subst KARTET_USE_ATLAS, -L/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS)))
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra $(CC_EXTRA_FLAGS)
-NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -Xcompiler "$(CC_FLAGS)" 
+NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)"
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_LAPACK, -llapack, $(findstring KARTET_USE_LAPACK,$(KARTET_OPTIONS))) \

@@ -217,6 +217,7 @@ namespace Kartet
 		}
 	}
 
+	// SourceType argument will refer to TSrc, and make use of the typedef.
 	#define DYNAMIC_COPY_CASE( SourceType ) \
 		switch(srcTypeIndex) \
 		{ \

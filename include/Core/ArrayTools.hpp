@@ -218,6 +218,38 @@ namespace Kartet
 	}
 
 	/**
+	\brief Returns the number of dimensions of the array.
+
+	For instance, with R,C,S>1, (N,1,1), (1,C,1) and (1,1,S) are 1 dimensions, (N,C,1), (N,1,S) and (1,C,S) are 2 dimensions, etc.
+	The function can return 0 for a singleton (1, 1, 1).
+
+	\return The number of dimensions of the array.
+	**/
+	__host__ __device__ inline int Layout::numDims(void) const
+	{
+		if(nSlices>1)
+			return 3;
+		else if(nColumns>1)
+			return 2;
+		else if(nRows>1)
+			return 1;
+		else
+			return 0;
+	}
+
+	/**
+	\brief Returns the number of non-singular dimensions.
+
+	The function can return 0 for a singleton (1, 1, 1).
+
+	\return The number of non-singular dimensions.
+	**/
+	__host__ __device__ inline int Layout::numDimsPacked(void) const
+	{
+		return static_cast<int>(nRows>1) + static_cast<int>(nColumns>1) + static_cast<int>(nSlices>1);
+	}
+
+	/**
 	\brief Returns the number of columns.
 	\return The number of columns.
 	**/
@@ -585,6 +617,16 @@ namespace Kartet
 	}
 
 	/**
+	\brief Test if this layout has the same sizes as another layout.
+	\param other Other layout object to be compared with.
+	\return True if this layout has the same sizes as the other layout.
+	**/
+	__host__ __device__ inline bool Layout::sameMonolithicLayoutAs(const Layout& other) const
+	{
+		return (nRows==other.nRows && nColumns==other.nColumns && nSlices==other.nSlices); 
+	}
+
+	/**
 	\brief Test if the layout a slice from this object is identical to those of another layout.
 	\param other Other layout object to be compared with.
 	\return True if the slice layout of this object has the same sizes and same strides as for the other layout.
@@ -592,6 +634,16 @@ namespace Kartet
 	__host__ __device__ inline bool Layout::sameSliceLayoutAs(const Layout& other) const
 	{
 		return (nRows==other.nRows && nColumns==other.nColumns && sColumns==other.sColumns); 
+	}
+
+	/**
+	\brief Test if this layout has the same slice sizes as another layout.
+	\param other Other layout object to be compared with.
+	\return True if the slice sizes of this object are the same as of the other layout.
+	**/
+	__host__ __device__ inline bool Layout::sameMonolithicSliceLayoutAs(const Layout& other) const
+	{
+		return (nRows==other.nRows && nColumns==other.nColumns); 
 	}
 
 	#ifdef __CUDACC__
@@ -1149,7 +1201,7 @@ namespace Kartet
 
 	/**
 	\brief Get the monolithic layout corresponding to this object.
-	\return The monolithic layout corresponding to this object.
+	\return The monolithic layout corresponding to this object (strides are set such as to get an array of tightly packed values).
 	**/
 	__host__ inline Layout Layout::monolithicLayout(void) const
 	{

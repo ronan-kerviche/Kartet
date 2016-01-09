@@ -176,6 +176,8 @@ namespace Kartet
 				__host__ __device__ inline index_t numColumns(void) const;
 				__host__ __device__ inline index_t numSlices(void) const;
 				__host__ __device__ inline index_t numFragments(void) const;
+				__host__ __device__ inline int numDims(void) const;
+				__host__ __device__ inline int numDimsPacked(void) const;
 				__host__ __device__ inline index_t width(void) const;		// For convenience ?
 				__host__ __device__ inline index_t height(void) const;		// For convenience ?
 				__host__ __device__ inline index_t depth(void) const;		// For convenience ?
@@ -200,7 +202,9 @@ namespace Kartet
 				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, index_t nRows=0, index_t nColumns=0, index_t nSlices=0) const;
 				__host__ 	    inline std::vector<Layout> splitLayoutSubArrays(index_t iBegin, index_t jBegin, index_t kBegin, const Layout& layout) const;
 				__host__ __device__ inline bool sameLayoutAs(const Layout& other) const;
+				__host__ __device__ inline bool sameMonolithicLayoutAs(const Layout& other) const;
 				__host__ __device__ inline bool sameSliceLayoutAs(const Layout& other) const;
+				__host__ __device__ inline bool sameMonolithicSliceLayoutAs(const Layout& other) const;
 
 			// Position tools :
 			#ifdef __CUDACC__
