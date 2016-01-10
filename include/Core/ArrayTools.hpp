@@ -2589,7 +2589,7 @@ namespace Kartet
 
 		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
 		const int precision = 4,
-			  maxWidth = precision+3;
+			  maxWidth = Traits<T>::isComplex ? (2*precision) : (precision+3);
 		const char fillCharacter = ' ';
 		const char* spacing = "  ";
 		const Kartet::Layout layout = (A.location()==DeviceSide) ? A.monolithicLayout() : A.layout();
@@ -2777,7 +2777,7 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ void Array<T,l>::allocateMemory(void)
 	{
-		StaticAssert<(l==DeviceSide) || (l==HostSide)>();
+		STATIC_ASSERT_VERBOSE(l==DeviceSide || l==HostSide, INVALID_LOCATION)
 
 		switch(l)
 		{

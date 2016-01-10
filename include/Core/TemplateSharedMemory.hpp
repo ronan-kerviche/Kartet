@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */ 
 
+/**
+	\file    TemplateSharedMemory.hpp
+	\brief   Shared memory access.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_TEMPLATE_SHARED_MEMORY__
 #define __KARTET_TEMPLATE_SHARED_MEMORY__
 

@@ -26,12 +26,12 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */ 
 
-/*
+/**
 	\file    Exceptions.hpp
 	\brief   Exceptions thrown by the API.
 	\author  R. Kerviche
 	\date    November 1st 2009
-*/
+**/
 
 #ifndef __KARTET_EXCEPTIONS__
 #define __KARTET_EXCEPTIONS__

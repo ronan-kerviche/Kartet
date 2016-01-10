@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    Meta.hpp
+	\brief   Meta tools.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_META__
 #define __KARTET_META__
 
@@ -42,6 +49,42 @@ namespace Kartet
 	template<>
 	struct StaticAssert<true>
 	{ };
+
+	// Static assertion with messages :
+	template<bool test>
+	struct StaticAssertVerbose;
+
+	template<>
+	struct StaticAssertVerbose<true>
+	{
+		enum
+		{
+			KARTET_STATIC_ERROR___RHS_IS_COMPLEX_BUT_LHS_IS_NOT,
+			KARTET_STATIC_ERROR___LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS,
+			KARTET_STATIC_ERROR___ARGUMENTS_HAVE_INCOMPATIBLE_LOCATIONS,
+			KARTET_STATIC_ERROR___CONTAINER_MUST_HAVE_VOID_PARAMER,
+			KARTET_STATIC_ERROR___INVALID_LOCATION,
+			KARTET_STATIC_ERROR___TYPE_NOT_SUPPORTED,
+			KARTET_STATIC_ERROR___TYPE_MUST_BE_REAL,
+			KARTET_STATIC_ERROR___TYPE_MUST_BE_COMPLEX,
+			KARTET_STATIC_ERROR___LOCATION_NOT_SUPPORTED,
+			KARTET_STATIC_ERROR___UNSUPPORTED_TYPE_SIZE,
+			KARTET_STATIC_ERROR___INVALID_ARGUMENTS_LAYOUT,
+			KARTET_STATIC_ERROR___ARGUMENTS_CONFLICT
+		};
+	};
+	
+	template<>
+	struct StaticAssertVerbose<false>
+	{ };
+
+	template<int>
+	struct StaticAssertCapsule
+	{ };
+
+	#define _JOIN(x, y) x ## y
+	#define JOIN(x, y) _JOIN(x, y)
+	#define STATIC_ASSERT_VERBOSE(test, message) typedef Kartet::StaticAssertCapsule<Kartet::StaticAssertVerbose<(test)>::KARTET_STATIC_ERROR___##message> JOIN(StaticAssertTest, __LINE__);
 
 	// Static tests :
 	template<bool test, typename TrueResult, typename FalseResult>

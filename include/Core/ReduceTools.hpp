@@ -239,7 +239,7 @@ namespace Kartet
 		hostPtr(NULL),
 		devicePtr(NULL)		
 	{
-		StaticAssert<sizeof(char)==1>();
+		STATIC_ASSERT_VERBOSE(sizeof(char)==1, UNSUPPORTED_TYPE_SIZE)
 
 		#ifdef __CUDACC__
 		hostPtr = new char[maxMemory];
@@ -530,7 +530,7 @@ namespace Kartet
 	__host__ const Accessor<TOut,l>& ReduceContext::reduceBlock(const Layout& layout, const TExpr& expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l>& output)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-		StaticAssert<ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide>(); // The expression must be on the same side than the output.
+		STATIC_ASSERT_VERBOSE(ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==AnySide, LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
 
 		if((layout.numRows() % output.numRows())!=0 || (layout.numColumns() % output.numColumns())!=0 || (layout.numSlices() % output.numSlices())!=0)	
 			throw InvalidOperation;

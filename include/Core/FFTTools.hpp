@@ -27,7 +27,7 @@
 /* ************************************************************************************************************* */
 
 /**
-	\file    FFT.hpp
+	\file    FFTTools.hpp
 	\brief   FFT Context implementation.
 	\author  R. Kerviche
 	\date    November 1st 2009
@@ -89,8 +89,8 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ FFTOperation FFTContext<T,l>::getOperation(const Layout& i, const Layout& o)
 	{
-		// Test type first : 
-		StaticAssert<Kartet::IsSame<T,float>::value || Kartet::IsSame<T,double>::value>(); // Only float and double types are supported.
+		// Test type first :
+		STATIC_ASSERT_VERBOSE((Kartet::IsSame<T,float>::value || Kartet::IsSame<T,double>::value), TYPE_NOT_SUPPORTED)
 	
 		// Test layouts (and get the corresponding operation) :
 		FFTOperation op = C2C;

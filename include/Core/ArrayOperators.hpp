@@ -57,7 +57,9 @@ namespace Kartet
 		#endif
 
 		// Make sure we are not computing complex numbers to store in a real array :
-		StaticAssert<!(Traits< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !Traits<T>::isComplex)>();
+		STATIC_ASSERT_VERBOSE(!Traits<typename ExpressionEvaluation<TExpr>::ReturnType>::isComplex || Traits<T>::isComplex, RHS_IS_COMPLEX_BUT_LHS_IS_NOT)
+		// Make sure the expression is on the same side :
+		STATIC_ASSERT_VERBOSE(ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==Kartet::AnySide, LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
 
 		if(l==DeviceSide)
 		{
@@ -154,7 +156,7 @@ namespace Kartet
 	template<Location l2>
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l2>& a, cudaStream_t stream)
 	{
-		StaticAssert<l!=l2>(); // The two accessors are on different sides.
+		STATIC_ASSERT_VERBOSE(l!=l2, LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
 
 		#ifdef __CUDACC__
 			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, stream);
@@ -427,7 +429,7 @@ namespace Kartet
 		#endif
 
 		// Make sure we are not computing complex numbers to store in a real array :
-		StaticAssert<!(Traits< typename ExpressionEvaluation<TExpr>::ReturnType >::isComplex && !Traits<T>::isComplex)>();
+		STATIC_ASSERT_VERBOSE(!Traits<typename ExpressionEvaluation<TExpr>::ReturnType>::isComplex || Traits<T>::isComplex, RHS_IS_COMPLEX_BUT_LHS_IS_NOT)
 
 		if(l==DeviceSide)
 		{
@@ -457,32 +459,26 @@ namespace Kartet
 	{
 		private :
 			// Test for correct order of arguments :
-			static const StaticAssert< 	(IsSame<T3,void>::value) ? 
-							( // No third argument
+			STATIC_ASSERT_VERBOSE( 	(IsSame<T3,void>::value) ? // No third argument :
 								!(IsSame<T1,void>::value) // whatever 2nd arg is, there must be at least one.
-							)
-							:
-							(
-								(!IsSame<T1,void>::value) && (!IsSame<T2,void>::value)
-							)
-						> 										test1;
+							:	(!IsSame<T1,void>::value) && (!IsSame<T2,void>::value), INVALID_ARGUMENTS_LAYOUT)
 
 			// Test for conflict free requests :
-			static const StaticAssert<	!(preferComplexOutput && preferRealOutput) > 				test2;
-			static const StaticAssert<	!(inputMustBeReal && inputMustBeComplex) > 				test3;
+			STATIC_ASSERT_VERBOSE( !(preferComplexOutput && preferRealOutput), ARGUMENTS_CONFLICT)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeReal && inputMustBeComplex), ARGUMENTS_CONFLICT)
 
 			// Test for type enforcing :
-			static const StaticAssert<	IsSame<enforceT1,void>::value || IsSame<enforceT1,T1>::value>		test4;
-			static const StaticAssert<	IsSame<enforceT2,void>::value || IsSame<enforceT2,T2>::value>		test5;
-			static const StaticAssert<	IsSame<enforceT3,void>::value || IsSame<enforceT3,T3>::value>		test6;
+			STATIC_ASSERT_VERBOSE( (IsSame<enforceT1,void>::value || IsSame<enforceT1,T1>::value), TYPE_NOT_SUPPORTED)
+			STATIC_ASSERT_VERBOSE( (IsSame<enforceT2,void>::value || IsSame<enforceT2,T2>::value), TYPE_NOT_SUPPORTED)
+			STATIC_ASSERT_VERBOSE( (IsSame<enforceT3,void>::value || IsSame<enforceT3,T3>::value), TYPE_NOT_SUPPORTED)
 
 			// Test validity :
-			static const StaticAssert<	!(inputMustBeReal && Traits<T1>::isComplex) >				test_ir1;
-			static const StaticAssert<	!(inputMustBeReal && Traits<T2>::isComplex) >				test_ir2;
-			static const StaticAssert<	!(inputMustBeReal && Traits<T3>::isComplex) >				test_ir3;
-			static const StaticAssert<	!(inputMustBeComplex && !Traits<T1>::isComplex) >			test_ic1;
-			static const StaticAssert<	!(inputMustBeComplex && !Traits<T2>::isComplex) >			test_ic2;
-			static const StaticAssert<	!(inputMustBeComplex && !Traits<T3>::isComplex) >			test_ic3;
+			STATIC_ASSERT_VERBOSE( !(inputMustBeReal && Traits<T1>::isComplex), TYPE_MUST_BE_REAL)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeReal && Traits<T2>::isComplex), TYPE_MUST_BE_REAL)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeReal && Traits<T3>::isComplex), TYPE_MUST_BE_REAL)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeComplex && !Traits<T1>::isComplex), TYPE_MUST_BE_COMPLEX)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeComplex && !Traits<T2>::isComplex), TYPE_MUST_BE_COMPLEX)
+			STATIC_ASSERT_VERBOSE( !(inputMustBeComplex && !Traits<T3>::isComplex), TYPE_MUST_BE_COMPLEX)
 			
 			// Choose best output type :
 			typedef typename ResultingType<T1,T2>::Type								Type1;

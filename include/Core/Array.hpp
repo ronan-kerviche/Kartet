@@ -126,9 +126,14 @@ namespace Kartet
 		template<typename T1, typename T2, typename T3, template<typename,typename,typename> class Op>
 		struct TernaryExpression;
 
-	/// Prefered indexing type.
+	/// 64 bits indexing type.
 	typedef signed long long index64_t;
+	/// 32 bits indexing type.
 	typedef signed int index32_t;
+	/**
+	\typedef TYPE index_t
+	\brief Default indexing type.
+	**/
 	#ifdef KARTET_USE_64BITS_INDEXING
 		typedef signed long long index_t;
 	#else
@@ -155,7 +160,7 @@ namespace Kartet
 			template<typename T>
 			struct StaticContainer
 			{
-				typedef StaticAssert< IsSame<void,T>::value > TestAssertion; // Must use the void type to access the container.
+				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), CONTAINER_MUST_HAVE_VOID_PARAMER)
 				static index_t numThreads;
 				static index_t maxZThreads;				
 				static const char streamHeader[];

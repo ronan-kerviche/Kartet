@@ -39,10 +39,10 @@
 namespace Kartet
 {
 // Type tools :
-	#define ALLOWED_TYPES_VERIFICATION		StaticAssert<	IsSame<T,float>::value || IsSame<T,double>::value || \
-									IsSame<T,cuFloatComplex>::value || IsSame<T,cuDoubleComplex>::value || \
-									IsSame<T,Complex<float> >::value || IsSame<T,Complex<double> >::value >();
-	#define TYPE_MUST_BE_COMPLEX			StaticAssert<Traits<T>::isComplex>();
+	#define ALLOWED_TYPES_VERIFICATION		STATIC_ASSERT_VERBOSE(	(IsSame<T,float>::value || IsSame<T,double>::value || \
+										IsSame<T,cuFloatComplex>::value || IsSame<T,cuDoubleComplex>::value || \
+										IsSame<T,Complex<float> >::value || IsSame<T,Complex<double> >::value), TYPE_NOT_SUPPORTED )
+	#define TYPE_MUST_BE_COMPLEX			STATIC_ASSERT_VERBOSE(Traits<T>::isComplex, TYPE_MUST_BE_COMPLEX)
 	#define TEST_MONOLITHIC(x)			{if(!(x).isMonolithic()) throw IncompatibleLayout;}
 	#define TEST_SINGLE_SLICE(x)			{if((x).numSlices()>1) throw IncompatibleLayout;} 
 	#define TEST_PRODUCT(A, opa, B, opb, C)		{if(!isProductValid(A, opa, B, opb, C)) throw InvalidOperation;}
@@ -340,7 +340,7 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ int BLASContext::Iamin(const Accessor<T,l>& x)
 	{
-		StaticAssert<l==DeviceSide>();
+		STATIC_ASSERT_VERBOSE(l==DeviceSide, LOCATION_NOT_SUPPORTED)
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		int res;
@@ -2472,7 +2472,7 @@ namespace Kartet
 	template<typename T, Location l, typename TAlpha, typename TBeta>
 	__host__ const Accessor<T,l>& BLASContext::geam(const TAlpha& alpha, const Accessor<T,l>& A, MatrixOperation opa, const TBeta& beta, const Accessor<T,l>& B, MatrixOperation opb, const Accessor<T,l>& C)
 	{
-		StaticAssert<l==DeviceSide>();
+		STATIC_ASSERT_VERBOSE(l==DeviceSide, LOCATION_NOT_SUPPORTED)
 		ALLOWED_TYPES_VERIFICATION
 		TEST_SINGLE_SLICE(A)
 		TEST_SINGLE_SLICE(B)
@@ -2563,7 +2563,7 @@ namespace Kartet
 	template<typename T, Location l>
 	__host__ const Accessor<T,l>& BLASContext::dgmm(MatrixSideMode side, const Accessor<T,l>& A, const Accessor<T,l>& x, const Accessor<T,l>& C)
 	{
-		StaticAssert<l==DeviceSide>();
+		STATIC_ASSERT_VERBOSE(l==DeviceSide, LOCATION_NOT_SUPPORTED)
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
 		TEST_SINGLE_SLICE(A)

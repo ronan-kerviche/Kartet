@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    Traits.hpp
+	\brief   Type traits.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_TRAITS__
 #define __KARTET_TRAITS__
 

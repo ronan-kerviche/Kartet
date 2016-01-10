@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    ArrayExpressions.hpp
+	\brief   Expressions templates base.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_ARRAY_EXPRESSIONS__
 #define __KARTET_ARRAY_EXPRESSIONS__
 
@@ -183,9 +190,9 @@ namespace Kartet
 		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& i, const index_t& j, const index_t& k)
 		{
 			// Both branches must be on the same side.
-			StaticAssert<	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location) ||
-					(ExpressionEvaluation<T1>::location==AnySide) ||
-					(ExpressionEvaluation<T2>::location==AnySide)>(); 
+			STATIC_ASSERT_VERBOSE( 	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location) ||
+						(ExpressionEvaluation<T1>::location==AnySide) ||
+						(ExpressionEvaluation<T2>::location==AnySide), LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
 
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, layout, i, j, k), 	
 							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, layout, i, j, k)
@@ -227,15 +234,15 @@ namespace Kartet
 		__host__ __device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& layout, const index_t& i, const index_t& j, const index_t& k)
 		{
 			// All branches must be on the same side.
-			StaticAssert<	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location ||
-					 ExpressionEvaluation<T1>::location==AnySide ||
-					 ExpressionEvaluation<T2>::location==AnySide) &&
-					(ExpressionEvaluation<T2>::location==ExpressionEvaluation<T3>::location ||
-					 ExpressionEvaluation<T2>::location==AnySide ||
-					 ExpressionEvaluation<T3>::location==AnySide) &&
-					(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T3>::location ||
-					 ExpressionEvaluation<T1>::location==AnySide ||
-					 ExpressionEvaluation<T3>::location==AnySide)	>();
+			STATIC_ASSERT_VERBOSE(  (ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location ||
+						 ExpressionEvaluation<T1>::location==AnySide ||
+						 ExpressionEvaluation<T2>::location==AnySide) &&
+						(ExpressionEvaluation<T2>::location==ExpressionEvaluation<T3>::location ||
+						 ExpressionEvaluation<T2>::location==AnySide ||
+						 ExpressionEvaluation<T3>::location==AnySide) &&
+						(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T3>::location ||
+						 ExpressionEvaluation<T1>::location==AnySide ||
+						 ExpressionEvaluation<T3>::location==AnySide), ARGUMENTS_HAVE_INCOMPATIBLE_LOCATIONS );
 
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(ternaryExpression.a, layout, i, j, k), 
 							ExpressionEvaluation<T2>::evaluate(ternaryExpression.b, layout, i, j, k),

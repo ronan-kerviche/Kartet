@@ -26,6 +26,13 @@
 /*                                                                                                               */
 /* ************************************************************************************************************* */
 
+/**
+	\file    LibTools.hpp
+	\brief   Library Tools.
+	\author  R. Kerviche
+	\date    November 1st 2009
+**/
+
 #ifndef __KARTET_LIBRARY_TOOLS__
 #define __KARTET_LIBRARY_TOOLS__
 
