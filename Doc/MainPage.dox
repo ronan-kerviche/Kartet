@@ -1,0 +1,138 @@
+/**
+\mainpage Kartet
+
+\section section_introduction Introduction
+	Kartet is a minimal C++ array library for CPU & GPU (CUDA) computing.
+
+	- Header-only code.
+	- Expression Templates with operators and functions.
+	- Transparent support for complex numbers.
+	- CuBLAS, CuRAND and CuFFT interfaces.
+	- Optional Host-Only binary generation.
+	- Optional CBLAS, ATLAS and FFTW(3) interfaces.
+	
+\section section_downloads Downloads
+	Clone me from  <a href="https://github.com/ronan-kerviche/Kartet">GitHub</a> :
+\code	
+	git clone https://github.com/ronan-kerviche/Kartet.git
+\endcode
+
+\section section_installation Installation
+	In order to use the provided build tool, the environment must have the following variable :
+	\code
+		KARTET_PATH=<path to Kartet location>
+	\endcode
+
+	By default, the build tool will assume a 35 device code. To change this, set the following variable :
+	\code
+		DEVICE_CODE=<platform code>
+	\endcode 
+
+	To only produce one of the two targets, you can also set the variable : 
+	\code
+		# Only generate the device binary :
+		KARTET_DEFAULT_TARGET=deviceBinary
+		# Only generate the host binary :
+		KARTET_DEFAULT_TARGET=hostBinary
+		# Generate both (default) :
+		KARTET_DEFAULT_TARGET=deviceBinary hostBinary
+	\endcode
+
+\section section_compilationExamples Compilation
+	Building a binary can be achieved with the following proxy Makefile :
+	\code
+		export EXEC_DEVICE	= <name of the device binary>
+		export EXEC_HOST	= <name of the host binary>
+		export FILES		= <list of source files>
+		export KARTET_OPTIONS	= <Kartet options>
+		#export CC_EXTRA_FLAGS	= <extra flags and options>
+		all :
+		% :
+			@$(MAKE) -s -f $(KARTET_PATH)/Tools/Makefile $@
+	\endcode
+
+	Make targets : 
+	\code
+		# Only make the device binary :
+		make deviceBinary
+		# Only make the host binary :
+		make hostBinary
+		# Clean :
+		make clean
+		# Gather information : 
+		make test
+	\endcode
+
+	- Use 64 bits indexing, slower operation (2x) but enable processing of large arrays (>2e9 elements).
+	\code
+		-D KARTET_USE_64BITS_INDEXING
+	\endcode
+
+	- Use ATLAS (requires -llapack -lf77blas -lcblas -latlas to be installed).
+	\code
+		-D KARTET_USE_ATLAS
+	\endcode
+
+	- Use CBLAS only (requires -lcblas to be installed, ignored if KARTET_USE_ATLAS).
+	\code
+		-D KARTET_USE_CBLAS
+	\endcode
+
+	- Use FFTW (v3, requires -lfftw3 -lfftw3f to be installed).
+	\code
+		-D KARTET_USE_FFTW
+	\endcode
+
+	- Change the default data location (Kartet::HostSide or Kartet::DeviceSide, see Kartet::Location). Note that for a host binary this is always set to Kartet::HostSide.
+	\code
+		-D KARTET_DEFAULT_LOCATION=newLocation
+	\endcode
+
+\section section_example Example
+	\code
+	// Define 8x8 arrays : 
+	const Kartet::Layout l(8,8);
+	Kartet::Array<float> A(l), B(l);
+
+	// Set A to 2*(i-j)-4 :
+	A = 2*(Kartet::IndexI() - Kartet::IndexJ()) - 4;
+	std::cout << "A = " << A << std::endl;
+
+	// Compute B = 4*A - [v, ... v] (where v is the 3rd column of A) : 
+	B = 4*A - clamp(A.column(2));
+	std::cout << "B = " << B << std::endl;
+
+	// Set the diagonal of A : 
+	A = -1.0f;
+	A.diagonal() = Kartet::IndexI() + 1;
+	std::cout << "A = " << A << std::endl;
+
+	// Matrix Product : 
+	Kartet::Array<float> C(l);
+	Kartet::BLASContext blas;
+	blas.gemm(A, B, C);
+	std::cout << C << std::endl;
+
+	// Set every other column of C to 0 :
+	C.columns(0, l.numColumns()/2, 2) = 0;
+	std::cout << C << std::endl;
+
+	// Copy C from device to host : 
+	Kartet::Array<float, Kartet::HostSide> CHost(C);
+	CHost.columns(0, 4) = shuffleColumns(2*Kartet::IndexJ()+1, CHost);
+	CHost.columns(4, 4) = 0;
+	std::cout << CHost << std::endl;
+	\endcode
+
+\section section_license License
+	(ALL) <b>MIT License</b>
+
+	Copyright (C) 2010-2015, Ronan Kerviche
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**/

@@ -2462,7 +2462,7 @@ namespace Kartet
 	__host__ Accessor<T,l> Accessor<T,l>::squeezed(void) const
 	{
 		Accessor<T, l> result = (*this);
-		result.squeez();
+		result.squeeze();
 		return result;
 	}
 
