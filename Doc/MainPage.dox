@@ -90,6 +90,8 @@
 
 \section section_example Example
 	\code
+	Kartet::initialize();
+
 	// Define 8x8 arrays : 
 	const Kartet::Layout l(8,8);
 	Kartet::Array<float> A(l), B(l);

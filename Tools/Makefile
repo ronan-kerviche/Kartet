@@ -96,7 +96,7 @@ DEVICE_OBJECTS	= $(patsubst %.o,%.device.o,$(OBJECTS))
 HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
 CC_INCLUDE	= -I$(KARTET_PATH)/include/ $(subst KARTET_USE_ATLAS, -L/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS)))
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
-CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra $(CC_EXTRA_FLAGS)
+CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs $(CC_EXTRA_FLAGS)
 NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)"
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \

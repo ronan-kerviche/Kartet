@@ -43,6 +43,8 @@ int main(int argc, char** argv)
 
 	try
 	{
+		Kartet::initialize();
+
 		// Creating a Layout (size of an array) :
 		const Kartet::Layout layout(5, 3);
 
@@ -97,6 +99,8 @@ int main(int argc, char** argv)
 
 		// Reduction example :
 		Kartet::ReduceContext reduceContext;
+		const float mA = reduceContext.mean(A);
+		std::cout << "Mean of A : " << mA << std::endl;
 		const float count1 = reduceContext.sum(A.layout(), Kartet::cast<int>(A>=B));
 		std::cout << "Number of elements of A larger than B : " << count1 << std::endl;
 		

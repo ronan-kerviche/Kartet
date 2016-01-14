@@ -42,6 +42,27 @@
 namespace Kartet
 {
 // Tools :
+	/**
+	\brief Initialize Kartet for CUDA.
+	
+	This function will initialize the correct number of threads per blocks to be requested, on the device selected (via cudaSetDevice).
+	In case of omission, the code will assume a 3.5 compute capability.
+	**/
+	inline void initialize(void)
+	{
+		#ifdef __CUDACC__
+			int deviceId = 0;
+			cudaError_t err = cudaGetDevice(&deviceId);
+			if(err!=cudaSuccess)
+				throw static_cast<Exception>(CudaExceptionsOffset + err);
+			cudaDeviceProp properties;
+			err = cudaGetDeviceProperties(&properties, deviceId);
+			if(err!=cudaSuccess)
+				throw static_cast<Exception>(CudaExceptionsOffset + err);
+			Layout::StaticContainer<void>::numThreads = properties.maxThreadsPerBlock/2;
+		#endif
+	}
+
 	inline Direction getDirection(const Location& from, const Location& to)
 	{
 		if(from==AnySide || to==AnySide)

@@ -754,7 +754,7 @@ namespace Kartet
 		\f$ A = \alpha x y^{H} + A \f$
 		**/
 		template<typename T, Location l>
-		__host__ const Accessor<T,l>& ger(const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
+		__host__ const Accessor<T,l>& BLASContext::ger(const Accessor<T,l>& x, const Accessor<T,l>& y, const Accessor<T,l>& A, bool conjugate)
 		{
 			const T alpha = 1;
 			return ger(alpha, x, y, A, conjugate);

@@ -1151,21 +1151,21 @@ namespace Kartet
 	\param a Real expression.
 	\param b Real expression.
 	**/
-	Complex<T> toComplex(Expression a, Expression b) { }
+	Complex<T> complex(Expression a, Expression b) { }
 
 	/**
 	\return The complex number a + i*b, force output to single precision.
 	\param a Real expression.
 	\param b Real expression.
 	**/
-	Complex<float> toFloatComplex(Expression a, Expression b) { }
+	Complex<float> complexf(Expression a, Expression b) { }
 
 	/**
 	\return The complex number a + i*b, force output to double precision.
 	\param a Real expression.
 	\param b Real expression.
 	**/
-	Complex<double> toDoubleComplex(Expression a, Expression b) { }
+	Complex<double> complexd(Expression a, Expression b) { }
 
 // Shuffle functions :
 	/**

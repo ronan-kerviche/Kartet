@@ -297,15 +297,14 @@ namespace Kartet
 						maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
 			const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);
 
-			/* // Testing the computation layouts :
-			std::cout << "numBlocks        : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
+			 // Testing the computation layouts :
+			/*std::cout << "numBlocks        : " << numBlocks.x << ", " << numBlocks.y << ", " << numBlocks.z << std::endl;
 			std::cout << "blockSize        : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
 			std::cout << "reducedNumBlocks : " << reducedNumBlocks.x << ", " << reducedNumBlocks.y << ", " << reducedNumBlocks.z << std::endl;
 			std::cout << "blockSteps       : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
 			std::cout << "totalNumBlocks   : " << totalNumBlocks << std::endl;
 			std::cout << "totalNumThreads  : " << totalNumThreads << std::endl;
-			std::cout << "maxPow2Half      : " <<  maxPow2Half << std::endl;
-			*/
+			std::cout << "maxPow2Half      : " <<  maxPow2Half << std::endl;*/
 
 			// Do the single-pass reduction :
 			reduceKernel<Op><<<reducedNumBlocks, blockSize, sharedMemorySize>>>(layout, blockSteps, expr, defaultValue, castDevicePtr,  totalNumThreads, maxPow2Half);

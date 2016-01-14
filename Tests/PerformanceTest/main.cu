@@ -45,6 +45,8 @@ int main(int argc, char** argv)
 
 	try
 	{
+		Kartet::initialize();
+
 		CuTimer timer;
 		Kartet::BLASContext blasContext;
 		Kartet::ReduceContext reduceContext;

@@ -37,7 +37,8 @@
 #define __KARTET_LIBRARY_TOOLS__
 
 	#define UNUSED_PARAMETER(x) (void)(x);
-	#define K_PI (3.14159265358979323846)
+	#define K_PI  (3.14159265358979323846)
+	#define K_2PI (6.28318530717958647692)
 
 	#ifdef __CUDACC__
 		#define __cuda_typename typename

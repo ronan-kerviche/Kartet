@@ -160,9 +160,9 @@ namespace Kartet
 			template<typename T>
 			struct StaticContainer
 			{
-				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), CONTAINER_MUST_HAVE_VOID_PARAMER)
+				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), CONTAINER_MUST_HAVE_VOID_PARAMETER)
 				static index_t numThreads;
-				static index_t maxZThreads;				
+				static const index_t maxZThreads;				
 				static const char streamHeader[];
 				static size_t streamHeaderLength();
 			};
@@ -303,12 +303,44 @@ namespace Kartet
 	};
 
 	// Set the constant (modify <void> to change this behavior, e.g. Layout::StaticContainer<void>::numThreads = 1024;)
+	/**
+	\var Layout::StaticContainer<T>::numThreads
+	\related Kartet::Layout
+	\brief Number of CUDA threads per block (global setting).
+
+	Number of threads per block can be changed as follow : 
+	\code
+	Kartet::Layout::StaticContainer<void>::numThreads = 512;
+	\endcode
+
+	See also Kartet::initialize().
+	**/
 	template<typename T>
 	index_t Layout::StaticContainer<T>::numThreads = 512;
 
-	template<typename T>
-	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
+	/**
+	\var Layout::StaticContainer<void>::maxZThreads
+	\related Kartet::Layout
+	\brief Maximum number of CUDA threads in the Z direction.
 
+	Access with : 
+	\code
+	const index_t maxZThreads = Kartet::Layout::StaticContainer<void>::maxZThreads;
+	\endcode
+	**/
+	template<typename T>
+	const index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
+
+	/**
+	\var Layout::StaticContainer<void>::streamHeader
+	\related Kartet::Layout
+	\brief Stream header written by Kartet.
+
+	Read : 
+	\code
+	const char* streamHeader = Kartet::Layout::StaticContainer<void>::streamHeader;
+	\endcode
+	**/
 	template<typename T>
 	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET02";
 
