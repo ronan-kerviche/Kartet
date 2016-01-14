@@ -126,6 +126,16 @@ namespace Kartet
 	-D KARTET_USE_CBLAS
 	-D KARTET_USE_ATLAS
 	\endcode
+
+	Example :
+	\code
+	Kartet::Array<float> A(8, 16), B(16, 24), C(8, 24);
+	A = Kartet::IndexI();
+	B = Kartet::IndexJ();
+	Kartet::BLASContext blas;
+	blas.gemm(A, B, C);
+	std::cout << "C = " << C << std::endl;
+	\endcode
 	**/
 	class BLASContext
 	{

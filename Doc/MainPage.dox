@@ -34,8 +34,9 @@
 		KARTET_DEFAULT_TARGET=deviceBinary
 		# Only generate the host binary :
 		KARTET_DEFAULT_TARGET=hostBinary
-		# Generate both (default) :
+		# Generate both :
 		KARTET_DEFAULT_TARGET=deviceBinary hostBinary
+		# (default, if not set in the environment)
 	\endcode
 
 \section section_compilationExamples Compilation
@@ -61,6 +62,7 @@
 		make clean
 		# Gather information : 
 		make test
+		# (will print the build information)
 	\endcode
 
 	- Use 64 bits indexing, slower operation (2x) but enable processing of large arrays (>2e9 elements).

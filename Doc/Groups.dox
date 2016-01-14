@@ -7,18 +7,21 @@
 
 /**
 	\defgroup OperatorsGroup Operators
-
+	\brief Operators on accessors/arrays.
+	
 	This page groups all the operators on accessors/arrays. 
 **/
 
 /**
 	\defgroup FunctionsGroup Functions
+	\brief Functions on accessors/arrays.
 
 	This page groups all the functions on accessors/arrays. 
 **/
 
 /**
 	\defgroup ExceptionsGroup Exceptions
+	\brief List of the exceptions.
 
 	This page lists the exceptions.
 **/

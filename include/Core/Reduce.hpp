@@ -44,7 +44,7 @@
 namespace Kartet
 {
 	/**
-	\brief Reduction context class.
+	\brief Reduction context.
 
 	The reduction process is carried on the side of the data (see Kartet::Location).
 
