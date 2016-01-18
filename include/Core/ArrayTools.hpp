@@ -2600,6 +2600,16 @@ namespace Kartet
 	std::cout << "Last two vectors : " << a.columns(2,2) << std::endl;
 	\endcode
 
+	Force the output precision :
+	\code
+	// Fixed :
+	std::cout << std::setprecision(6) << std::fixed << A << std::endl;
+	// Scientific :
+	std::cout << std::setprecision(6) << std::scientific << A << std::endl;
+	// Reset :
+	std::cout.flags(std::cout.flags() & ~std::ios_base::floatfield);
+	\endcode
+
 	\return Output stream object for follow-up.
 	**/
 	template<typename T, Location l>
@@ -2607,18 +2617,22 @@ namespace Kartet
 	{
 		// Prevent printing characters : 
 		typedef typename StaticIf<IsSame<T, char>::value || IsSame<T, unsigned char>::value, int, T>::Type CastType;
-
-		#define FMT std::right << std::setfill(fillCharacter) << std::setw(maxWidth)
-		const int precision = 4,
-			  maxWidth = Traits<T>::isComplex ? (2*precision) : (precision+3);
-		const char fillCharacter = ' ';
+	
+		// Change the floatting point format if not specified :		
+		const std::ios_base::fmtflags originalFlags = os.flags();
+		const bool forcedFloattingFormat = (os.flags() & std::ios_base::floatfield)!=0;
+		if(!forcedFloattingFormat)
+			os.setf(std::ios_base::scientific);
+	
+		const int precision = forcedFloattingFormat? os.precision() : 2,
+			  maxWidth = Traits<T>::isComplex ? 1 : !Traits<T>::isFloatingPoint ? 9 : (os.flags() & std::ios_base::scientific)!=0 ? (precision+7) : (precision+3);	
+		const int originalPrecision = os.precision(precision);
+		const char fillCharacter = ' ';	
+		const char originalFill = os.fill(fillCharacter);
 		const char* spacing = "  ";
 		const Kartet::Layout layout = (A.location()==DeviceSide) ? A.monolithicLayout() : A.layout();
 		T* tmp = (A.location()==DeviceSide) ? A.getData() : A.dataPtr();
-
-		// Get old parameter :
-		const int oldPrecision = os.precision(precision);
-
+	
 		os << "(Array of size " << A.layout() << ", " << ((A.location()==DeviceSide) ? "DeviceSide" : "HostSide") << ')' << std::endl;
 		for(int k=0; k<layout.numSlices(); k++)
 		{
@@ -2628,17 +2642,23 @@ namespace Kartet
 			for(int i=0; i<layout.numRows(); i++)
 			{
 				for(int j=0; j<(layout.numColumns()-1); j++)
-					os << FMT << static_cast<CastType>(tmp[layout.getPosition(i,j,k)]) << spacing;
-				os << FMT << static_cast<CastType>(tmp[layout.getPosition(i,layout.numColumns()-1,k)]) << std::endl;
+				{
+					os.width(maxWidth);
+					os.setf(std::ios_base::right);
+					os << static_cast<CastType>(tmp[layout.getPosition(i,j,k)]) << spacing;
+				}
+				os.width(maxWidth);
+				os.setf(std::ios_base::right);
+				os << static_cast<CastType>(tmp[layout.getPosition(i,layout.numColumns()-1,k)]) << std::endl;
 			}
 		}
-		#undef FMT
-
-		os.precision(oldPrecision);
-
+		// Reset :
+		os.precision(originalPrecision);
+		os.fill(originalFill);
+		os.flags(originalFlags);
+		// Clean :
 		if(A.location()==DeviceSide)
 			delete[] tmp;
-		
 		return os;
 	}
 

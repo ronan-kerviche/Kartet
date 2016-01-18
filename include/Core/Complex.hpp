@@ -86,7 +86,6 @@ namespace Kartet
 	template<typename T>
 	struct Complex
 	{
-		// Data : 
 		typedef T BaseType;
 		
 			/// Real part.
