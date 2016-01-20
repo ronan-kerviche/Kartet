@@ -2050,6 +2050,17 @@ namespace Kartet
 	\brief Write data to stream (including layout header).
 	\param stream Stream to write to.
 	\param maxBufferSize Buffer size used for transfers from the device.
+
+	Example :
+	\code
+	Kartet::Array<float> A(8,8), B(8,8);
+	A = Kartet::IndexI();
+	B = Kartet::IndexJ();
+	std::ofstream file("arrays.dat", std::ios::out | std::ios::binary);
+	A.writeToStream(file);
+	B.writeToStream(file);
+	file.close();
+	\endcode
 	**/
 	template<typename T, Location l>
 	__host__ void Accessor<T,l>::writeToStream(std::ostream& stream, const size_t maxBufferSize)
