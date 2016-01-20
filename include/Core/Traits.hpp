@@ -52,7 +52,8 @@ namespace Kartet
 		static const bool 	isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
-					isComplex 	= false;	
+					isComplex 	= false,
+					isFloatingPoint	= false;
 	};
 
 	template<typename T>
@@ -64,7 +65,8 @@ namespace Kartet
 		static const bool 	isConst 	= SubTraits::isConst,
 					isPointer 	= true,
 					isReference 	= SubTraits::isReference,
-					isComplex 	= SubTraits::isComplex;
+					isComplex 	= SubTraits::isComplex,
+					isFloatingPoint	= SubTraits::isFloatingPoint;
 	};
 
 	template<typename T>
@@ -76,7 +78,8 @@ namespace Kartet
 		static const bool 	isConst 	= SubTraits::isConst,
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= true,
-					isComplex 	= SubTraits::isComplex;
+					isComplex 	= SubTraits::isComplex,
+					isFloatingPoint = SubTraits::isFloatingPoint;
 	};
 
 	template<typename T>
@@ -88,7 +91,47 @@ namespace Kartet
 		static const bool 	isConst 	= true,
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= SubTraits::isReference,
-					isComplex 	= SubTraits::isComplex;
+					isComplex 	= SubTraits::isComplex,
+					isFloatingPoint = SubTraits::isFloatingPoint;
+	};
+
+	template<>
+	struct Traits<float>
+	{
+		typedef void SubTraits;
+		typedef float BaseType;
+		
+		static const bool 	isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= false,
+					isFloatingPoint = true;
+	};
+
+	template<>
+	struct Traits<double>
+	{
+		typedef void SubTraits;
+		typedef double BaseType;
+		
+		static const bool 	isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= false,
+					isFloatingPoint = true;
+	};
+
+	template<>
+	struct Traits<long double>
+	{
+		typedef void SubTraits;
+		typedef float BaseType;
+		
+		static const bool 	isConst 	= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= false,
+					isFloatingPoint = true;
 	};
 
 	template<>
@@ -100,7 +143,8 @@ namespace Kartet
 		static const bool 	isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
-					isComplex 	= true;
+					isComplex 	= true,
+					isFloatingPoint = true;
 	};
 
 	template<>
@@ -112,19 +156,21 @@ namespace Kartet
 		static const bool 	isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
-					isComplex 	= true;
+					isComplex 	= true,
+					isFloatingPoint = true;
 	};
 
 	template<typename T>
 	struct Traits< Complex<T> >
 	{
-		typedef void SubTraits;
+		typedef Traits<T> SubTraits;
 		typedef T BaseType;
 
 		static const bool 	isConst 	= false,
 					isPointer 	= false,
 					isReference 	= false,
-					isComplex 	= true;
+					isComplex 	= true,
+					isFloatingPoint = SubTraits::isFloatingPoint;
 	};
 
 	// Resulting types :
