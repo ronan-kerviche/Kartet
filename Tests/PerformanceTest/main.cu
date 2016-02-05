@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 	}
-	catch(Kartet::Exception& e)
+	catch(const Kartet::Exception& e)
 	{
 		std::cout << "Exception : " << e << std::endl;
 		returnCode = -1;

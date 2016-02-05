@@ -2891,7 +2891,7 @@ namespace Kartet
 		{
 			result->readFromStream(stream, convert, maxBufferSize, true, sourceTypeIndex);
 		}
-		catch(Kartet::Exception& e)
+		catch(const Kartet::Exception& e)
 		{
 			delete result;
 			throw e;

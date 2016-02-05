@@ -134,7 +134,8 @@ namespace Kartet
 		DEFINE_CUDA_EXCEPTION( udaErrorInvalidPc ),
 		DEFINE_CUDA_EXCEPTION( udaErrorIllegalAddress ),
 		#endif
-		#endif
+		#endif	
+		#undef DEFINE_CUDA_EXCEPTION
 		// CuBLAS Specifics :
 		CuBLASExceptionOffset		= 2048,
 		#ifdef __CUDACC__
@@ -175,8 +176,8 @@ namespace Kartet
 		CuFFTInvalidSize		= CuFFTExceptionOffset + CUFFT_INVALID_SIZE,
 		CuFFTUnalignedData		= CuFFTExceptionOffset + CUFFT_UNALIGNED_DATA,
 		#endif
-		#undef DEFINE_CUDA_EXCEPTION
 		// Kartet Specifics :
+		NoException = 0,
 		InvalidNegativeSize,
 		InvalidNegativeStep,
 		InvalidStep,
@@ -199,9 +200,7 @@ namespace Kartet
 		InvalidDirection,
 		InsufficientIndexingDepth,
 		NullPointer,
-		NotSupported,
-		// Others :
-		NoException = 0,
+		NotSupported
 	};
 	/// \endcond
 

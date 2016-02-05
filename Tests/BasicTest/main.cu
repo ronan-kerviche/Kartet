@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 		std::cout << "M2 = " << M2 << std::endl;
 		std::cout << "M3 = " << M3 << std::endl;
 	}
-	catch(Kartet::Exception& e)
+	catch(const Kartet::Exception& e)
 	{
 		std::cout << "Exception : " << e << std::endl;
 		returnCode = -1;
