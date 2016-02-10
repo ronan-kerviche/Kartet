@@ -178,6 +178,11 @@ namespace Kartet
 	template< typename T1, typename T2, template<typename,typename> class Op >
 	struct ExpressionEvaluation< BinaryExpression<T1, T2, Op> >
 	{
+		// Both branches must be on the same side.
+		STATIC_ASSERT_VERBOSE( 	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location) ||
+					(ExpressionEvaluation<T1>::location==AnySide) ||
+					(ExpressionEvaluation<T2>::location==AnySide), LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
+
 		// Mechanism for a BinaryExpression :
 		typedef Op< 		typename ExpressionEvaluation<T1>::ReturnType, 
 					typename ExpressionEvaluation<T2>::ReturnType 
@@ -189,11 +194,6 @@ namespace Kartet
 
 		__host__ __device__ inline static ReturnType evaluate(const BinaryExpression<T1, T2, Op>& binaryExpression, const Layout& layout, const index_t& i, const index_t& j, const index_t& k)
 		{
-			// Both branches must be on the same side.
-			STATIC_ASSERT_VERBOSE( 	(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location) ||
-						(ExpressionEvaluation<T1>::location==AnySide) ||
-						(ExpressionEvaluation<T2>::location==AnySide), LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
-
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(binaryExpression.a, layout, i, j, k), 	
 							ExpressionEvaluation<T2>::evaluate(binaryExpression.b, layout, i, j, k)
 						);
@@ -395,7 +395,8 @@ namespace Kartet
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		
-		for(index_t k=0, j=0, i=0, q=0; q<array.numElements(); q++)
+		const index_t N = array.numElements();
+		for(index_t k=0, j=0, i=0, q=0; q<N; q++)
 		{
 			array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 			array.moveToNext(i, j, k);
@@ -428,7 +429,8 @@ namespace Kartet
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		for(index_t k=0, j=0, i=0, q=0; q<array.numElements(); q++)
+		const index_t N = array.numElements();
+		for(index_t k=0, j=0, i=0, q=0; q<N; q++)
 		{
 			const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
 			if(test)

@@ -769,7 +769,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, false, false, false, void, void, void, void>::ReturnType ReturnType; \
 			 \
-			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(const T1& a, const T2& b) \
 			{ \
 				__VA_ARGS__ \
 			} \
@@ -784,7 +784,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, false, false, false, bool, void, void, void>::ReturnType ReturnType; \
 			 \
-			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(const T1& a, const T2& b) \
 			{ \
 				__VA_ARGS__ \
 			} \
@@ -799,7 +799,7 @@ namespace Kartet
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, true, false, false, true, void, void, void, void>::ReturnType ReturnType; \
 			 \
-			__host__ __device__ inline static ReturnType apply(T1 a, T2 b) \
+			__host__ __device__ inline static ReturnType apply(const T1& a, const T2& b) \
 			{ \
 				__VA_ARGS__ \
 			} \
