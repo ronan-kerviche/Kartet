@@ -333,10 +333,14 @@ namespace Kartet
 		{
 			ReturnType result = defaultValue;
 
-			for(index_t k=0, j=0, i=0, q=0; q<layout.numElements(); q++)
+			const index_t 	R = layout.numRows(),
+					Z = layout.numColumns() * layout.numSlices();
+			for(index_t k=0, j=0, q=0; q<Z; q++)
 			{
-				result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
-				layout.moveToNext(i, j, k);
+				// Keep the inner loop intact to help the compiler optimizing :
+				for(index_t i=0; i<R; i++)
+					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
+				layout.moveToNext(j, k);
 			}
 
 			return result;
@@ -630,23 +634,27 @@ namespace Kartet
 		{
 			const Layout block(layout.numRows()/output.numRows(), layout.numColumns()/output.numColumns(), layout.numSlices()/output.numSlices());
 
-			for(index_t ko=0, jo=0, io=0, qo=0; qo<output.numElements(); qo++)
+			const index_t 	outputNumElements = output.numElements(),
+					blockZ = block.numColumns()*block.numSlices(),
+					blockNumRows = block.numRows();
+			for(index_t ko=0, jo=0, io=0, qo=0; qo<outputNumElements; qo++)
 			{
 				ReturnType result = defaultValue;
 
-				for(index_t kb=0, jb=0, ib=0, qb=0; qb<block.numElements(); qb++)
+				for(index_t kb=0, jb=0, qb=0; qb<blockZ; qb++)
 				{
-					index_t	i = io * block.numRows() + ib,
-						j = jo * block.numColumns() + jb,
-						k = ko * block.numSlices() + kb;
+					// Keep the inner loop intact to help the compiler optimizing :
+					for(index_t ib=0; ib<blockNumRows; ib++)
+					{
+						const index_t	i = io * block.numRows() + ib,
+								j = jo * block.numColumns() + jb,
+								k = ko * block.numSlices() + kb;
 
-					result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
-
-					block.moveToNext(ib, jb, kb);
+						result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
+					}
+					block.moveToNext(jb, kb);
 				}
-				
 				output.data(io, jo, ko) = result;
-
 				output.moveToNext(io, jo, ko);
 			}
 		}

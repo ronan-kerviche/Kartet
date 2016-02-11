@@ -275,6 +275,7 @@ namespace Kartet
 				__host__ __device__ inline void unpackIndex(index_t index, index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline void unpackPosition(index_t index, index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline void moveToNext(index_t& i, index_t& j, index_t& k) const;
+				__host__ __device__ inline void moveToNext(index_t& j, index_t& k) const;
 
 			// Other Tools : 
 				#ifdef __CUDACC__

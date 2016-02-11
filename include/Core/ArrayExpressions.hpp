@@ -218,8 +218,18 @@ namespace Kartet
 	template< typename T1, typename T2, typename T3, template<typename,typename,typename> class Op >
 	struct ExpressionEvaluation< TernaryExpression<T1, T2, T3, Op> >
 	{
-		// Mechanism for a TernaryExpression :
+		// All branches must be on the same side.
+		STATIC_ASSERT_VERBOSE(  (ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location ||
+					 ExpressionEvaluation<T1>::location==AnySide ||
+					 ExpressionEvaluation<T2>::location==AnySide) &&
+					(ExpressionEvaluation<T2>::location==ExpressionEvaluation<T3>::location ||
+					 ExpressionEvaluation<T2>::location==AnySide ||
+					 ExpressionEvaluation<T3>::location==AnySide) &&
+					(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T3>::location ||
+					 ExpressionEvaluation<T1>::location==AnySide ||
+					 ExpressionEvaluation<T3>::location==AnySide), ARGUMENTS_HAVE_INCOMPATIBLE_LOCATIONS )
 
+		// Mechanism for a TernaryExpression :
 		typedef Op< 		typename ExpressionEvaluation<T1>::ReturnType, 
 					typename ExpressionEvaluation<T2>::ReturnType, 
 					typename ExpressionEvaluation<T3>::ReturnType 
@@ -233,17 +243,6 @@ namespace Kartet
 		
 		__host__ __device__ inline static ReturnType evaluate(const TernaryExpression<T1, T2, T3, Op>& ternaryExpression, const Layout& layout, const index_t& i, const index_t& j, const index_t& k)
 		{
-			// All branches must be on the same side.
-			STATIC_ASSERT_VERBOSE(  (ExpressionEvaluation<T1>::location==ExpressionEvaluation<T2>::location ||
-						 ExpressionEvaluation<T1>::location==AnySide ||
-						 ExpressionEvaluation<T2>::location==AnySide) &&
-						(ExpressionEvaluation<T2>::location==ExpressionEvaluation<T3>::location ||
-						 ExpressionEvaluation<T2>::location==AnySide ||
-						 ExpressionEvaluation<T3>::location==AnySide) &&
-						(ExpressionEvaluation<T1>::location==ExpressionEvaluation<T3>::location ||
-						 ExpressionEvaluation<T1>::location==AnySide ||
-						 ExpressionEvaluation<T3>::location==AnySide), ARGUMENTS_HAVE_INCOMPATIBLE_LOCATIONS );
-
 			return Operator::apply(		ExpressionEvaluation<T1>::evaluate(ternaryExpression.a, layout, i, j, k), 
 							ExpressionEvaluation<T2>::evaluate(ternaryExpression.b, layout, i, j, k),
 							ExpressionEvaluation<T3>::evaluate(ternaryExpression.c, layout, i, j, k)
@@ -394,12 +393,21 @@ namespace Kartet
 	__host__ void evaluateExpressionOverLayout(const Accessor<T,l>& array, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-		
-		const index_t N = array.numElements();
-		for(index_t k=0, j=0, i=0, q=0; q<N; q++)
+
+		const index_t 	R = array.numRows(),
+				Z = array.numColumns()*array.numSlices();
+	#ifdef KARTET_USE_OMP
+		index_t k=0, j=0;
+		#pragma omp parallel for schedule(static) firstprivate(j,k)
+		for(index_t q=0; q<Z; q++)
+	#else
+		for(index_t k=0, j=0, q=0; q<Z; q++)
+	#endif
 		{
-			array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-			array.moveToNext(i, j, k);
+			// Keep the inner loop intact to help the compiler optimizing :
+			for(index_t i=0; i<R; i++)
+				array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
+			array.moveToNext(j, k);
 		}
 	}
 
@@ -429,13 +437,24 @@ namespace Kartet
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 
-		const index_t N = array.numElements();
-		for(index_t k=0, j=0, i=0, q=0; q<N; q++)
+		const index_t 	R = array.numRows(),
+				Z = array.numColumns()*array.numSlices();
+	#ifdef KARTET_USE_OMP
+		index_t k=0, j=0;
+		#pragma omp parallel for schedule(static) firstprivate(j,k)
+		for(index_t q=0; q<Z; q++)
+	#else
+		for(index_t k=0, j=0, q=0; q<Z; q++)
+	#endif
 		{
-			const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
-			if(test)
-				array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-			array.moveToNext(i, j, k);
+			// Keep the inner loop intact to help the compiler optimizing :
+			for(index_t i=0; i<R; i++)
+			{
+				const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
+				if(test)
+					array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
+			}
+			array.moveToNext(j, k);
 		}
 	}
 

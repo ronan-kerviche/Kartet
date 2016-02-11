@@ -1147,6 +1147,8 @@ namespace Kartet
 	\param i Input : current row index. Output : next row index.
 	\param j Input : current column index. Output : next column index.
 	\param k Input : current slice index. Output : next slice index.
+
+	Note that this function does not protect the outermost boundary of the array.
 	**/
 	__host__ __device__ inline void Layout::moveToNext(index_t& i, index_t& j, index_t& k) const
 	{
@@ -1163,6 +1165,27 @@ namespace Kartet
 		j = (i==0) ? (j+1) : j;
 		j = (j>=nColumns) ? 0 : j;
 		k = (i==0 && j==0) ? (k+1) : k;
+	}
+
+	/**
+	\brief Move to next coordinate in the layout.
+	\param j Input : current column index. Output : next column index.
+	\param k Input : current slice index. Output : next slice index.
+
+	Note that this function does not protect the outermost boundary of the array.
+	**/
+	__host__ __device__ inline void Layout::moveToNext(index_t& j, index_t& k) const
+	{
+		// This version is the "protected version" 
+		// It will safely warp bad coordinates.
+		//j = (j+1) % nColumns;
+		//k = (j==0) ? (k+1) : k;
+
+		// This version is the "unprotected version"
+		// It is also much faster by avoiding index_t modulos. 
+		j++;
+		j = (j>=nColumns) ? 0 : j;
+		k = (j==0) ? (k+1) : k;
 	}
 
 	#ifdef __CUDACC__
