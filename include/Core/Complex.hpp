@@ -859,14 +859,14 @@ namespace Kartet
 			return Kartet::Complex<double>(realPart, imagPart); \
 		} \
 		 \
-		__host__ __device__ Kartet::Complex<float> function (const Kartet::Complex<float>& x) \
+		__host__ __device__ inline Kartet::Complex<float> function (const Kartet::Complex<float>& x) \
 		{ \
 			typedef float WorkType; \
 			const float __VA_ARGS__; \
 			return Kartet::Complex<float>(realPart, imagPart); \
 		} \
 		 \
-		/*__host__ Kartet::Complex<long double> function (const Kartet::Complex<long double>& x) \
+		/*__host__ inline Kartet::Complex<long double> function (const Kartet::Complex<long double>& x) \
 		{ \
 			typedef long double WorkType; \
 			const long double __VA_ARGS__; \
