@@ -39,6 +39,8 @@
 	#define UNUSED_PARAMETER(x) (void)(x);
 	#define K_PI  (3.14159265358979323846)
 	#define K_2PI (6.28318530717958647692)
+	#define K_L10 (2.30258509299404568401)
+	#define K_L2  (0.69314718055994530941)
 
 	#ifdef __CUDACC__
 		#define __cuda_typename typename

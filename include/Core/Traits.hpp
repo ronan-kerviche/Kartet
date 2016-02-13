@@ -125,7 +125,7 @@ namespace Kartet
 	struct Traits<long double>
 	{
 		typedef void SubTraits;
-		typedef float BaseType;
+		typedef long double BaseType;
 		
 		static const bool 	isConst 	= false,
 					isPointer 	= false,

@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 		Kartet::ReduceContext reduceContext;
 	
 		// Speed test:
-		typedef float T;
+		typedef double T;
 		const int M = 4096, N = 4096, L = 20;
 		double t = 0.0, v = 0.0;
 		Kartet::Array<T> A(M, N), B(M, N), C(1, N), V(M),

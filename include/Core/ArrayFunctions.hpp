@@ -65,10 +65,10 @@
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_LowerTriangleb, 	LowerTriangleb, 	bool, 		return ((i>=j)?(true):(false)); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_LowerTrianglef, 	LowerTrianglef, 	float, 		return ((i>=j)?(1.0f):(0.0f)); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_LowerTriangle, 	LowerTriangle,		double, 	return ((i>=j)?(1.0):(0.0)); )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radiusf,		Radiusf,		float,		return sqrtf((2.0f*i-l.numRows())*(2.0f*i-l.numRows()) + (2.0f*j-l.numColumns())*(2.0f*j-l.numColumns()))/2.0f; )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radius,		Radius,			double,		return sqrt((2.0*i-l.numRows())*(2.0*i-l.numRows()) + (2.0*j-l.numColumns())*(2.0*j-l.numColumns()))/2.0; )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalizedf,	RadiusNormalizedf,	float,		return sqrtf((2.0f*i-(l.numRows()-1))*(2.0f*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0f*j-(l.numColumns()-1))*(2.0f*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))); )
-	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalized,	RadiusNormalized,	double,		return sqrt((2.0*i-(l.numRows()-1))*(2.0*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0*j-(l.numColumns()-1))*(2.0*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radiusf,		Radiusf,		float,		return ::sqrtf((2.0f*i-l.numRows())*(2.0f*i-l.numRows()) + (2.0f*j-l.numColumns())*(2.0f*j-l.numColumns()))/2.0f; )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Radius,		Radius,			double,		return ::sqrt((2.0*i-l.numRows())*(2.0*i-l.numRows()) + (2.0*j-l.numColumns())*(2.0*j-l.numColumns()))/2.0; )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalizedf,	RadiusNormalizedf,	float,		return ::sqrtf((2.0f*i-(l.numRows()-1))*(2.0f*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0f*j-(l.numColumns()-1))*(2.0f*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_RadiusNormalized,	RadiusNormalized,	double,		return ::sqrt((2.0*i-(l.numRows()-1))*(2.0*i-(l.numRows()-1))/((l.numRows()-1)*(l.numRows()-1)) + (2.0*j-(l.numColumns()-1))*(2.0*j-(l.numColumns()-1))/((l.numColumns()-1)*(l.numColumns()-1))); )
 
 // Unary functions : 
 	// From CUDA, automatic or double precision : 

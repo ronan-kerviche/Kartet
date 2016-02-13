@@ -72,7 +72,7 @@ namespace Kartet
 	/**
 	\brief Complex class.
 	
-	Usual operators are also defined and implemented. Kartet::Complex<float> and Kartet::Complex<double> are binary compatible respectively with cuFloatComplex and cuDoubleComplex.
+	Usual operators are also defined and implemented. Kartet::Complex<float> and Kartet::Complex<double> are binary compatible respectively with cuFloatComplex and cuDoubleComplex. Note that std::complex might not work with Cuda.
 
 	Example : 
 	\code
@@ -236,23 +236,65 @@ namespace Kartet
 		{
 			return Complex<T>(-x, -y);
 		}
-
-		/**
-		\return The imaginary unit.
-		**/
-		static Complex<T> i(void)
-		{
-			return Complex<T>(0, 1);
-		}
-
-		/**
-		\return The imaginary unit.
-		**/
-		static Complex<T> j(void)
-		{
-			return Complex<T>(0, 1);
-		}
 	};
+
+	/**
+	\tparam T Base type.
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	template<typename T>
+	Complex<T> I(void)
+	{
+		return Complex<T>(0, 1);
+	}
+
+	/**
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	inline Complex<double> I(void)
+	{
+		return Complex<double>(0, 1);
+	}
+
+	/**
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	inline Complex<float> If(void)
+	{
+		return Complex<float>(0, 1);
+	}
+
+	/**
+	\tparam T Base type.
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	template<typename T>
+	Complex<T> J(void)
+	{
+		return Complex<T>(0, 1);
+	}
+
+	/**
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	inline Complex<double> J(void)
+	{
+		return Complex<double>(0, 1);
+	}
+
+	/**
+	\return The imaginary unit.
+	\related Kartet::Complex
+	**/
+	inline Complex<float> Jf(void)
+	{
+		return Complex<float>(0, 1);
+	}
 
 	// Operators :
 		/**
@@ -647,7 +689,7 @@ namespace Kartet
 		SPECIAL_ReFUNCTION( imag, 	z.y, 				0,			0)
 		SPECIAL_ReFUNCTION( abs, 	::sqrt(z.x*z.x+z.y*z.y), 	r<0 ? -r : r,		r)
 		SPECIAL_ReFUNCTION( absSq, 	z.x*z.x+z.y*z.y, 		r*r,			r*r)
-		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.y), 		r<0 ? -K_PI : K_PI,	K_PI)
+		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? -K_PI : K_PI,	K_PI)
 	#undef SPECIAL_ReFUNCTION
 
 	#define SPECIAL_CxFUNCTION( function, CxOperation, ReOperation ) \
@@ -712,7 +754,6 @@ namespace Kartet
 			return Complex<double> CxOperation ; \
 		}
 		
-		
 		SPECIAL_CxFUNCTION( conj, (z.x, -z.y), r)
 	#undef SPECIAL_CxFUNCTION
 	/// \endcond
@@ -739,11 +780,165 @@ namespace Kartet
 	template<typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Complex<T>& z)
 	{
-		os << '(' << z.x << ", " << z.y << ')';
+		// Vector notation :
+		#ifdef KARTET_VECTOR_COMPLEX_NOTATION
+			os << '(' << z.x << ", " << z.y << ')';
+		#else //#ifdef KARTET_LITERAL_COMPLEX_NOTATION
+			const bool reset = !(os.flags() & std::ios_base::showpos);
+			os << z.x << std::showpos << z.y << 'i';
+			if(reset)
+				os << std::noshowpos;
+		#endif
 		return os;
 	}
 
+	// Overload special functions :
+		/**
+		\fn Complex<TFloat> cos(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The cosine of the argument.
+
+		\fn Complex<TFloat> exp(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The exponential of the argument.
+
+		\fn Complex<TFloat> log(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The logarithm of the argument.
+		
+		\fn Complex<TFloat> log10(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The logarithm in base 10 of the argument.
+
+		\fn Complex<TFloat> log2(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The logarithm in base 2 of the argument.
+
+		\fn Complex<TFloat> sin(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The sine of the argument.
+
+		\fn Complex<TFloat> sqrt(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The square root of the argument (on the positive branch).
+
+		\fn Complex<TFloat> tan(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The tangeant of the argument.
+		**/
+
 } // namespace Kartet
+
+// The following functions must be kept in the global namespace (::) :
+	/// \cond FALSE 
+	#define TRANSCENDENTAL_CxFUNCTION(function, realPart, imagPart, ...) \
+		template<typename T> \
+		__host__ __device__ Kartet::Complex<double> function (const Kartet::Complex<T>& x) \
+		{ \
+			typedef double WorkType; \
+			const double __VA_ARGS__; \
+			return Kartet::Complex<double>(realPart, imagPart); \
+		} \
+		 \
+		__host__ __device__ Kartet::Complex<float> function (const Kartet::Complex<float>& x) \
+		{ \
+			typedef float WorkType; \
+			const float __VA_ARGS__; \
+			return Kartet::Complex<float>(realPart, imagPart); \
+		} \
+		 \
+		/*__host__ Kartet::Complex<long double> function (const Kartet::Complex<long double>& x) \
+		{ \
+			typedef long double WorkType; \
+			const long double __VA_ARGS__; \
+			return Kartet::Complex<long double>(realPart, imagPart); \
+		}*/
+		// NVCC will generate warnings on this last part.
+
+		TRANSCENDENTAL_CxFUNCTION( cos, 
+						ca/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e + e), 
+						sa/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e - e), 
+							ca = ::cos(x.real()), 
+							sa = ::sin(x.real()),
+							e = ::exp(x.imag())
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( exp, 
+						ea*cb, 
+						ea*sb, 
+							ea = ::exp(x.real()), 
+							cb = ::cos(x.imag()),
+							sb = ::sin(x.imag())
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( log, 
+						::log(a*a+b*b)/static_cast<WorkType>(2),
+						::atan2(b, a),
+							a = x.real(),
+							b = x.imag()
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( log10, 
+						::log10(a*a+b*b)/static_cast<WorkType>(2),
+						::atan2(b, a)/static_cast<WorkType>(K_L10),
+							a = x.real(),
+							b = x.imag()
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( log2, 
+						::log2(a*a+b*b)/static_cast<WorkType>(2),
+						::atan2(b, a)/static_cast<WorkType>(K_L2),
+							a = x.real(),
+							b = x.imag()
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( sin, 
+						sa/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e + e),
+						ca/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e - e),
+							ca = ::cos(x.real()), 
+							sa = ::sin(x.real()),
+							e = ::exp(x.imag())
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( sqrt,
+						n*::cos(p), 
+						n*::sin(p), 
+							a = x.real(),
+							b = x.imag(),
+							n = ::pow(a*a+b*b, static_cast<WorkType>(0.25)),
+							p = ::atan2(b, a)/static_cast<WorkType>(2)
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( tan, 
+						s2a/(c2a + (e2b+static_cast<WorkType>(1)/e2b)/static_cast<WorkType>(2)),
+						(e2b-static_cast<WorkType>(1)/e2b)/(static_cast<WorkType>(2)*c2a + e2b+static_cast<WorkType>(1)/e2b),
+							c2a = ::cos(x.real()*static_cast<WorkType>(2)), 
+							s2a = ::sin(x.real()*static_cast<WorkType>(2)),
+							e2b = ::exp(x.imag()*static_cast<WorkType>(2))
+					)
+
+		/* To be implemented :
+			cosh	Hyperbolic cosine of complex.
+			pow	Power of complex (binary).
+			sinh	Hyperbolic sine of complex.
+			tanh	Hyperbolic tangent of complex.
+			acos	Arc cosine of complex.
+			acosh	Arc hyperbolic cosine of complex.
+			asin	Arc sine of complex.
+			asinh	Arc hyperbolic sine of complex.
+			atan	Arc tangent of complex.
+			atanh	Arc hyperbolic tangent of complex.
+		*/
+	#undef TRANSCENDENTAL_CxFUNCTION
+	/// \endcond
 
 #endif
 
