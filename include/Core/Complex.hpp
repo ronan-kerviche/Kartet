@@ -366,7 +366,7 @@ namespace Kartet
 		**/
 
 	/// \cond FALSE 
-	#define COMPLEX_OPERATOR( operator, CxCxOperation, CxReOperation ) \
+	#define COMPLEX_OPERATOR( operator, CxCxOperation, CxReOperation, ReCxOperation ) \
 		template<typename T> \
 		__host__ __device__ Complex<T> operator (const Complex<T>& z1, const Complex<T>& z2) \
 		{ \
@@ -448,51 +448,49 @@ namespace Kartet
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,int>::Type> operator (const int& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,int>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,int>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,unsigned int>::Type> operator (const unsigned int& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,unsigned int>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,unsigned int>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,long long>::Type> operator (const signed long long& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,long long>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,long long>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,unsigned long long>::Type> operator (const unsigned long long& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,unsigned long long>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,unsigned long long>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,float>::Type> operator (const float& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,float>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,float>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ __device__ Complex<typename ResultingType<T,double>::Type> operator (const double& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,double>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,double>::Type> ReCxOperation ;\
 		} \
 		 \
 		template<typename T> \
 		__host__ Complex<typename ResultingType<T,double>::Type> operator (const long double& r, const Complex<T>& z) \
 		{ \
-			return Complex<typename ResultingType<T,long double>::Type> CxReOperation ;\
+			return Complex<typename ResultingType<T,long double>::Type> ReCxOperation ;\
 		}
 
-		
-
-		COMPLEX_OPERATOR(operator+, (z1.x+z2.x, z1.y+z2.y), 										(z.x + r, z.y) )
-		COMPLEX_OPERATOR(operator-, (z1.x-z2.x, z1.y-z2.y), 										(z.x - r, z.y) )
-		COMPLEX_OPERATOR(operator*, (z1.x*z2.x - z1.y*z2.y, z1.x*z2.y + z1.y*z2.x), 							(z.x*r, z.y*r) )
-		COMPLEX_OPERATOR(operator/, ((z1.x*z2.x+z1.y*z2.y)/(z2.x*z2.x + z2.y*z2.y), (z1.y*z2.x-z1.x*z2.y)/(z2.x*z2.x + z2.y*z2.y)), 	(z.x/r, z.y/r) )
+		COMPLEX_OPERATOR(operator+, (z1.x+z2.x, z1.y+z2.y), 										(z.x + r, z.y),	(z.x + r, z.y)  )
+		COMPLEX_OPERATOR(operator-, (z1.x-z2.x, z1.y-z2.y), 										(z.x - r, z.y),	(r - z.x, -z.y) )
+		COMPLEX_OPERATOR(operator*, (z1.x*z2.x - z1.y*z2.y, z1.x*z2.y + z1.y*z2.x), 							(z.x*r, z.y*r), (z.x*r, z.y*r)  )
+		COMPLEX_OPERATOR(operator/, ((z1.x*z2.x+z1.y*z2.y)/(z2.x*z2.x + z2.y*z2.y), (z1.y*z2.x-z1.x*z2.y)/(z2.x*z2.x + z2.y*z2.y)), 	(z.x/r, z.y/r), (r*z.x/(z.x*z.x + z.y*z.y), -r*z.y/(z.x*z.x + z.y*z.y)))
 	#undef 	COMPLEX_OPERATOR
 
 	#define COMPARISON_OPERATOR( operator, CxCxOperation, CxReOperation ) \
@@ -792,12 +790,19 @@ namespace Kartet
 		return os;
 	}
 
-	// Overload special functions :
+} // namespace Kartet
+
+// The following functions must be kept in the global namespace (::) :
 		/**
 		\fn Complex<TFloat> cos(const T& x)
 		\related Kartet::Complex
 		\param a Argument.
 		\return The cosine of the argument.
+
+		\fn Complex<TFloat> cosh(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The hyperbolic cosine of the argument.
 
 		\fn Complex<TFloat> exp(const T& x)
 		\related Kartet::Complex
@@ -824,6 +829,11 @@ namespace Kartet
 		\param a Argument.
 		\return The sine of the argument.
 
+		\fn Complex<TFloat> sinh(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The hyperbolic sine of the argument.
+
 		\fn Complex<TFloat> sqrt(const T& x)
 		\related Kartet::Complex
 		\param a Argument.
@@ -832,12 +842,13 @@ namespace Kartet
 		\fn Complex<TFloat> tan(const T& x)
 		\related Kartet::Complex
 		\param a Argument.
-		\return The tangeant of the argument.
+		\return The tangent of the argument.
+
+		\fn Complex<TFloat> tanh(const T& x)
+		\related Kartet::Complex
+		\param a Argument.
+		\return The hyperbolic tangent of the argument.
 		**/
-
-} // namespace Kartet
-
-// The following functions must be kept in the global namespace (::) :
 	/// \cond FALSE 
 	#define TRANSCENDENTAL_CxFUNCTION(function, realPart, imagPart, ...) \
 		template<typename T> \
@@ -869,6 +880,15 @@ namespace Kartet
 							ca = ::cos(x.real()), 
 							sa = ::sin(x.real()),
 							e = ::exp(x.imag())
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( cosh,
+						ach*bc,
+						ash*bs,
+							ach = ::cosh(x.real()),
+							ash = ::sinh(x.real()),
+							bc = ::cos(x.imag()),
+							bs = ::sin(x.imag())
 					)
 
 		TRANSCENDENTAL_CxFUNCTION( exp, 
@@ -903,9 +923,18 @@ namespace Kartet
 		TRANSCENDENTAL_CxFUNCTION( sin, 
 						sa/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e + e),
 						ca/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e - e),
-							ca = ::cos(x.real()), 
+							ca = ::cos(x.real()),
 							sa = ::sin(x.real()),
 							e = ::exp(x.imag())
+					)
+
+		TRANSCENDENTAL_CxFUNCTION( sinh,
+						ash*bc,
+						ach*bs,
+							ach = ::cosh(x.real()),
+							ash = ::sinh(x.real()),
+							bc = ::cos(x.imag()),
+							bs = ::sin(x.imag())
 					)
 
 		TRANSCENDENTAL_CxFUNCTION( sqrt,
@@ -920,16 +949,23 @@ namespace Kartet
 		TRANSCENDENTAL_CxFUNCTION( tan, 
 						s2a/(c2a + (e2b+static_cast<WorkType>(1)/e2b)/static_cast<WorkType>(2)),
 						(e2b-static_cast<WorkType>(1)/e2b)/(static_cast<WorkType>(2)*c2a + e2b+static_cast<WorkType>(1)/e2b),
-							c2a = ::cos(x.real()*static_cast<WorkType>(2)), 
+							c2a = ::cos(x.real()*static_cast<WorkType>(2)),
 							s2a = ::sin(x.real()*static_cast<WorkType>(2)),
 							e2b = ::exp(x.imag()*static_cast<WorkType>(2))
 					)
 
+		TRANSCENDENTAL_CxFUNCTION( tanh,
+						(bst+static_cast<WorkType>(1))*at/d,
+						(static_cast<WorkType>(1)-ast)*bt/d,
+							at = ::tanh(x.real()),
+							bt = ::tan(x.imag()),
+							ast = at*at,
+							bst = bt*bt,
+							d = (bst*ast + static_cast<WorkType>(1))
+					)
+
 		/* To be implemented :
-			cosh	Hyperbolic cosine of complex.
 			pow	Power of complex (binary).
-			sinh	Hyperbolic sine of complex.
-			tanh	Hyperbolic tangent of complex.
 			acos	Arc cosine of complex.
 			acosh	Arc hyperbolic cosine of complex.
 			asin	Arc sine of complex.

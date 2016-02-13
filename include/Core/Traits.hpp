@@ -244,7 +244,7 @@ namespace Kartet
 				static const int index = lower<0 ? -1 : lower + 1;
 			};
 		public :
-			static const int index = worker<T, IntegralTypes>::index;
+			static const int index = worker<typename Traits<T>::BaseType, IntegralTypes>::index;
 	};
 
 	__host__ inline size_t sizeOf(const int index)

@@ -134,6 +134,7 @@ namespace Kartet
 						outputLayout;
 
 			__host__ FFTContext(const Layout& inputL, const Layout& outputL, const FFTArrayMode& _arrayMode=Volume);
+			__host__ FFTContext(const Layout& inputOutputL, const FFTArrayMode& _arrayMode=Volume);
 			__host__ ~FFTContext(void);
 
 			__host__ const Accessor<Complex<T>,l>& fft(const Accessor<Complex<T>,l>& input, const Accessor<Complex<T>,l>& output, const bool forward=true);

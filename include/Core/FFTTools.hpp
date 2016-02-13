@@ -52,7 +52,7 @@ namespace Kartet
 	**/
 	template<typename T, Location l>
 	__host__ FFTContext<T,l>::FFTContext(const Layout& _inputLayout, const Layout& _outputLayout, const FFTArrayMode& _arrayMode)
-	 : 	
+	 :
 		#ifdef __CUDACC__
 		cufftHandle(0),
 		#endif
@@ -66,6 +66,37 @@ namespace Kartet
 		arrayMode(_arrayMode),
 		inputLayout(_inputLayout),
 		outputLayout(_outputLayout)
+	{
+		initialize();
+	}
+
+	/**
+	\brief FFTContext constructor.
+	\tparam T The base type of the computation (either float or double).
+	\tparam l Location of the computation (see Kartet::Location).
+	\param _inputOutputLayout Layout of the input and output data.
+	\param _arrayMode Transform mode.
+
+	The transform type will be deduced automatically from these parameters.
+
+	\throw IncompatibleLayout If the layouts are not compatible for any transform or if the layout are not (sufficiently) monolithic for a computation with FFTW.
+	**/
+	template<typename T, Location l>
+	__host__ FFTContext<T,l>::FFTContext(const Layout& _inputOutputLayout, const FFTArrayMode& _arrayMode)
+	 :
+		#ifdef __CUDACC__
+		cufftHandle(0),
+		#endif
+		#ifdef KARTET_USE_FFTW
+		fftwHandleFloat(NULL),
+		ifftwHandleFloat(NULL),
+		fftwHandleDouble(NULL),
+		ifftwHandleDouble(NULL),
+		#endif
+		operation(getOperation(_inputOutputLayout, _inputOutputLayout)),
+		arrayMode(_arrayMode),
+		inputLayout(_inputOutputLayout),
+		outputLayout(_inputOutputLayout)
 	{
 		initialize();
 	}

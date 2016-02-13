@@ -193,8 +193,6 @@
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			return abs(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			return absSq(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			arg,			return arg(a); )
-	//R2C_UNARY_OPERATOR_DEFINITION(	UnOp_angleToComplex,		angleToComplex,		return angleToComplex(a); )
-	//R2C_UNARY_OPERATOR_DEFINITION(	UnOp_piAngleToComplex,		piAngleToComplex,	return piAngleToComplex(a); )
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
 // Transform functions :

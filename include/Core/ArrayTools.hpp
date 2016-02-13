@@ -917,7 +917,7 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getIndex(index_t i, index_t j, index_t k) const
 	{
-		return k*nSlices + j*nColumns + i;
+		return k*nColumns + j*nRows + i;
 	}
 
 	/**
@@ -968,15 +968,12 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getPositionFFTShift(index_t& i, index_t& j, index_t& k) const
 	{
-		const index_t	hi = nRows % 2,
-				hj = nColumns % 2;
-
-		if(i<(nRows-hi)/2) 	j = j + (nRows+hi)/2;
-		else			j = j - (nRows-hi)/2;
-
-		if(j<(nColumns-hj)/2) i = i + (nColumns+hj)/2;
-		else 			i = i - (nColumns-hj)/2;
-
+		if(i<nRows/2)		i += (nRows+1)/2;
+		else			i -= nRows/2;
+		if(j<nColumns/2)	j += (nColumns+1)/2;
+		else			j -= nColumns/2;
+		if(k<nSlices/2)		k += (nSlices+1)/2;
+		else			k -= nSlices/2;
 		return getPosition(i, j, k);
 	}
 
@@ -992,15 +989,12 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getPositionFFTInverseShift(index_t& i, index_t& j, index_t& k) const
 	{
-		const index_t	hi = nRows % 2,
-				hj = nColumns % 2;
-
-		if(i<(nRows+hi)/2) 	i = i + (nRows-hi)/2;
-		else			i = i - (nRows+hi)/2;
-
-		if(j<(nColumns+hj)/2) j = j + (nColumns-hj)/2;
-		else 			j = j - (nColumns+hj)/2;
-
+		if(i<(nRows+1)/2)	i += nRows/2;
+		else			i -= (nRows+1)/2;
+		if(j<(nColumns+1)/2)	j += nColumns/2;
+		else			j -= (nColumns+1)/2;
+		if(k<(nSlices+1)/2)	k += nSlices/2;
+		else			k -= (nSlices+1)/2;
 		return getPosition(i, j, k);
 	}
 
@@ -1425,7 +1419,7 @@ namespace Kartet
 		// Write the header :
 		stream.write(StaticContainer<void>::streamHeader, StaticContainer<void>::streamHeaderLength()-1);
 		
-		// Write the type :	
+		// Write the type :
 		stream.write(reinterpret_cast<const char*>(&typeIndex), sizeof(int));
 		stream.write(reinterpret_cast<const char*>(&isComplex), sizeof(bool));
 	
