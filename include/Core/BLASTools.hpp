@@ -290,7 +290,7 @@ namespace Kartet
 	\f$ = \mbox{argmax}_k\{|x_k|\} \f$
 	**/
 	template<typename T, Location l>
-	__host__ int BLASContext::Iamax(const Accessor<T,l>& x)
+	__host__ int BLASContext::iamax(const Accessor<T,l>& x)
 	{
 		ALLOWED_TYPES_VERIFICATION
 		TEST_MONOLITHIC(x)
@@ -338,7 +338,7 @@ namespace Kartet
 	\f$ = \mbox{argmin}_k\{|x_k|\} \f$
 	**/
 	template<typename T, Location l>
-	__host__ int BLASContext::Iamin(const Accessor<T,l>& x)
+	__host__ int BLASContext::iamin(const Accessor<T,l>& x)
 	{
 		STATIC_ASSERT_VERBOSE(l==DeviceSide, LOCATION_NOT_SUPPORTED)
 		ALLOWED_TYPES_VERIFICATION

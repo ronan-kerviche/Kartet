@@ -172,10 +172,10 @@ namespace Kartet
 			
 
 			template<typename T, Location l>
-			__host__ int Iamax(const Accessor<T,l>& x);
+			__host__ int iamax(const Accessor<T,l>& x);
 
 			template<typename T, Location l>
-			__host__ int Iamin(const Accessor<T,l>& x);
+			__host__ int iamin(const Accessor<T,l>& x);
 
 			template<typename T, Location l>
 			__host__ typename Traits<T>::BaseType asum(const Accessor<T,l>& x);
