@@ -1564,7 +1564,7 @@ namespace Kartet
 
 	/**
 	\brief Accessor constructor.
-	\param ptr Data pointer.
+	\param _ptr Data pointer.
 	\param r Number of rows.
 	\param c Number of columns.
 	\param s Number of slices.
@@ -1575,14 +1575,14 @@ namespace Kartet
 	The data pointer provided will not be released by the accessor.
 	**/
 	template<typename T, Location l>
-	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
+	__host__ __device__ Accessor<T,l>::Accessor(T* _ptr, index_t r, index_t c, index_t s, index_t lc, index_t ls, index_t o)
 	 :	Layout(r, c, s, lc, ls, o),
-		ptr(ptr)
+		ptr(_ptr)
 	{ }
 
 	/**
 	\brief Accessor constructor.
-	\param ptr Data pointer.
+	\param _ptr Data pointer.
 	\param r Number of rows.
 	\param c Number of columns.
 	\param s Number of slices.
@@ -1590,22 +1590,22 @@ namespace Kartet
 	Assumes monolithic layout.
 	**/
 	template<typename T, Location l>
-	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, index_t r, index_t c, index_t s)
+	__host__ __device__ Accessor<T,l>::Accessor(T* _ptr, index_t r, index_t c, index_t s)
 	 :	Layout(r, c, s),
-		ptr(ptr)
+		ptr(_ptr)
 	{ }
 
 	/**
 	\brief Accessor constructor.
-	\param ptr Data pointer.
+	\param _ptr Data pointer.
 	\param layout Layout of the accessor.
 	
 	The data pointer provided will not be released by the accessor.
 	**/
 	template<typename T, Location l>
-	__host__ __device__ Accessor<T,l>::Accessor(T* ptr, const Layout& layout)
+	__host__ __device__ Accessor<T,l>::Accessor(T* _ptr, const Layout& layout)
 	 :	Layout(layout),
-		ptr(ptr)
+		ptr(_ptr)
 	{ }
 	
 	/**
@@ -1630,7 +1630,7 @@ namespace Kartet
 	__host__ __device__ Accessor<T,l>::Accessor(const Accessor<T,l>& a)
 	 : 	Layout(a),
 		ptr(a.ptr)
-	{ }
+	{ }	
 
 	/**
 	\brief Get the location of the data manipulated by this accessor.
@@ -1650,6 +1650,16 @@ namespace Kartet
 	__host__ __device__ T* Accessor<T,l>::dataPtr(void) const
 	{
 		return ptr;
+	}
+
+	/**
+	\brief Test if the the data pointer is NULL.
+	\return True if the pointer is NULL.
+	**/
+	template<typename T, Location l>
+	__host__ __device__ bool Accessor<T,l>::isNull(void) const
+	{
+		return (ptr==NULL);
 	}
 
 	/**

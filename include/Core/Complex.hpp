@@ -796,57 +796,57 @@ namespace Kartet
 		/**
 		\fn Complex<TFloat> cos(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The cosine of the argument.
 
 		\fn Complex<TFloat> cosh(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The hyperbolic cosine of the argument.
 
 		\fn Complex<TFloat> exp(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The exponential of the argument.
 
 		\fn Complex<TFloat> log(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The logarithm of the argument.
 		
 		\fn Complex<TFloat> log10(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The logarithm in base 10 of the argument.
 
 		\fn Complex<TFloat> log2(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The logarithm in base 2 of the argument.
 
 		\fn Complex<TFloat> sin(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The sine of the argument.
 
 		\fn Complex<TFloat> sinh(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The hyperbolic sine of the argument.
 
 		\fn Complex<TFloat> sqrt(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The square root of the argument (on the positive branch).
 
 		\fn Complex<TFloat> tan(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The tangent of the argument.
 
 		\fn Complex<TFloat> tanh(const T& x)
 		\related Kartet::Complex
-		\param a Argument.
+		\param x Argument.
 		\return The hyperbolic tangent of the argument.
 		**/
 	/// \cond FALSE 

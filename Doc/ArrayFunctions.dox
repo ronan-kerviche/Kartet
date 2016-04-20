@@ -1208,6 +1208,51 @@ namespace Kartet
 	**/
 	T shuffleSlices(Expression index, Expression data) { }
 
+// Range functions :
+	/**
+	\return Linear range between the specified bounds.
+	\param a Beginning.
+	\param b End.
+	**/
+	float linearRangef(const T& a, const T& b) { }
+
+	/**
+	\return Linear range between the specified bounds.
+	\param a Beginning.
+	\param b End.
+	**/
+	double linearRange(const T& a, const T& b) { }
+
+	/**
+	\return Logarithmic range between the specified bounds (in base 10).
+	\param a Beginning.
+	\param b End.
+	**/
+	float logRangef(const T& a, const T& b) {}
+
+	/**
+	\return Logarithmic range between the specified bounds.
+	\param a Beginning.
+	\param b End.
+	\param e Base.
+	**/
+	float logRangef(const T& a, const T& b, const T& e) {}
+
+	/**
+	\return Logarithmic range between the specified bounds (in base 10).
+	\param a Beginning.
+	\param b End.
+	**/
+	double logRange(const T& a, const T& b) {}
+
+	/**
+	\return Logarithmic range between the specified bounds.
+	\param a Beginning.
+	\param b End.
+	\param e Base.
+	**/
+	double logRange(const T& a, const T& b, const T& e) {}
+
 /**
 	@}
 **/

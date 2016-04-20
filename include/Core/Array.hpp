@@ -377,11 +377,12 @@ namespace Kartet
 				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1);
 				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 				__host__	    Accessor(const Array<T,l>& a);
-				__host__ __device__ Accessor(const Accessor<T,l>& a);
-			
+				__host__ __device__ Accessor(const Accessor<T,l>& a);	
+					
 			// Data Tools :
 				__host__ __device__ 	   Location location(void) const;
 				__host__ __device__        T* dataPtr(void) const;
+				__host__ __device__	   bool isNull(void) const;
 				__host__ __device__        size_t size(void) const;
 				__host__ __device__ inline T& data(index_t i, index_t j, index_t k=0) const;
 				__host__ __device__ inline T& data(index_t p) const;

@@ -56,6 +56,10 @@
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_JNormIncl, 	JNormIncl, 		double, 	return static_cast<double>(j)/static_cast<double>(l.numColumns()-1); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_KNormIncl, 	KNormIncl, 		double, 	return static_cast<double>(k)/static_cast<double>(l.numSlices()-1); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Index, 		Index, 			index_t, 	return l.getIndex(i, j, k); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(   NuOp_IndexExclf,        IndexExclf,             float,          return static_cast<float>(l.getIndex(i, j, k))/static_cast<float>(l.numElements()); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(   NuOp_IndexInclf,        IndexInclf,             float,          return static_cast<float>(l.getIndex(i, j, k))/static_cast<float>(l.numElements()-1); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(   NuOp_IndexExcl,         IndexExcl,              double,         return static_cast<double>(l.getIndex(i, j, k))/static_cast<double>(l.numElements()); )
+	STANDARD_NULLARY_OPERATOR_DEFINITION(   NuOp_IndexIncl,         IndexIncl,              double,         return static_cast<double>(l.getIndex(i, j, k))/static_cast<double>(l.numElements()-1); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Identityb, 	Identityb, 		bool, 		return ((i==j)?(true):(false)); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION(	NuOp_Identityf, 	Identityf, 		float, 		return ((i==j)?(1.0f):(0.0f)); )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_Identity, 		Identity,		double, 	return ((i==j)?(1.0):(0.0)); )
@@ -267,5 +271,45 @@
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleRows, 		shuffleRows,		i = v; )
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleColumns, 		shuffleColumns,		j = v; )
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleSlices, 		shuffleSlices,		k = v; )
+
+// Range tools :
+namespace Kartet
+{
+	template<typename T>
+	ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> > linearRangef(const T& a, const T& b)
+	{
+		return IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a);
+	}
+
+	template<typename T>
+	ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, double, BinOp_Times> >, double, BinOp_Plus> > linearRange(const T& a, const T& b)
+	{
+		return IndexIncl()*static_cast<double>(b-a)+static_cast<double>(a);
+	}
+
+	template<typename T>
+	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_pow> > logRangef(const T& a, const T& b)
+	{
+		return powf(10.0f, IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a));
+	}
+	
+	template<typename T>
+	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_pow> > logRangef(const T& a, const T& b, const T& e)
+	{
+		return powf(static_cast<float>(e), IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a));
+	}
+
+	template<typename T>
+	ExpressionContainer<BinaryExpression< double, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, double, BinOp_Times> >, double, BinOp_Plus> >, BinOp_pow> > logRange(const T& a, const T& b)
+	{
+		return pow(10.0, IndexIncl()*static_cast<double>(b-a)+static_cast<double>(a));
+	}
+	
+	template<typename T>
+	ExpressionContainer<BinaryExpression< double, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, double, BinOp_Times> >, double, BinOp_Plus> >, BinOp_pow> > logRange(const T& a, const T& b, const T& e)
+	{
+		return pow(static_cast<double>(e), IndexIncl()*static_cast<double>(b-a)+static_cast<double>(a));
+	}
+}
 
 #endif
