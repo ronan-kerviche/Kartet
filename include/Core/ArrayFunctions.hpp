@@ -276,7 +276,7 @@
 namespace Kartet
 {
 	template<typename T>
-	ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> > linearRangef(const T& a, const T& b)
+	ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexInclf> >, float, BinOp_Times> >, float, BinOp_Plus> > linearRangef(const T& a, const T& b)
 	{
 		return IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a);
 	}
@@ -288,13 +288,13 @@ namespace Kartet
 	}
 
 	template<typename T>
-	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_pow> > logRangef(const T& a, const T& b)
+	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexInclf> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_powf> > logRangef(const T& a, const T& b)
 	{
 		return powf(10.0f, IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a));
 	}
 	
 	template<typename T>
-	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexIncl> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_pow> > logRangef(const T& a, const T& b, const T& e)
+	ExpressionContainer<BinaryExpression< float, ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexInclf> >, float, BinOp_Times> >, float, BinOp_Plus> >, BinOp_powf> > logRangef(const T& a, const T& b, const T& e)
 	{
 		return powf(static_cast<float>(e), IndexInclf()*static_cast<float>(b-a)+static_cast<float>(a));
 	}
