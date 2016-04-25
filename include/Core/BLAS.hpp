@@ -40,17 +40,7 @@
 		#include <cublas_v2.h>
 	#endif
 
-	#ifdef KARTET_USE_ATLAS
-		#ifdef __cplusplus
-		extern "C"
-		{
-		#endif
-			#define KARTET_ADD_CBLAS_INTERFACE
-			#include <cblas.h>
-		#ifdef __cplusplus
-		}
-		#endif
-	#elif defined(KARTET_USE_CBLAS)
+	#if defined(KARTET_USE_ATLAS) || defined(KARTET_USE_CBLAS)
 		#ifdef __cplusplus
 		extern "C"
 		{

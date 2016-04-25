@@ -309,6 +309,7 @@ namespace Kartet
 				else IF_CX_DOUBLE
 					err = cublasIzamax(handle, x.numElements(), ZPTR(x.dataPtr()), 1, &res);
 				TEST_EXCEPTION(err)
+				res--; // CuBLAS output is in 1-based indexing for compatibility with Fortran.
 			#else
 				throw NotSupported;
 			#endif
@@ -335,6 +336,8 @@ namespace Kartet
 	\return The index of the absolute minimum value.
 	\param x Input data, must be monolithic.
 
+	Only works on device data at the moment.
+
 	\f$ = \mbox{argmin}_k\{|x_k|\} \f$
 	**/
 	template<typename T, Location l>
@@ -356,6 +359,7 @@ namespace Kartet
 			else IF_CX_DOUBLE
 				err = cublasIzamin(handle, x.numElements(), ZPTR(x.dataPtr()), 1, &res);
 			TEST_EXCEPTION(err)
+			res--; // CuBLAS output is in 1-based indexing for compatibility with Fortran.
 		#else
 			throw NotSupported;
 		#endif
