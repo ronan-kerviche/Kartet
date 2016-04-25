@@ -614,8 +614,6 @@ namespace Kartet
 			return CxReOperation ;\
 		}
 
-		
-
 		COMPARISON_OPERATOR( operator==, (z1.x==z2.x && z1.y==z2.y), (z.x==r && z.y==0) )
 		COMPARISON_OPERATOR( operator!=, (z1.x!=z2.x || z1.y!=z2.y), (z.x!=r || z.y!=0) )
 	#undef COMPARISON_OPERATOR
@@ -765,7 +763,32 @@ namespace Kartet
 	template<typename T>
 	__host__ __device__ Complex<T> polar(const T& r, const T& theta)
 	{
+		static const bool t =	IsSame<T,bool>::value ||
+					IsSame<T,char>::value || IsSame<T,unsigned char>::value ||
+					IsSame<T,short>::value || IsSame<T,unsigned short>::value ||
+					IsSame<T,int>::value || IsSame<T,unsigned int>::value ||
+					IsSame<T,long long>::value || IsSame<T,unsigned long long>::value ||
+					IsSame<T,float>::value || IsSame<T,double>::value;
+		STATIC_ASSERT_VERBOSE(t, TYPE_MUST_BE_REAL)
 		return Complex<T>(r*::cos(theta), r*::sin(theta));
+	}
+
+	/**
+	\return Complex number from polar representation.
+	\related Kartet::Complex
+	\param theta Angle.
+	**/
+	template<typename T>
+	__host__ __device__ Complex<T> polar(const T& theta)
+	{
+		static const bool t =	IsSame<T,bool>::value ||
+					IsSame<T,char>::value || IsSame<T,unsigned char>::value ||
+					IsSame<T,short>::value || IsSame<T,unsigned short>::value ||
+					IsSame<T,int>::value || IsSame<T,unsigned int>::value ||
+					IsSame<T,long long>::value || IsSame<T,unsigned long long>::value ||
+					IsSame<T,float>::value || IsSame<T,double>::value;
+		STATIC_ASSERT_VERBOSE(t, TYPE_MUST_BE_REAL)
+		return Complex<T>(::cos(theta), ::sin(theta));
 	}
 
 	/**

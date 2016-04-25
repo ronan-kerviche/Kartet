@@ -795,22 +795,23 @@ namespace Kartet
 	T absSq(Expression a) { }
 
 	/**
-	\return The angle of the argument (complex argument).
+	\return The angle of the argument (complex argument), within \f$ [-\pi; +\pi] \f$.
 	\param a Expression.
 	**/
-	T angle(Expression a) { }
+	T arg(Expression a) { }
 
 	/**
 	\return The unitary complex number defined by the argument as angle.
 	\param a Real expression.
 	**/
-	Complex<T> angleToComplex(Expression a) { }
+	Complex<T> polar(Expression a) { }
 
 	/**
-	\return The unitary complex number defined by the argument times Pi as angle.
-	\param a Real expression.
+	\return The complex number from polar representation.
+	\param a Radius.
+	\param b Angle.
 	**/
-	Complex<T> piAngleToComplex(Expression a) { }
+	Complex<T> polar(Expression a, Expression b) { }
 
 	/**
 	\return The argument casted to another type.

@@ -95,6 +95,12 @@
 		-D KARTET_DEFAULT_LOCATION=newLocation
 	\endcode
 
+	- Change complex output (vector or literal notation) :
+	\code
+		-D KARTET_VECTOR_COMPLEX_NOTATION
+		-D KARTET_LITERAL_COMPLEX_NOTATION
+	\endcode
+
 \section section_example Example
 	\code
 	Kartet::initialize();

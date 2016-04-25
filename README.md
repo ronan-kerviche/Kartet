@@ -27,3 +27,6 @@ or 'hostBinary' to generate only one binary.
 ## Examples :
   See Tests/BasicTest for simple operations.
 
+## Documentation :
+	See http://ronan-kerviche.net/Kartet
+

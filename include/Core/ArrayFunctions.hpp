@@ -196,7 +196,8 @@
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			return imag(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			return abs(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			return absSq(a); )
-	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_angle,			arg,			return arg(a); )
+	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_arg,			arg,			return arg(a); )
+	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_polar,			polar,			return polar(a); )
 	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
 
 // Transform functions :
@@ -265,6 +266,7 @@
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_Complex,			complex,		return ReturnType(a, b); )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexF,			complexf,		return Complex<float>(a, b); )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexD,			complexd,		return Complex<double>(a, b); )
+	R2C_BINARY_OPERATOR_DEFINITION(		BinOp_Polar,			polar,			return polar(a,b); )
 
 // Shuffle functions :
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleIndex, 		shuffleIndex,		l.unpackIndex(v, i, j, k); )
