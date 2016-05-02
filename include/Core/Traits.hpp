@@ -50,10 +50,25 @@ namespace Kartet
 		typedef void SubTraits;
 		typedef T BaseType;
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
 					isFloatingPoint	= false;
+	};
+
+	template<typename T>
+	struct Traits<T[]>
+	{
+		typedef Traits<T> SubTraits;
+		typedef typename SubTraits::BaseType BaseType;
+
+		static const bool 	isConst 	= SubTraits::isConst,
+					isArray		= true,
+					isPointer 	= SubTraits::isPointer,
+					isReference 	= SubTraits::isReference,
+					isComplex 	= SubTraits::isComplex,
+					isFloatingPoint	= SubTraits::isFloatingPoint;
 	};
 
 	template<typename T>
@@ -63,6 +78,7 @@ namespace Kartet
 		typedef typename SubTraits::BaseType BaseType;
 
 		static const bool 	isConst 	= SubTraits::isConst,
+					isArray		= SubTraits::isArray,
 					isPointer 	= true,
 					isReference 	= SubTraits::isReference,
 					isComplex 	= SubTraits::isComplex,
@@ -76,6 +92,7 @@ namespace Kartet
 		typedef typename SubTraits::BaseType BaseType;
 
 		static const bool 	isConst 	= SubTraits::isConst,
+					isArray		= SubTraits::isArray,
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= true,
 					isComplex 	= SubTraits::isComplex,
@@ -89,6 +106,7 @@ namespace Kartet
 		typedef typename SubTraits::BaseType BaseType;
 
 		static const bool 	isConst 	= true,
+					isArray		= SubTraits::isArray,	
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= SubTraits::isReference,
 					isComplex 	= SubTraits::isComplex,
@@ -102,6 +120,7 @@ namespace Kartet
 		typedef float BaseType;
 		
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
@@ -115,6 +134,7 @@ namespace Kartet
 		typedef double BaseType;
 		
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
@@ -128,6 +148,7 @@ namespace Kartet
 		typedef long double BaseType;
 		
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
@@ -141,6 +162,7 @@ namespace Kartet
 		typedef float BaseType;
 
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,
@@ -154,6 +176,7 @@ namespace Kartet
 		typedef double BaseType;
 
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,
@@ -167,6 +190,7 @@ namespace Kartet
 		typedef T BaseType;
 
 		static const bool 	isConst 	= false,
+					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,

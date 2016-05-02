@@ -37,6 +37,7 @@
 #define __KARTET_CONTAINER__
 
 	#include "Core/Exceptions.hpp"
+	#include "Core/Traits.hpp"
 
 /// Kartet main namespace.
 namespace Kartet
@@ -44,7 +45,19 @@ namespace Kartet
 	/**
 	\brief Container object.
 
-	Contains a dynamically allocated object and assumes its ownership.
+	Contains a dynamically allocated object and assumes its ownership similarly to C++11's unique_ptr. However, it does not support the allocation of arrays and will always perform the de-allocation with delete (not delete[]).
+
+\code
+Kartet::Container<Kartet::Array<double> > a;
+// Populate with a pointer :
+a = new Kartet::Array<double>(5,5);
+// Use as a typical pointer :
+*a = Kartet::IndexI();
+std::cout << "Layout : " << a->layout() << std::endl;
+// Replace, the previous object will be de-allocated automatically :
+a = new Kartet::Array<double>(10,10);
+// The object is automatically cleared at the end of the scope.
+\endcode
 	**/
 	template<typename T>
 	class Container
@@ -90,8 +103,7 @@ namespace Kartet
 	template<typename T>
 	__host__ Container<T>::~Container(void)
 	{
-		delete ptr;
-		ptr = NULL;
+		reset();
 	}
 
 	/**
@@ -110,7 +122,7 @@ namespace Kartet
 	template<typename T>
 	__host__ void Container<T>::replace(Container<T>& c)
 	{
-		delete ptr;
+		reset();
 		ptr = c.take();
 	}
 
@@ -148,12 +160,13 @@ namespace Kartet
 
 	/**
 	\brief Set the data tracked by this container. The previous data will be released.
+	\param _ptr Replacement pointer. This container will take its ownership.
 	\return This.
 	**/
 	template<typename T>
 	__host__ Container<T>& Container<T>::operator=(T* _ptr)
 	{
-		delete ptr;
+		reset();
 		ptr = _ptr;
 		return (*this);
 	}
