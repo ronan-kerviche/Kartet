@@ -45,7 +45,7 @@ namespace Kartet
 	/**
 	\brief Container object.
 
-	Contains a dynamically allocated object and assumes its ownership similarly to C++11's unique_ptr. However, it does not support the allocation of arrays and will always perform the de-allocation with delete (not delete[]).
+	Contains a dynamically allocated object and assumes its ownership similarly to C++11's unique_ptr. <b>However, it does not support the allocation of arrays</b> and will always perform the de-allocation with delete (not delete[]).
 
 \code
 Kartet::Container<Kartet::Array<double> > a;
@@ -72,7 +72,7 @@ a = new Kartet::Array<double>(10,10);
 			__host__ void reset(void);
 			__host__ void replace(Container<T>& c);
 			__host__ T* take(void);
-			__host__ T* dataPtr(void) const;
+			__host__ operator bool(void) const;
 			__host__ bool isNull(void) const;
 			__host__ Container<T>& operator=(T* _ptr);
 			__host__ Container<T>& operator=(Container<T>& c);
@@ -136,17 +136,7 @@ a = new Kartet::Array<double>(10,10);
 		T* r = ptr;
 		ptr = NULL;
 		return r;
-	}
-
-	/**
-	\brief Get the pointer to the data.
-	\return The pointer to the data.
-	**/
-	template<typename T>
-	__host__ T* Container<T>::dataPtr(void) const
-	{
-		return ptr;
-	}
+	}	
 
 	/**
 	\brief Test if the pointer is NULL.
@@ -156,6 +146,16 @@ a = new Kartet::Array<double>(10,10);
 	__host__ bool Container<T>::isNull(void) const
 	{
 		return (ptr==NULL);
+	}
+
+	/**
+	\brief Test if the pointer is not NULL.
+	\return True if the pointer is not NULL.
+	**/
+	template<typename T>
+	__host__ Container<T>::operator bool(void) const
+	{
+		return (ptr!=NULL);
 	}
 
 	/**
