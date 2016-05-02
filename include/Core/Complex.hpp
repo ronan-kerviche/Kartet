@@ -685,7 +685,7 @@ namespace Kartet
 		SPECIAL_ReFUNCTION( imag, 	z.y, 				0,			0)
 		SPECIAL_ReFUNCTION( abs, 	::sqrt(z.x*z.x+z.y*z.y), 	r<0 ? -r : r,		r)
 		SPECIAL_ReFUNCTION( absSq, 	z.x*z.x+z.y*z.y, 		r*r,			r*r)
-		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? -K_PI : K_PI,	K_PI)
+		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? K_PI : 0,		0)
 	#undef SPECIAL_ReFUNCTION
 
 	#define SPECIAL_CxFUNCTION( function, CxOperation, ReOperation ) \

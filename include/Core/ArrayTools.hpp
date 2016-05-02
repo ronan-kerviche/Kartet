@@ -2662,8 +2662,7 @@ namespace Kartet
 		if(!forcedFloattingFormat)
 			os.setf(std::ios_base::scientific);
 	
-		const int precision = forcedFloattingFormat? os.precision() : 3,
-			  maxWidth = Traits<T>::isComplex ? 1 : !Traits<T>::isFloatingPoint ? 9 : (os.flags() & std::ios_base::scientific)!=0 ? (precision+7) : (precision+5); //3	
+		const int precision = forcedFloattingFormat? os.precision() : 3;
 		const int originalPrecision = os.precision(precision);
 		const char fillCharacter = ' ';	
 		const char originalFill = os.fill(fillCharacter);
@@ -2683,15 +2682,16 @@ namespace Kartet
 				for(int j=0; j<(layout.numColumns()-1); j++)
 				{
 					const CastType v = static_cast<CastType>(tmp[layout.getPosition(i,j,k)]);
-					os.width(maxWidth);
 					os.setf(std::ios_base::right);
-					if(v>=static_cast<CastType>(0))
+					if(!Traits<T>::isComplex && arg(v)==static_cast<CastType>(0))
 						os << ' ';
 					os << v << spacing;
 				}
-				os.width(maxWidth);
 				os.setf(std::ios_base::right);
-				os << static_cast<CastType>(tmp[layout.getPosition(i,layout.numColumns()-1,k)]) << std::endl;
+				const CastType v = static_cast<CastType>(tmp[layout.getPosition(i,layout.numColumns()-1,k)]);
+				if(!Traits<T>::isComplex && arg(v)==static_cast<CastType>(0))
+					os << ' ';
+				os << v << std::endl;
 			}
 		}
 		// Reset :
