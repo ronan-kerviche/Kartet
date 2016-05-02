@@ -806,6 +806,7 @@ namespace Kartet
 			os << '(' << z.x << ", " << z.y << ')';
 		#else //#ifdef KARTET_LITERAL_COMPLEX_NOTATION
 			const bool reset = !(os.flags() & std::ios_base::showpos);
+			if(z.x>=static_cast<T>(0)) os << ' ';
 			os << z.x << std::showpos << z.y << 'i';
 			if(reset)
 				os << std::noshowpos;

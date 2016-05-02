@@ -42,6 +42,7 @@
 	#include "Core/RandomSource.hpp"
 	#include "Core/FFT.hpp"
 	#include "Core/Reduce.hpp"
+	#include "Core/Container.hpp"
 
 #endif
 

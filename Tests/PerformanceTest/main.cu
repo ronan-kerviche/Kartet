@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 	}
 	catch(const Kartet::Exception& e)
 	{
-		std::cout << "Exception : " << e << std::endl;
+		std::cerr << "Exception : " << e << std::endl;
 		returnCode = -1;
 	}
 

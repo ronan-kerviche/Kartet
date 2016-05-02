@@ -155,7 +155,7 @@ namespace Kartet
 		return (nRows>0 && nColumns>0 && nSlices>0 && 
 			sColumns>=nRows && 
 			sSlices>=(nRows*nColumns));
-			//(nColumns!=1 || sColumns==sSlices) &&	- The column stride is equal to the slice stride if there is only one column.
+			//(nColumns!=1 || sColumns==sSlices) &&		- The column stride is equal to the slice stride if there is only one column.
 			//(nSlices!=1 || sSlices==numElements())	- The slice stride is equal to the number of elements if there is only one slice.
 	}
 
@@ -2662,8 +2662,8 @@ namespace Kartet
 		if(!forcedFloattingFormat)
 			os.setf(std::ios_base::scientific);
 	
-		const int precision = forcedFloattingFormat? os.precision() : 2,
-			  maxWidth = Traits<T>::isComplex ? 1 : !Traits<T>::isFloatingPoint ? 9 : (os.flags() & std::ios_base::scientific)!=0 ? (precision+7) : (precision+3);	
+		const int precision = forcedFloattingFormat? os.precision() : 3,
+			  maxWidth = Traits<T>::isComplex ? 1 : !Traits<T>::isFloatingPoint ? 9 : (os.flags() & std::ios_base::scientific)!=0 ? (precision+7) : (precision+5); //3	
 		const int originalPrecision = os.precision(precision);
 		const char fillCharacter = ' ';	
 		const char originalFill = os.fill(fillCharacter);
@@ -2679,11 +2679,15 @@ namespace Kartet
 	
 			for(int i=0; i<layout.numRows(); i++)
 			{
+				os << ' ';
 				for(int j=0; j<(layout.numColumns()-1); j++)
 				{
+					const CastType v = static_cast<CastType>(tmp[layout.getPosition(i,j,k)]);
 					os.width(maxWidth);
 					os.setf(std::ios_base::right);
-					os << static_cast<CastType>(tmp[layout.getPosition(i,j,k)]) << spacing;
+					if(v>=static_cast<CastType>(0))
+						os << ' ';
+					os << v << spacing;
 				}
 				os.width(maxWidth);
 				os.setf(std::ios_base::right);
@@ -2714,7 +2718,7 @@ namespace Kartet
 	{
 		if(!layout().isValid())
 			throw InvalidLayout;
-		allocateMemory();	
+		allocateMemory();
 	}
 	
 	/**
