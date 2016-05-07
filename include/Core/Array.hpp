@@ -160,9 +160,12 @@ namespace Kartet
 			template<typename T>
 			struct StaticContainer
 			{
-				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), CONTAINER_MUST_HAVE_VOID_PARAMETER)
-				static index_t numThreads;
-				static const index_t maxZThreads;				
+				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), STATIC_CONTAINER_MUST_HAVE_VOID_PARAMETER)
+				static index_t 	numThreads,
+						warpSize,
+						maxXThreads,
+						maxYThreads,
+						maxZThreads;
 				static const char streamHeader[];
 				static size_t streamHeaderLength();
 			};
@@ -318,19 +321,53 @@ namespace Kartet
 	**/
 	template<typename T>
 	index_t Layout::StaticContainer<T>::numThreads = 512;
+	
+	/**
+	\var Layout::StaticContainer<T>::warpSize
+	\related Kartet::Layout
+	\brief Size of threads warps.
+
+	Use the initialize method to set automatically.
+
+	See also Kartet::initialize().
+	**/
+	template<typename T>
+	index_t Layout::StaticContainer<T>::warpSize = 32;
+
+	/**
+	\var Layout::StaticContainer<void>::maxXThreads
+	\related Kartet::Layout
+	\brief Maximum number of CUDA threads in the X direction.
+
+	Use the initialize method to set automatically.
+
+	See also Kartet::initialize().
+	**/
+	template<typename T>
+	index_t Layout::StaticContainer<T>::maxXThreads = 1024;
+
+	/**
+	\var Layout::StaticContainer<void>::maxYThreads
+	\related Kartet::Layout
+	\brief Maximum number of CUDA threads in the Y direction.
+
+	Use the initialize method to set automatically.
+
+	See also Kartet::initialize().
+	**/
+	template<typename T>
+	index_t Layout::StaticContainer<T>::maxYThreads = 1024;
+
 
 	/**
 	\var Layout::StaticContainer<void>::maxZThreads
 	\related Kartet::Layout
 	\brief Maximum number of CUDA threads in the Z direction.
 
-	Access with : 
-	\code
-	const index_t maxZThreads = Kartet::Layout::StaticContainer<void>::maxZThreads;
-	\endcode
+	See also Kartet::initialize().
 	**/
 	template<typename T>
-	const index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
+	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
 
 	/**
 	\var Layout::StaticContainer<void>::streamHeader

@@ -51,8 +51,17 @@ function writeArrayToFile(A, arg)
 	fwrite(fileId, size(A,1), '*int64');
 	fwrite(fileId, size(A,2), '*int64');
 	fwrite(fileId, size(A,3), '*int64');
-	fwrite(fileId, A(:), sprintf('*%s', types{typeId}.typename));
-
+	if(~isComplex)
+		fwrite(fileId, A(:), sprintf('*%s', types{typeId}.typename));
+	else
+		% Zip a complex array by interleaving real and imaginary parts.
+		% The output will have twice more rows.
+		B = zeros(2*size(A,1), size(A,2), size(A,3), class(A));
+		B(1:2:end) = real(A(:));
+		B(2:2:end) = imag(A(:));
+		fwrite(fileId, B(:), sprintf('*%s', types{typeId}.typename));
+	end
+	
 	% Close, if needed :
 	if(isstr(arg))
 		fclose(fileId);

@@ -60,6 +60,10 @@ namespace Kartet
 			if(err!=cudaSuccess)
 				throw static_cast<Exception>(CudaExceptionsOffset + err);
 			Layout::StaticContainer<void>::numThreads = properties.maxThreadsPerBlock/2;
+			Layout::StaticContainer<void>::warpSize = properties.warpSize;
+			Layout::StaticContainer<void>::maxXThreads = properties.maxThreadsDim[0];
+			Layout::StaticContainer<void>::maxYThreads = properties.maxThreadsDim[1];
+			Layout::StaticContainer<void>::maxZThreads = properties.maxThreadsDim[2];
 		#endif
 	}
 
