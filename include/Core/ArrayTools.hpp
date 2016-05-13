@@ -2157,7 +2157,7 @@ namespace Kartet
 	\brief Get an accessor to the specified elements.
 	\param p Starting index.
 	\param n Number of elements.
-	\throw Kartet::OutofRange If the starting index is not valid or if the number of elements is larger than the number of contiguous elements.
+	\throw Kartet::OutOfRange If the starting index is not valid or if the number of elements is larger than the number of contiguous elements.
 	\return An accessor to the contiguous elements.
 	**/
 	template<typename T, Location l>
@@ -2479,6 +2479,38 @@ namespace Kartet
 			return Accessor<T,l>(ptr + getPosition(numRows()-1,o,0), 1, std::max(numRows(), numColumns())-o, numSlices(), columnsStride()-1, slicesStride(), getPosition(numRows()-1,o,0));
 		else
 			return Accessor<T,l>(ptr + getPosition(numRows()+o-1,0,0), 1, std::max(numRows(), numColumns())+o, numSlices(), columnsStride()-1, slicesStride(), offset()+getPosition(numRows()+o-1,0,0));
+	}
+
+	/**
+	\brief Return a reinterpreted version of this accessor (see Kartet::Layout::reinterpretLayout()).
+	\param r New row count.
+	\param c New column count.
+	\param s New slice count.
+
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
+	\return A reinterpreted version of this accessor.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::reinterpretedLayout(index_t r, index_t c, index_t s) const
+	{
+		Accessor<T, l> result = (*this);
+		result.reinterpretLayout(r, c, s);
+		return result;
+	}
+
+	/**
+	\brief Return a reinterpreted version of this accessor (see Kartet::Layout::reinterpretLayout()).
+	\param other New layout (only the number of rows, columns and slices are considered).
+
+	\throw Kartet::InvalidLayoutReinterpretation In case of a failure.
+	\return A reinterpreted version of this accessor.
+	**/
+	template<typename T, Location l>
+	__host__ Accessor<T,l> Accessor<T,l>::reinterpretedLayout(const Layout& other) const
+	{
+		Accessor<T, l> result = (*this);
+		result.reinterpretLayout(other);
+		return result;
 	}
 
 	/**

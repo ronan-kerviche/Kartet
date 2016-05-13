@@ -459,6 +459,8 @@ namespace Kartet
 				__host__		   Accessor<T,l> bottomRightCorner(index_t r, index_t c) const;
 				__host__		   Accessor<T,l> diagonal(index_t o=0) const;
 				__host__		   Accessor<T,l> secondaryDiagonal(index_t o=0) const;
+				__host__		   Accessor<T,l> reinterpretedLayout(index_t r, index_t c=1, index_t s=1) const;
+				__host__		   Accessor<T,l> reinterpretedLayout(const Layout& other) const;
 				__host__  	           Accessor<T,l> flattened(void) const;
 				__host__  	           Accessor<T,l> stretched(void) const;
 				__host__  	           Accessor<T,l> vectorized(void) const;

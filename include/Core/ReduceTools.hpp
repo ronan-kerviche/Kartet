@@ -76,9 +76,9 @@ namespace Kartet
 				for(int jl=0; jl<blockSteps.y; jl++)
 					for(int il=0; il<blockSteps.x; il++)
 					{
-						index_t	iL = i + il * gridDim.x * blockDim.x,
-							jL = j + jl * gridDim.y * blockDim.y,
-							kL = k + kl * gridDim.z * blockDim.z;
+						const index_t	iL = i + il * gridDim.x * blockDim.x,
+								jL = j + jl * gridDim.y * blockDim.y,
+								kL = k + kl * gridDim.z * blockDim.z;
 						if(layout.isInside(iL, jL, kL))
 							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 					}
@@ -127,6 +127,7 @@ namespace Kartet
 	template<template<typename,typename> class Op, typename TOut, Location l, typename TExpr>
 	__global__ void reduceToLayoutKernel_LargeReductionMode(const Layout layout, const Layout reductionBlockLayout, const dim3 blockSteps, const TExpr expr, const typename ExpressionEvaluation<TExpr>::ReturnType defaultValue, const Accessor<TOut,l> output, const unsigned int totalNumThreads, const unsigned int maxPow2Half)
 	{
+		// Multiple thread will work collectively to reduce an expression :
 		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		ReturnType *sharedData = SharedMemory<ReturnType>();
 
@@ -144,12 +145,12 @@ namespace Kartet
 			for(int jl=0; jl<blockSteps.y; jl++)
 				for(int il=0; il<blockSteps.x; il++)
 				{
-					index_t	iB = threadIdx.x + il * blockDim.x,
-						jB = threadIdx.y + jl * blockDim.y,
-						kB = threadIdx.z + kl * blockDim.z,
-						iL = i + il * blockDim.x,
-						jL = j + jl * blockDim.y,
-						kL = k + kl * blockDim.z;
+					const index_t	iB = threadIdx.x + il * blockDim.x,
+							jB = threadIdx.y + jl * blockDim.y,
+							kB = threadIdx.z + kl * blockDim.z,
+							iL = i + il * blockDim.x,
+							jL = j + jl * blockDim.y,
+							kL = k + kl * blockDim.z;
 					if(layout.isInside(iL, jL, kL) && reductionBlockLayout.isInside(iB, jB, kB))
 						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 				}
@@ -193,12 +194,12 @@ namespace Kartet
 			for(unsigned int jl=0; jl<blockSteps.y; jl++)
 				for(unsigned int il=0; il<blockSteps.x; il++)
 				{
-					index_t	iBL = iB + il * blockDim.x,
-						jBL = jB + jl * blockDim.y,
-						kBL = kB + kl * blockDim.z,
-						iL = i + il * blockDim.x,
-						jL = j + jl * blockDim.y,
-						kL = k + kl * blockDim.z;
+					const index_t	iBL = iB + il * blockDim.x,
+							jBL = jB + jl * blockDim.y,
+							kBL = kB + kl * blockDim.z,
+							iL = i + il * blockDim.x,
+							jL = j + jl * blockDim.y,
+							kL = k + kl * blockDim.z;
 					if(layout.isInside(iL, jL, kL) && reductionBlockLayout.isInside(iBL, jBL, kBL))
 						v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 				}
