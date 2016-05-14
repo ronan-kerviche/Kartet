@@ -396,18 +396,17 @@ namespace Kartet
 
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
+
 	#ifdef KARTET_USE_OMP
-		index_t k=0, j=0;
-		#pragma omp parallel for schedule(static) firstprivate(j,k)
-		for(index_t q=0; q<Z; q++)
-	#else
-		for(index_t k=0, j=0, q=0; q<Z; q++)
+		#pragma omp parallel for schedule(static)
 	#endif
+		for(index_t q=0; q<Z; q++)
 		{
+			index_t dummy, j, k;
+			array.unpackIndex(q*R, dummy, j, k);
 			// Keep the inner loop intact to help the compiler optimizing :
 			for(index_t i=0; i<R; i++)
 				array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
-			array.moveToNext(j, k);
 		}
 	}
 
@@ -440,13 +439,12 @@ namespace Kartet
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
 	#ifdef KARTET_USE_OMP
-		index_t k=0, j=0;
-		#pragma omp parallel for schedule(static) firstprivate(j,k)
-		for(index_t q=0; q<Z; q++)
-	#else
-		for(index_t k=0, j=0, q=0; q<Z; q++)
+		#pragma omp parallel for schedule(static)
 	#endif
+		for(index_t q=0; q<Z; q++)
 		{
+			index_t dummy, j, k;
+			array.unpackIndex(q*R, dummy, j, k);
 			// Keep the inner loop intact to help the compiler optimizing :
 			for(index_t i=0; i<R; i++)
 			{

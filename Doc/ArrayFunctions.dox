@@ -872,10 +872,16 @@ namespace Kartet
 	T distributeSlice(Expression a) { }
 
 	/**
-	\return Distribute the first column of the argument on all columns of the output expression.
+	\return Distribute the first columns <b>of all the slices</b> from the argument on all columns of the output expression.
 	\param a Expression.
 	**/
 	T distributeColumn(Expression a) { }
+
+	/**
+	\return Distribute the first column <b>of the first slice</b> from the argument on all columns of the output expression.
+	\param a Expression.
+	**/
+	T distributeColumnSlice(Expression a) { }
 
 	/**
 	\return Distribute the first element of the argument on all elements of the output expression.

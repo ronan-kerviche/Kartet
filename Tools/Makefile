@@ -133,9 +133,9 @@ hostBinary : $(HOST_OBJECTS)
 
 %.host.o : $(SOURCES_DIR)%.cu
 	@echo '[ HOST ] Compiling $^ ...'
-	@ln -sf $(notdir $^) $(patsubst %.cu,%.cpp,$^)
-	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $(patsubst %.cu,%.cpp,$^) $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
-	@rm $(patsubst %.cu,%.cpp,$^)
+	@ln -sf $(notdir $^) $(patsubst %.cu,%.lnk.cpp,$^)
+	@$(HSCC) -o $(OBJ_DIR)$(notdir $@) -c $(patsubst %.cu,%.lnk.cpp,$^) $(CC_INCLUDE) $(KARTET_OPTIONS) $(CC_FLAGS)
+	@rm $(patsubst %.cu,%.lnk.cpp,$^)
 
 %.host.o : $(SOURCES_DIR)%.cpp
 	@echo '[ HOST ] Compiling $^ ...'

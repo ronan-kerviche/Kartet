@@ -207,6 +207,7 @@
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YFlip,				yFlip,				i = l.numRows()-(i+1); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeColumn,			distributeColumn,		j=0; )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeColumnSlice, 		distributeColumnSlice,		j=0; k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElement,			distributeElement,		i=j=k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_diagonal,				diagonal,			j=i; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeElementsOnColumns,	distributeElementsOnColumns,	i=j; j=0; )

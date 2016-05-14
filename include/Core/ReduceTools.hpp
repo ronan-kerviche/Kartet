@@ -596,7 +596,7 @@ namespace Kartet
 				blockSize.x = std::max( static_cast<index_t>(std::max(blockSize.x - blockSize.x % reductionBlockLayout.numRows(), reductionBlockLayout.numRows() % blockSize.x)), static_cast<index_t>(1));
 				blockSize.y = std::max( static_cast<index_t>(std::max(blockSize.y - blockSize.y % reductionBlockLayout.numColumns(), reductionBlockLayout.numColumns() % blockSize.y)), static_cast<index_t>(1));
 				blockSize.z = std::max( static_cast<index_t>(std::max(blockSize.z - blockSize.z % reductionBlockLayout.numSlices(), reductionBlockLayout.numSlices() % blockSize.z)), static_cast<index_t>(1));
-			
+
 				// The number of steps to do also depends on the previous cut :
 				blockSteps.x = (reductionBlockLayout.numRows() + blockSize.x - 1) / blockSize.x;
 				blockSteps.y = (reductionBlockLayout.numColumns() + blockSize.y - 1) / blockSize.y;
@@ -643,31 +643,32 @@ namespace Kartet
 		}
 		else
 		{
-			const Layout block(layout.numRows()/output.numRows(), layout.numColumns()/output.numColumns(), layout.numSlices()/output.numSlices());
-
-			const index_t 	outputNumElements = output.numElements(),
-					blockZ = block.numColumns()*block.numSlices(),
-					blockNumRows = block.numRows();
-			for(index_t ko=0, jo=0, io=0, qo=0; qo<outputNumElements; qo++)
-			{
-				ReturnType result = defaultValue;
-
-				for(index_t kb=0, jb=0, qb=0; qb<blockZ; qb++)
+			const index_t 	onr = output.numRows(),
+					bns = layout.numSlices()/output.numSlices(),
+					bnc = layout.numColumns()/output.numColumns(),
+					bnr = layout.numRows()/output.numRows(),
+					outputZ = output.numColumns()*output.numSlices();
+			#ifdef KARTET_USE_OMP
+				#pragma omp parallel for schedule(static)
+			#endif
+				for(index_t qo=0; qo<outputZ; qo++)
 				{
-					// Keep the inner loop intact to help the compiler optimizing :
-					for(index_t ib=0; ib<blockNumRows; ib++)
+					index_t dummy, jo, ko;
+					output.unpackIndex(qo*onr, dummy, jo, ko);
+					for(index_t io=0; io<onr; io++)
 					{
-						const index_t	i = io * block.numRows() + ib,
-								j = jo * block.numColumns() + jb,
-								k = ko * block.numSlices() + kb;
-
-						result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, i, j, k));
+						const index_t 	iob =  io * bnr,
+								job = jo * bnc,
+								kob = ko * bns;
+						ReturnType result = defaultValue;
+						for(index_t kb=0; kb<bns; kb++)
+							for(index_t jb=0; jb<bnc; jb++)
+								for(index_t ib=0; ib<bnr; ib++)
+									result = Op<ReturnType, ReturnType>::apply(result, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iob+ib, job+jb, kob+kb));
+						output.data(io, jo, ko) = result;
 					}
-					block.moveToNext(jb, kb);
+					output.moveToNext(jo, ko);
 				}
-				output.data(io, jo, ko) = result;
-				output.moveToNext(io, jo, ko);
-			}
 		}
 		// Return output accessor : 
 		return output;
