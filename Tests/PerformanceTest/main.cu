@@ -53,7 +53,13 @@ int main(int argc, char** argv)
 	
 		// Speed test:
 		typedef float T;
+		if(Kartet::IsSame<T,float>::value)
+			std::cout << "In single precision." << std::endl;
+		else
+			std::cout << "In double precision." << std::endl;
+
 		const int M = 4096, N = 4096, L = 20;
+		const double GB = 1024.0*1024.0*1024.0;
 		double t = 0.0, v = 0.0;
 		Kartet::Array<T> A(M, N), B(M, N), C(1, N), V(M),
 				 ones(M, N);
@@ -73,7 +79,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Addition                                  : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against Thrust :
@@ -84,7 +90,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[THRUST] Addition                         : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Test :
@@ -95,7 +101,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Affine Expression                         : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Test :
@@ -106,7 +112,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Expression                                : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Test :	
@@ -118,7 +124,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Reduction sum                             : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against Thrust :
@@ -130,7 +136,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[THRUST] Reduction sum                    : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Test :
@@ -142,7 +148,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Expression Reduction sum                  : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against Thrust :
@@ -157,7 +163,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[THRUST] Expression Reduction sum         : " << v << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s (but uses two more I/O operations)" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s (but uses two more I/O operations)" << std::endl;
 		std::cout << std::endl;
 
 		// Test :
@@ -168,7 +174,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "Expression Reduction multi-sum            : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against BLAS (1) :
@@ -182,7 +188,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[BLAS] (1) Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*1.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*1.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against BLAS (2) :
@@ -196,7 +202,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[BLAS] (2) Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 
 		// Against Thrust :
@@ -213,7 +219,7 @@ int main(int argc, char** argv)
 		t = timer.getElapsedTime_s();
 		std::cout << "[THRUST] Expression Reduction multi-sum   : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(1024.0*1024.0*1024.0*t) << " GB/s" << std::endl;
+		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
 		std::cout << std::endl;
 	}
 	catch(const Kartet::Exception& e)

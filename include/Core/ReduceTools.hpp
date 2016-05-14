@@ -71,7 +71,6 @@ namespace Kartet
 			// First elements :
 			ReturnType v = defaultValue;
 			
-			// WORKING, AND FASTER (???) :
 			for(int kl=0; kl<blockSteps.z; kl++)
 				for(int jl=0; jl<blockSteps.y; jl++)
 					for(int il=0; il<blockSteps.x; il++)
@@ -82,39 +81,13 @@ namespace Kartet
 						if(layout.isInside(iL, jL, kL))
 							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, iL, jL, kL));
 					}
-
-			// THIS ONE IS SLOWER (???) :
-			/*index_t   iL = i,
-				  jL = j,
-				  kL = k,
-				  pL = 0;
-			const index_t 	stepX = gridDim.x * blockDim.x, 
-					stepY = gridDim.y * blockDim.y, 
-					stepZ = gridDim.z * blockDim.z;
-			for(int kc=0; kc<blockSteps.z; kc++)
-			{
-				for(int jc=0; jc<blockSteps.y; jc++)
-				{				
-					for(int ic=0; ic<blockSteps.x; ic++)
-					{
-						pL = layout.getPosition(iL, jL, kL);
-						if(layout.isInside(iL, jL, kL))
-							v = Op<ReturnType, ReturnType>::apply(v, ExpressionEvaluation<TExpr>::evaluate(expr, layout, pL, iL, jL, kL));
-						iL += stepX;
-					}
-					iL = i;
-					jL += stepY;
-				}
-				jL = j;
-				kL += stepZ;
-			}*/
 			sharedData[threadId] = v;
 
 			// Reduce :
 			for(int k=maxPow2Half; k>0; k/=2)
 			{
 				__syncthreads();
-				if(threadId<k && (threadId+k)<totalNumThreads && threadId<totalNumThreads)
+				if(threadId<k && (threadId+k)<totalNumThreads)
 					sharedData[threadId] = Op<TOut, TOut>::apply(sharedData[threadId], sharedData[threadId + k]);
 			}
 		
@@ -160,7 +133,7 @@ namespace Kartet
 		for(int k=maxPow2Half; k>0; k/=2)
 		{
 			__syncthreads();
-			if(threadId<k && (threadId+k)<totalNumThreads && threadId<totalNumThreads)
+			if(threadId<k && (threadId+k)<totalNumThreads)
 				sharedData[threadId] = Op<TOut, TOut>::apply(sharedData[threadId], sharedData[threadId + k]);
 		}
 	

@@ -939,7 +939,7 @@ namespace Kartet
 	\return Clamp the argument for the output expression. 
 	\param a Expression.
 
-	If the argument is smaller than the output expression, then its border values are repeated.
+	If the argument is smaller than the output expression, then its border values are repeated. For simpler layouts, prefer the faster distribute methods.
 	**/
 	T clamp(Expression a) { }
 
