@@ -63,7 +63,7 @@ namespace Kartet
 	T operator/(Expression a, Expression b) { }
 
 	/**
-	\return Modulo with two expressions.
+	\return Remainder of two expressions.
 	\param a Left.
 	\param b Right.
 	**/

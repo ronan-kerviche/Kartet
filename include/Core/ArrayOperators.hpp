@@ -995,7 +995,7 @@ namespace Kartet
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Minus, 		operator-, 	return a-b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Times, 		operator*, 	return a*b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Divide, 		operator/, 	return a/b; )
-		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Modulo, 		operator%, 	return a%b; )
+		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_Remainder, 	operator%, 	return a%b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryAnd, 	operator&, 	return a&b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_BinaryOr, 	operator|, 	return a|b; )
 		STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_And, 		operator&&, 	return a && b; )
