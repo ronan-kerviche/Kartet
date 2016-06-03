@@ -885,7 +885,10 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getIWrapped(index_t i) const
 	{
-		return (i % nRows);
+		i = i % nRows;
+		if(i<0)
+			i += nRows;
+		return i;
 	}
 
 	/**
@@ -895,7 +898,10 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getJWrapped(index_t j) const
 	{
-		return (j % nColumns);
+		j = j % nColumns;
+		if(j<0)
+			j += nColumns;
+		return j;
 	}
 
 	/**
@@ -905,7 +911,10 @@ namespace Kartet
 	**/
 	__host__ __device__ inline index_t Layout::getKWrapped(index_t k) const
 	{
-		return (k % nSlices);
+		k = k % nSlices;
+		if(k<0)
+			k += nSlices;
+		return k;
 	}
 
 	/**
@@ -1150,12 +1159,6 @@ namespace Kartet
 	**/
 	__host__ __device__ inline void Layout::moveToNext(index_t& i, index_t& j, index_t& k) const
 	{
-		// This version is the "protected version" 
-		// It will safely warp bad coordinates.
-		//i = ((i+1) % nRows);
-		//j = (((i==0) ? (j+1) : j) % nColumns);
-		//k = ((i==0 && j==0) ? (k+1) : k);
-
 		// This version is the "unprotected version"
 		// It is also much faster by avoiding index_t modulos. 
 		i = (i+1);
