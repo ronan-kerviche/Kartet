@@ -37,6 +37,7 @@
 #define __KARTET_ARRAY_TOOLS__
 
 	#include <cmath>
+	#include <algorithm>
 	#include <limits>
 
 namespace Kartet
