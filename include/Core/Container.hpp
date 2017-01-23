@@ -64,6 +64,7 @@ a = new Kartet::Array<double>(10,10);
 	{
 		private :
 			T* ptr;
+			__host__ Container(const Container&); // No-copy
 		public :
 			__host__ Container(void);
 			__host__ Container(T* _ptr);
@@ -76,8 +77,10 @@ a = new Kartet::Array<double>(10,10);
 			__host__ bool isNull(void) const;
 			__host__ Container<T>& operator=(T* _ptr);
 			__host__ Container<T>& operator=(Container<T>& c);
-			__host__ T& operator*(void) const;
-			__host__ T* operator->(void) const;
+			__host__ const T& operator*(void) const;
+			__host__ T& operator*(void);
+			__host__ const T* operator->(void) const;
+			__host__ T* operator->(void);
 	};
 
 	/**
@@ -174,14 +177,40 @@ a = new Kartet::Array<double>(10,10);
 	/**
 	\brief Dereference the data tracked by this container.
 	\throw Kartet::NullPointer if the the pointer is invalid.
-	\return A reference to the tracked object.
+	\return A constant reference to the tracked object.
 	**/
 	template<typename T>
-	__host__ T& Container<T>::operator*(void) const
+	__host__ const T& Container<T>::operator*(void) const
 	{
 		if(ptr==NULL)
 			throw NullPointer;
 		return (*ptr);
+	}
+
+	/**
+	\brief Dereference the data tracked by this container.
+	\throw Kartet::NullPointer if the the pointer is invalid.
+	\return A reference to the tracked object.
+	**/
+	template<typename T>
+	__host__ T& Container<T>::operator*(void)
+	{
+		if(ptr==NULL)
+			throw NullPointer;
+		return (*ptr);
+	}
+
+	/**
+	\brief Get the constant pointer to the data.
+	\throw Kartet::NullPointer if the the pointer is invalid.
+	\return The constant pointer to the data.
+	**/
+	template<typename T>
+	__host__ const T* Container<T>::operator->(void) const
+	{
+		if(ptr==NULL)
+			throw NullPointer;
+		return ptr;
 	}
 
 	/**
@@ -190,7 +219,7 @@ a = new Kartet::Array<double>(10,10);
 	\return The pointer to the data.
 	**/
 	template<typename T>
-	__host__ T* Container<T>::operator->(void) const
+	__host__ T* Container<T>::operator->(void)
 	{
 		if(ptr==NULL)
 			throw NullPointer;

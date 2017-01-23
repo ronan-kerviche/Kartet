@@ -51,14 +51,14 @@ int main(int argc, char** argv)
 		Kartet::BLASContext blasContext;
 		Kartet::ReduceContext reduceContext;
 	
-		// Speed test:
+		// Speed test :
 		typedef float T;
 		if(Kartet::IsSame<T,float>::value)
 			std::cout << "In single precision." << std::endl;
 		else
 			std::cout << "In double precision." << std::endl;
 
-		const int M = 4096, N = 4096, L = 20;
+		const int M = 4096, N = 4096, L = 32;
 		const double GB = 1024.0*1024.0*1024.0;
 		double t = 0.0, v = 0.0;
 		Kartet::Array<T> A(M, N), B(M, N), C(1, N), V(M),
@@ -117,6 +117,7 @@ int main(int argc, char** argv)
 
 		// Test :	
 		v = 0.0;
+		A = 1;
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += reduceContext.sum(A);
