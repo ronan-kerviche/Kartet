@@ -27,6 +27,7 @@
 /* ************************************************************************************************************* */
 
 #include <iostream>
+#include "GetArgs.hpp"
 #include "Kartet.hpp"
 #include "CuTimer.hpp"
 #include <thrust/version.h>
@@ -45,20 +46,43 @@ int main(int argc, char** argv)
 
 	try
 	{
+		// Select the device from the arguments ?
+		int 	deviceId = 0,
+			numSamples = 32;
+		std::map<const char, int*> arguments;
+		std::map<const char, std::string> argumentsHelp;
+		arguments['d'] = &deviceId;
+		argumentsHelp['d'] = "Target device Id, per nvidia-smi indexing.";
+		arguments['l'] = &numSamples;
+		argumentsHelp['l'] = "Number of samples, for the average.";
+		if(!getArgs(argc, argv, arguments, argumentsHelp))
+			throw Kartet::InvalidArgument;
+		#ifdef __CUDACC__
+			// Only executed if compiled by NVCC :
+			std::cout << "Target device Id : " << deviceId << std::endl;
+			cudaError_t cudaError = cudaSetDevice(deviceId);
+			if(cudaError!=0)
+				throw static_cast<Kartet::Exception>(Kartet::CudaExceptionsOffset + cudaError);
+		#else
+			// Otherwise :
+			std::cout << "[Warning] Ignoring device selection in Host binary (deviceId=" << deviceId << ") ..." << std::endl;
+		#endif
+
+		// Start here :
 		Kartet::initialize();
 
 		CuTimer timer;
 		Kartet::BLASContext blasContext;
 		Kartet::ReduceContext reduceContext;
 	
-		// Speed test :
+		// Setup :
 		typedef float T;
 		if(Kartet::IsSame<T,float>::value)
 			std::cout << "In single precision." << std::endl;
 		else
 			std::cout << "In double precision." << std::endl;
 
-		const int M = 4096, N = 4096, L = 32;
+		const int M = 4096, N = 4096, L = std::max(1, numSamples);
 		const double GB = 1024.0*1024.0*1024.0;
 		double t = 0.0, v = 0.0;
 		Kartet::Array<T> A(M, N), B(M, N), C(1, N), V(M),
@@ -66,10 +90,11 @@ int main(int argc, char** argv)
 		thrust::device_ptr<T> 	devPtrA( A.dataPtr() ),
 					devPtrB( B.dataPtr() ),
 					devPtrV( V.dataPtr() );
-		// Setup :
 		ones = 1;
 		A = Kartet::IndexI();
 		B = Kartet::IndexJ();
+
+		std::cout << "Number of samples : " << L << std::endl;
 
 		// Test :
 		timer.start();

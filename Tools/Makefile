@@ -6,7 +6,8 @@
 # FILES			: Files to compile (*.cu, *.cpp)
 # DEVICE_CODE		: Target device platform code (20, 35, ...)
 # CC_EXTRA_FLAGS	: Extra flags for the compilers.
-# CC_EXTRA_LIB		: Extra linrary flags for the linkers.
+# CC_EXTRA_INCLUDE	: Extra flags for the compilers.
+# CC_EXTRA_LIB		: Extra flags for the linkers.
 # HSCC			: Host side compiler.
 # NVCC			: Device side compiler.
 # KARTET_DEFAULT_TARGET	: Default compilation target amon deviceBinary and hostBinary.
@@ -95,7 +96,7 @@ FILES_LIST	= $(wildcard $(SOURCES_DIR)$(FILES))
 OBJECTS		= $(patsubst %.cu,%.o,$(filter %.cu,$(FILES_LIST))) $(patsubst %.cpp,%.o,$(filter %.cpp,$(FILES_LIST))) $(patsubst %.c,%.o,$(filter %.c,$(FILES_LIST)))
 DEVICE_OBJECTS	= $(patsubst %.o,%.device.o,$(OBJECTS))
 HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
-CC_INCLUDE	= -I$(KARTET_PATH)/include/ $(subst KARTET_USE_ATLAS, -L/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS)))
+CC_INCLUDE	= -I$(KARTET_PATH)/include/ $(subst KARTET_USE_ATLAS, -L/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) $(CC_EXTRA_INCLUDE)
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs \
 			$(subst KARTET_USE_OMP, -fopenmp, $(findstring KARTET_USE_OMP,$(KARTET_OPTIONS))) \
@@ -159,6 +160,7 @@ test:
 	@echo "  FILES                 : $(FILES)"
 	@echo "  DEVICE_CODE           : $(DEVICE_CODE)"
 	@echo "  CC_EXTRA_FLAGS        : $(CC_EXTRA_FLAGS)"
+	@echo "  CC_EXTRA_INCLUDE      : $(CC_EXTRA_INCLUDE)"
 	@echo "  CC_EXTRA_LIB          : $(CC_EXTRA_LIB)"
 	@echo "  HSCC                  : $(HSCC)"
 	@echo "  NVCC                  : $(NVCC)"

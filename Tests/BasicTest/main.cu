@@ -27,6 +27,7 @@
 /* ************************************************************************************************************* */
 
 #include <iostream>
+#include "GetArgs.hpp"
 #include "Kartet.hpp"
 
 int main(int argc, char** argv)
@@ -43,6 +44,26 @@ int main(int argc, char** argv)
 
 	try
 	{
+		// Select the device from the arguments ?
+		int deviceId = 0;
+		std::map<const char, int*> arguments;
+		std::map<const char, std::string> argumentsHelp;
+		arguments['d'] = &deviceId;
+		argumentsHelp['d'] = "Target device Id, per nvidia-smi indexing.";
+		if(!getArgs(argc, argv, arguments, argumentsHelp))
+			throw Kartet::InvalidArgument;
+		#ifdef __CUDACC__
+			// Only executed if compiled by NVCC :
+			std::cout << "Target device Id : " << deviceId << std::endl;
+			cudaError_t cudaError = cudaSetDevice(deviceId);
+			if(cudaError!=0)
+				throw static_cast<Kartet::Exception>(Kartet::CudaExceptionsOffset + cudaError);
+		#else
+			// Otherwise :
+			std::cout << "[Warning] Ignoring device selection in Host binary (deviceId=" << deviceId << ") ..." << std::endl;
+		#endif
+
+		// Start here :
 		Kartet::initialize();
 
 		// Creating a Layout (size of an array) :

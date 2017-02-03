@@ -185,6 +185,7 @@ namespace Kartet
 		OutOfRange,
 		OutOfMemory,
 		InvalidOperation,
+		InvalidArgument,
 		InvalidLayout,
 		IncompatibleLayout,
 		InvalidLayoutReinterpretation,
@@ -334,6 +335,7 @@ namespace Kartet
 			EXCEPTION_MESSAGE( OutOfRange )
 			EXCEPTION_MESSAGE( OutOfMemory )
 			EXCEPTION_MESSAGE( InvalidOperation )
+			EXCEPTION_MESSAGE( InvalidArgument )
 			EXCEPTION_MESSAGE( InvalidLayout )
 			EXCEPTION_MESSAGE( IncompatibleLayout )
 			EXCEPTION_MESSAGE( InvalidLayoutReinterpretation )
