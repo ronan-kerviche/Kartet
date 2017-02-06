@@ -274,10 +274,14 @@
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleRows, 		shuffleRows,		i = v; )
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleColumns, 		shuffleColumns,		j = v; )
 	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShuffleSlices, 		shuffleSlices,		k = v; )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShiftRows, 		shiftRows,		i += v; )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShiftColumns, 		shiftColumns,		j += v; )
+	STANDARD_SHUFFLE_FUNCTION_DEFINITION( 	ShuFun_ShiftSlices, 		shiftSlices,		k += v; )
 
-// Range tools :
+// Other tools :
 namespace Kartet
 {
+	// Range tools :
 	template<typename T>
 	ExpressionContainer<BinaryExpression<ExpressionContainer<BinaryExpression<ExpressionContainer<NullaryExpression<NuOp_IndexInclf> >, float, BinOp_Times> >, float, BinOp_Plus> > linearRangef(const T& a, const T& b)
 	{
@@ -316,3 +320,4 @@ namespace Kartet
 }
 
 #endif
+

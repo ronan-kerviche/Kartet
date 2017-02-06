@@ -1215,6 +1215,36 @@ namespace Kartet
 	**/
 	T shuffleSlices(Expression index, Expression data) { }
 
+	/**
+	\return Shifted argument rows for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shiftRows(Expression index, Expression data) { }
+
+	/**
+	\return Shifted argument columns for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shiftColumns(Expression index, Expression data) { }
+
+	/**
+	\return Shifted argument slices for the given indices.
+	\param index Expression, casted to int.
+	\param data Expression.
+
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T shiftSlices(Expression index, Expression data) { }
+
 // Range functions :
 	/**
 	\return Linear range between the specified bounds.
