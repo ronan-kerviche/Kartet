@@ -244,7 +244,7 @@ namespace Kartet
 	\related Kartet::Complex
 	**/
 	template<typename T>
-	Complex<T> I(void)
+	__host__ __device__ Complex<T> I(void)
 	{
 		return Complex<T>(0, 1);
 	}
@@ -253,7 +253,7 @@ namespace Kartet
 	\return The imaginary unit.
 	\related Kartet::Complex
 	**/
-	inline Complex<double> I(void)
+	__host__ __device__ inline Complex<double> I(void)
 	{
 		return Complex<double>(0, 1);
 	}
@@ -262,7 +262,7 @@ namespace Kartet
 	\return The imaginary unit.
 	\related Kartet::Complex
 	**/
-	inline Complex<float> If(void)
+	__host__ __device__ inline Complex<float> If(void)
 	{
 		return Complex<float>(0, 1);
 	}
@@ -273,7 +273,7 @@ namespace Kartet
 	\related Kartet::Complex
 	**/
 	template<typename T>
-	Complex<T> J(void)
+	__host__ __device__ Complex<T> J(void)
 	{
 		return Complex<T>(0, 1);
 	}
@@ -282,7 +282,7 @@ namespace Kartet
 	\return The imaginary unit.
 	\related Kartet::Complex
 	**/
-	inline Complex<double> J(void)
+	__host__ __device__ inline Complex<double> J(void)
 	{
 		return Complex<double>(0, 1);
 	}
@@ -291,7 +291,7 @@ namespace Kartet
 	\return The imaginary unit.
 	\related Kartet::Complex
 	**/
-	inline Complex<float> Jf(void)
+	__host__ __device__ inline Complex<float> Jf(void)
 	{
 		return Complex<float>(0, 1);
 	}
@@ -365,7 +365,7 @@ namespace Kartet
 		\return The conjugate of the complex.
 		**/
 
-	/// \cond FALSE 
+	/// \cond FALSE
 	#define COMPLEX_OPERATOR( operator, CxCxOperation, CxReOperation, ReCxOperation ) \
 		template<typename T> \
 		__host__ __device__ Complex<T> operator (const Complex<T>& z1, const Complex<T>& z2) \
@@ -915,36 +915,36 @@ namespace Kartet
 							bs = ::sin(x.imag())
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( exp, 
-						ea*cb, 
-						ea*sb, 
-							ea = ::exp(x.real()), 
+		TRANSCENDENTAL_CxFUNCTION( exp,
+						ea*cb,
+						ea*sb,
+							ea = ::exp(x.real()),
 							cb = ::cos(x.imag()),
 							sb = ::sin(x.imag())
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( log, 
+		TRANSCENDENTAL_CxFUNCTION( log,
 						::log(a*a+b*b)/static_cast<WorkType>(2),
 						::atan2(b, a),
 							a = x.real(),
 							b = x.imag()
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( log10, 
+		TRANSCENDENTAL_CxFUNCTION( log10,
 						::log10(a*a+b*b)/static_cast<WorkType>(2),
 						::atan2(b, a)/static_cast<WorkType>(K_L10),
 							a = x.real(),
 							b = x.imag()
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( log2, 
+		TRANSCENDENTAL_CxFUNCTION( log2,
 						::log2(a*a+b*b)/static_cast<WorkType>(2),
 						::atan2(b, a)/static_cast<WorkType>(K_L2),
 							a = x.real(),
 							b = x.imag()
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( sin, 
+		TRANSCENDENTAL_CxFUNCTION( sin,
 						sa/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e + e),
 						ca/static_cast<WorkType>(2)*(static_cast<WorkType>(1)/e - e),
 							ca = ::cos(x.real()),
@@ -962,15 +962,15 @@ namespace Kartet
 					)
 
 		TRANSCENDENTAL_CxFUNCTION( sqrt,
-						n*::cos(p), 
-						n*::sin(p), 
+						n*::cos(p),
+						n*::sin(p),
 							a = x.real(),
 							b = x.imag(),
 							n = ::pow(a*a+b*b, static_cast<WorkType>(0.25)),
 							p = ::atan2(b, a)/static_cast<WorkType>(2)
 					)
 
-		TRANSCENDENTAL_CxFUNCTION( tan, 
+		TRANSCENDENTAL_CxFUNCTION( tan,
 						s2a/(c2a + (e2b+static_cast<WorkType>(1)/e2b)/static_cast<WorkType>(2)),
 						(e2b-static_cast<WorkType>(1)/e2b)/(static_cast<WorkType>(2)*c2a + e2b+static_cast<WorkType>(1)/e2b),
 							c2a = ::cos(x.real()*static_cast<WorkType>(2)),
@@ -999,6 +999,22 @@ namespace Kartet
 		*/
 	#undef TRANSCENDENTAL_CxFUNCTION
 	/// \endcond
+
+// And they need to be imported to Kartet Namespace for some expressions to work :
+namespace Kartet
+{
+	using ::cos;
+	using ::cosh;
+	using ::exp;
+	using ::log;
+	using ::log10;
+	using ::log2;
+	using ::sin;
+	using ::sinh;
+	using ::sqrt;
+	using ::tan;
+	using ::tanh;
+}
 
 #endif
 

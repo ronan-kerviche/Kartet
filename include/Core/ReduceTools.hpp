@@ -41,6 +41,7 @@
 	The strategy for the block reduction is still far from being optimal. There exists a bug when reducing over more than 64 slices, where the scheduler will try to create blocks with more that 64 threads in Z directions. For example :
 
 	Array<double> A(512, 4, 256), B(A.numRows(), A.numColumns());
+	ReduceContext reduce;
 	reduce.sumBlock(A, B);
 
 	Also, the scheduling strategy should be strongly improved by increasing the number of blocks/decreasing the number of threads per block and alllowing the blocks to have group of threads work on multiple portions of the data. For instance, the previous example will try to create blocks of 256 threads along the z dimensions which will break the coalesced memory access pattern. Instead, it should create 32x4 blocks (16 such blocks) walking the z dimension.
@@ -591,6 +592,7 @@ namespace Kartet
 			std::cout << "blockSize             : " << blockSize.x << ", " << blockSize.y << ", " << blockSize.z << std::endl;
 			std::cout << "blockSteps            : " << blockSteps.x << ", " << blockSteps.y << ", " << blockSteps.z << std::endl;
 			std::cout << "numSubReductionBlocks : " << numSubReductionBlocks.x << ", " << numSubReductionBlocks.y << ", " << numSubReductionBlocks.z << std::endl;*/
+
 			const unsigned int 	totalNumThreads = blockSize.x * blockSize.y * blockSize.z,
 						maxPow2Half = 1 << (static_cast<int>(std::floor(std::log(totalNumThreads-1)/std::log(2))));
 			const size_t sharedMemorySize = totalNumThreads * sizeof(ReturnType);

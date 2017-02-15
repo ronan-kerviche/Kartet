@@ -175,6 +175,7 @@ namespace Kartet
 		}
 	};
 
+	/// \cond FALSE
 	template< typename T1, typename T2, template<typename,typename> class Op >
 	struct ExpressionEvaluation< BinaryExpression<T1, T2, Op> >
 	{
@@ -199,6 +200,7 @@ namespace Kartet
 						);
 		}
 	};
+	/// \endcond
 
 	template< typename TIndex, typename TData, template<typename> class Op >
 	struct ExpressionEvaluation< ShuffleExpression<TIndex, TData, Op> >
@@ -215,6 +217,7 @@ namespace Kartet
 		}
 	};
 
+	/// \cond FALSE
 	template< typename T1, typename T2, typename T3, template<typename,typename,typename> class Op >
 	struct ExpressionEvaluation< TernaryExpression<T1, T2, T3, Op> >
 	{
@@ -249,6 +252,7 @@ namespace Kartet
 						);
 		}
 	};
+	/// \endcond
 
 // Expression Container (transparent expression, used as an expression filter) :
 	template<typename T>

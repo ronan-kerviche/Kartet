@@ -548,6 +548,21 @@ namespace Kartet
 		}; \
 	}
 
+	#define BOOLEAN_UNARY_OPERATOR_OBJECT(objName, ...) \
+	namespace Kartet \
+	{ \
+		template<typename T> \
+		struct objName \
+		{ \
+			typedef typename StandardOperatorTypeToolbox<T, void, void, false, false, false, false, bool, void, void, void>::ReturnType ReturnType; \
+			\
+			__host__ __device__ inline static ReturnType apply(const T& a) \
+			{ \
+				__VA_ARGS__ \
+			} \
+		}; \
+	}
+
 	#define C2R_UNARY_OPERATOR_OBJECT(objName, ...) \
 	namespace Kartet \
 	{ \
@@ -587,11 +602,11 @@ namespace Kartet
 			template<typename T> \
 			struct Sub \
 			{ \
-				typedef typename StandardOperatorTypeToolbox<TOut, void, void, false, false, false, false, void, void, void, void>::ReturnType ReturnType; \
+				typedef typename StandardOperatorTypeToolbox<T, void, void, false, false, false, false, TOut, void, void, void>::ReturnType ReturnType; \
 				\
 				__host__ __device__ inline static ReturnType apply(const T& a) \
 				{ \
-					return static_cast<TOut>(__VA_ARGS__) ; \
+					__VA_ARGS__ \
 				} \
 			}; \
 		}; \
@@ -619,6 +634,16 @@ namespace Kartet
 		} \
 	}
 
+	#define EXTRA_UNARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
+		template<typename T> \
+		__host__ __device__ typename opName <T>::ReturnType funcName (const T& a) \
+		{ \
+			return opName <T>::apply(a); \
+		} \
+	}
+
 	#define CAST_UNARY_FUNCTION_INTERFACE(funcName, opName) \
 	namespace Kartet \
 	{ \
@@ -641,21 +666,256 @@ namespace Kartet
 		} \
 	}
 
+	#define EXTRA_CAST_UNARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
+		template<typename TOut, typename T> \
+		__host__ __device__ typename opName <TOut>::template Sub<T>::ReturnType funcName (const T& a) \
+		{ \
+			return opName <TOut>::template Sub<T>::apply(a); \
+		} \
+	}
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a standard unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_UNARY_OPERATOR_DEFINITION instead).
+
+	Declaration example :
+	\code
+	STANDARD_UNARY_OPERATOR_DEFINITION(UnOp_cosDiv2, cosDiv2, return ::cos(a/static_cast<T>(2)); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	B = cosDiv2(4*A);
+	\endcode
+	**/
 	#define STANDARD_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
 		STANDARD_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a unary boolean operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_UNARY_OPERATOR_DEFINITION instead). The result is guaranteed to be boolean.
+
+	Declaration example :
+	\code
+	BOOLEAN_UNARY_OPERATOR_DEFINITION(UnOp_mod2Test, mod2Test, return ::mod(a,static_cast<T>(2))==static_cast<T>(0); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	B = mod2Test(A);
+	\endcode
+	**/
+	#define BOOLEAN_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		BOOLEAN_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
+		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Complex To Real unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_C2R_UNARY_OPERATOR_DEFINITION instead). The inputs are either real or complex and the output is guaranteed to be real.
+
+	Declaration example :
+	\code
+	C2R_UNARY_OPERATOR_DEFINITION(UnOp_cxl1, cxl1, return real(a)+imag(a); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	A = cxl1( polar(4*B) );
+	\endcode
+	**/
 	#define C2R_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
 		C2R_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Real To Complex unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_R2C_UNARY_OPERATOR_DEFINITION instead). It will enforce that the inputs are real and the output is guaranteed to be complex.
+
+	Declaration example :
+	\code
+	R2C_UNARY_OPERATOR_DEFINITION(UnOp_expPol, expPol, return ::exp(I()*a+static_cast<T>(1)); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A;
+	A = expPol( IndexI()+IndexJ() );
+	\endcode
+	**/
 	#define R2C_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
 		R2C_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
 		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a type casting unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T' and the return type is 'TOut'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_CAST_UNARY_OPERATOR_DEFINITION instead). It will enforce that the return type is TOut.
+
+	Declaration example :
+	\code
+	CAST_UNARY_OPERATOR_DEFINITION(UnOp_castFilter, castFilter, if(Kartet::IsSame<T,TOut>::value) return a; else return static_cast<TOut>(0); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	A = castFilter<double>(5.0);  // 5.0 everywhere.
+	B = castFilter<double>(7.0f); // 0.0 everywhere.
+	\endcode
+	**/
 	#define CAST_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
 		CAST_UNARY_OPERATOR(objName, __VA_ARGS__) \
 		CAST_UNARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a standard unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace.
+
+	Declaration example :
+	\code
+	EXTRA_UNARY_OPERATOR_DEFINITION(UnOp_cosDiv2, cosDiv2, return ::cos(a/static_cast<T>(2)); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << cosDiv2(1.0) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		STANDARD_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
+		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName) \
+		EXTRA_UNARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a unary boolean operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace. The result is guaranteed to be boolean.
+
+	Declaration example :
+	\code
+	EXTRA_BOOLEAN_UNARY_OPERATOR_DEFINITION(UnOp_mod2Test, mod2Test, return ::mod(a,static_cast<T>(2))==static_cast<T>(0); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << mod2Test(1) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_BOOLEAN_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		BOOLEAN_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
+		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName) \
+		EXTRA_UNARY_FUNCTION_INTERFACE(funcName, objName)
+	
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Complex To Real unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace. The inputs are either real or complex and the output is guaranteed to be real.
+
+	Declaration example :
+	\code
+	EXTRA_C2R_UNARY_OPERATOR_DEFINITION(UnOp_cxl1, cxl1, return real(a)+imag(a); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << cxl1( polar(4.0) ) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_C2R_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		C2R_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
+		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName) \
+		EXTRA_UNARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Real To Complex unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T'.
+
+	This declaration creates an operator which is part of the Kartet namespace. It will enforce that the inputs are real and the output is guaranteed to be complex.
+
+	Declaration example :
+	\code
+	EXTRA_R2C_UNARY_OPERATOR_DEFINITION(UnOp_expPol, expPol, return ::exp(I()*a+static_cast<T>(1)); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << expPol(5.0) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_R2C_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		R2C_UNARY_OPERATOR_OBJECT(objName, __VA_ARGS__) \
+		STANDARD_UNARY_FUNCTION_INTERFACE(funcName, objName) \
+		EXTRA_UNARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a type casting unary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input argument is 'a', its type is 'T' and the return type is 'TOut'.
+
+	This declaration creates an operator which is part of the Kartet namespace. It will enforce that the return type is TOut.
+
+	Declaration example :
+	\code
+	EXTRA_CAST_UNARY_OPERATOR_DEFINITION(UnOp_castFilter, castFilter, if(Kartet::IsSame<T,TOut>::value) return a; else return static_cast<TOut>(0); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << castFilter<double>(5.0) << " or " << castFilter<double>(7.0f) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_CAST_UNARY_OPERATOR_DEFINITION(objName, funcName, ...) \
+		CAST_UNARY_OPERATOR(objName, __VA_ARGS__) \
+		CAST_UNARY_FUNCTION_INTERFACE(funcName, objName) \
+		EXTRA_CAST_UNARY_FUNCTION_INTERFACE(funcName, objName)
 
 // Standard Transform Operators :
 	#define STANDARD_TRANSFORM_OPERATOR_OBJECT(objName, ...) \
@@ -698,6 +958,26 @@ namespace Kartet
 		} \
 	}
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create an array transform operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The layout is 'l' (constant) and the coordinates are 'i', 'j' and 'k'.
+
+	This declaration creates an operator which is part of the Kartet namespace and can only be used in expressions. It can change the coordinates of the sub expression it contains.
+
+	Declaration example :
+	\code
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION(UnOp_shiftRow2, shiftRow2, i=(i+2)%l.numRows(); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	B = shiftRow2(A); // Cannot be used in place, A and B must have the same size.
+	\endcode
+	**/
 	#define STANDARD_TRANSFORM_OPERATOR_DEFINITION( objName, funcName, ...) \
 		STANDARD_TRANSFORM_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_TRANSFORM_FUNCTION_INTERFACE( funcName, objName)
@@ -756,6 +1036,29 @@ namespace Kartet
 		} \
 	}
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create an layout reinterpretation operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The (external) layout is 'l' (constant), the (internal) layout is 'lnew' and the coordinates are 'i', 'j' and 'k'.
+
+	This declaration creates an operator which is part of the Kartet namespace and can only be used in expressions. It can change the coordinates and layout of the sub expression it contains.
+
+	Declaration example :
+	\code
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION(UnOp_clampShift2, clampShift2, 	i = lnew.getIClamped(i+2);
+										j = lnew.getJClamped(j+2);
+										k = lnew.getKClamped(k+2); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	B = clampShift2(A); // Cannot be used in place, A and B do not necessarily have the same size.
+	B = clampShift2(A.layout(), 2.0*cos(A)); // For an expression, we must supply the internal layout.
+	\endcode
+	**/
 	#define STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_DEFINITION( objName, funcName, ...) \
 		STANDARD_LAYOUT_REINTERPRETATION_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_LAYOUT_REINTERPRETATION_FUNCTION_INTERFACE( funcName, objName)
@@ -783,6 +1086,21 @@ namespace Kartet
 		struct objName \
 		{ \
 			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, false, false, false, bool, void, void, void>::ReturnType ReturnType; \
+			 \
+			__host__ __device__ inline static ReturnType apply(const T1& a, const T2& b) \
+			{ \
+				__VA_ARGS__ \
+			} \
+		}; \
+	}
+
+	#define C2R_BINARY_OPERATOR_OBJECT(objName, ...) \
+	namespace Kartet \
+	{ \
+		template<typename T1, typename T2> \
+		struct objName \
+		{ \
+			typedef typename StandardOperatorTypeToolbox<T1, T2, void, false, true, false, false, void, void, void, void>::ReturnType ReturnType; \
 			 \
 			__host__ __device__ inline static ReturnType apply(const T1& a, const T2& b) \
 			{ \
@@ -888,17 +1206,207 @@ namespace Kartet
 		} \
 	}
 
+	#define EXTRA_BINARY_FUNCTION_INTERFACE(funcName, opName) \
+	namespace Kartet \
+	{ \
+		template<typename T1, typename T2> \
+		__host__ __device__ typename opName <T1,T2>::ReturnType funcName (const T1& a, const T2& b) \
+		{ \
+			return opName <T1,T2>::apply(a,b); \
+		} \
+	}
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a standard binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_BINARY_OPERATOR_DEFINITION instead).
+
+	Declaration example :
+	\code
+	STANDARD_BINARY_OPERATOR_DEFINITION(UnOp_cosSum, cosSum, return ::cos(a+b); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B, C;
+	C = cosSum(A, B);
+	\endcode
+	**/
 	#define STANDARD_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
 		STANDARD_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a binary comparison operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_COMPARISON_BINARY_OPERATOR_DEFINITION instead). The result is guaranteed to be boolean.
+
+	Declaration example :
+	\code
+	COMPARISON_BINARY_OPERATOR_DEFINITION(BinOp_equalPlusOne, equalPlusOne, return a==b+1; )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B, C;
+	C = equalPlusOne(A, B);
+	\endcode
+	**/
 	#define COMPARISON_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
 		COMPARISON_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Complex to Real binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_C2R_BINARY_OPERATOR_DEFINITIONinstead). The inputs are either real or complex and the output is guaranteed to be real.
+
+	Declaration example :
+	\code
+	C2R_BINARY_OPERATOR_DEFINITION(BinOp_cxle, cxle, return real(a*b)+imag(a+b); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B, C;
+	C = cxle(A, B);
+	\endcode
+	**/
+	#define C2R_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		C2R_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
+		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Real To Complex binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace and <b>can only be used in expressions</b> (prefer EXTRA_R2C_BINARY_OPERATOR_DEFINITION). It will enforce that the inputs are real and the output is guaranteed to be complex.
+
+	Declaration example :
+	\code
+	EXTRA_R2C_BINARY_OPERATOR_DEFINITION(BinOp_pole, pole, return polar(a*b+a); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B, C;
+	C = pole(A, B);
+	\endcode
+	**/
 	#define R2C_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
 		R2C_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
 		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a standard binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace.
+
+	Declaration example :
+	\code
+	STANDARD_BINARY_OPERATOR_DEFINITION(UnOp_cosSum, cosSum, return ::cos(a+b); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << cosSum(K_PI, K_PI) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		STANDARD_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
+		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName) \
+		EXTRA_BINARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a binary comparison operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace. The result is guaranteed to be boolean.
+
+	Declaration example :
+	\code
+	COMPARISON_BINARY_OPERATOR_DEFINITION(BinOp_equalPlusOne, equalPlusOne, return a==b+1; )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << equalPlusOne(2.0, 1.0) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_COMPARISON_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		COMPARISON_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
+		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName) \
+		EXTRA_BINARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Complex to Real binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace. The inputs are either real or complex and the output is guaranteed to be real.
+
+	Declaration example :
+	\code
+	C2R_BINARY_OPERATOR_DEFINITION(BinOp_cxle, cxle, return real(a*b)+imag(a+b); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << cxle(I(), 1.0+I()) << std::end;
+	\endcode
+	**/
+	#define EXTRA_C2R_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		C2R_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
+		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName) \
+		EXTRA_BINARY_FUNCTION_INTERFACE(funcName, objName)
+
+	/**
+	\ingroup FunctionsGroup
+	\brief Create a Real To Complex binary operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The input arguments are 'a' and 'b', their respective types are 'T1' and 'T2'.
+
+	This declaration creates an operator which is part of the Kartet namespace. It will enforce that the inputs are real and the output is guaranteed to be complex.
+
+	Declaration example :
+	\code
+	EXTRA_R2C_BINARY_OPERATOR_DEFINITION(BinOp_pole, pole, return polar(a*b+a); )
+	\endcode
+
+	Call example :
+	\code
+	std::cout << pole(K_PI, 1.0) << std::endl;
+	\endcode
+	**/
+	#define EXTRA_R2C_BINARY_OPERATOR_DEFINITION( objName, funcName, ...) \
+		R2C_BINARY_OPERATOR_OBJECT( objName, __VA_ARGS__) \
+		STANDARD_BINARY_FUNCTION_INTERFACE( funcName, objName) \
+		EXTRA_BINARY_FUNCTION_INTERFACE(funcName, objName)
 
 // Shuffle Operator Tools (can make use of v variable from the index data) :
 	#define STANDARD_SHUFFLE_FUNCTION_OBJECT(objName, ...) \
@@ -1016,6 +1524,29 @@ namespace Kartet
 		} \
 	}
 
+	/**
+	\ingroup FunctionsGroup
+	\brief Create an shuffling operator.
+	\param objName Name of the operator object.
+	\param funcName Name of the function.
+	\param ... Function body. The new index is 'index', the layout is 'l' (constant) and the coordinates are 'i', 'j' and 'k'.
+
+	This declaration creates an operator which is part of the Kartet namespace and can only be used in expressions. It can change the coordinates for the sub-expression it contains via another expression.
+
+	Declaration example :
+	\code
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION(UnOp_clampShift2, clampShift2, 	i = lnew.getIClamped(i+2);
+										j = lnew.getJClamped(j+2);
+										k = lnew.getKClamped(k+2); )
+	\endcode
+
+	Call example :
+	\code
+	Array<...> A, B;
+	B = clampShift2(A); // Cannot be used in place, A and B do not necessarily have the same size.
+	B = clampShift2(A.layout(), 2.0*cos(A)); // For an expression, we must supply the internal layout.
+	\endcode
+	**/
 	#define STANDARD_SHUFFLE_FUNCTION_DEFINITION( objName, funcName, ...) \
 		STANDARD_SHUFFLE_FUNCTION_OBJECT( objName, __VA_ARGS__) \
 		SHUFFLE_FUNCTION_INTERFACE( funcName, objName)
@@ -1023,7 +1554,7 @@ namespace Kartet
 // Standard operators : 
 	// Unary : 
 		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Minus,		operator-,	return -a;)
-		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_Not,		operator!,	return !a;)
+		BOOLEAN_UNARY_OPERATOR_DEFINITION(	UnOp_Not,		operator!,	return !a;)
 		STANDARD_UNARY_OPERATOR_DEFINITION(	UnOp_BinaryCompl,	operator~,	return ~a;)
 
 	// Binary :

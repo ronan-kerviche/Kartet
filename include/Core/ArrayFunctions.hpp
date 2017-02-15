@@ -36,6 +36,9 @@
 #ifndef __KARTET_ARRAY_FUNCTIONS__
 #define __KARTET_ARRAY_FUNCTIONS__
 
+// No Documentation will be generated here :
+/// \cond FALSE
+
 // Nullary functions : 
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexI, 		IndexI, 		index_t, 	return i; )
 	STANDARD_NULLARY_OPERATOR_DEFINITION( 	NuOp_IndexJ, 		IndexJ, 		index_t, 	return j; )
@@ -198,7 +201,7 @@
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			return absSq(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_arg,			arg,			return arg(a); )
 	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_polar,			polar,			return polar(a); )
-	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			a )
+	CAST_UNARY_OPERATOR_DEFINITION(		UnOp_cast,			cast,			return static_cast<TOut>(a); )
 
 // Transform functions :
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_fftshift,				fftshift,			l.getPositionFFTShift(i, j, k); )
@@ -318,6 +321,7 @@ namespace Kartet
 		return pow(static_cast<double>(e), IndexIncl()*static_cast<double>(b-a)+static_cast<double>(a));
 	}
 }
+/// \endcond
 
 #endif
 

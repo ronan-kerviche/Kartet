@@ -16,7 +16,7 @@
 	\defgroup FunctionsGroup Functions
 	\brief Functions on accessors/arrays.
 
-	This page groups all the functions on accessors/arrays. 
+	This page groups all the functions on accessors/arrays and tools to build new ones.
 **/
 
 /**

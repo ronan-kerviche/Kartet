@@ -2901,7 +2901,6 @@ namespace Kartet
 	__host__ void Array<T,l>::allocateMemory(void)
 	{
 		STATIC_ASSERT_VERBOSE(l==DeviceSide || l==HostSide, INVALID_LOCATION)
-
 		switch(l)
 		{
 			case DeviceSide :
