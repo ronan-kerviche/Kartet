@@ -87,7 +87,7 @@
 
 	- Use OpenMP (preliminary, only a few constructs will benefit).
 	\code
-		-D KARTET_USE_OPENMP
+		-D KARTET_USE_OMP
 	\endcode
 
 	- Change the default data location (Kartet::HostSide or Kartet::DeviceSide, see Kartet::Location). Note that for a host binary this is always set to Kartet::HostSide.
