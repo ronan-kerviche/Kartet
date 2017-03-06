@@ -849,7 +849,7 @@ namespace Kartet
 	\return The flipped version of the argument around X.
 	\param a Expression.
 
-	- First column become last column.
+	- The first row becomes the last row.
 	- This function cannot be used in-place.
 	- This function can be slow on device.
 	**/
@@ -859,7 +859,17 @@ namespace Kartet
 	\return The flipped version of the argument around X.
 	\param a Expression.
 
-	- First column become last column.
+	- The first column becomes the last column.
+	- This function cannot be used in-place.
+	- This function can be slow on device.
+	**/
+	T yFlip(Expression a) { }
+
+	/**
+	\return The flipped version of the argument around Z.
+	\param a Expression.
+
+	- The first slice becomes the last slice.
 	- This function cannot be used in-place.
 	- This function can be slow on device.
 	**/

@@ -208,6 +208,7 @@
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ifftshift,				ifftshift,			l.getPositionFFTInverseShift(i, j, k); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_XFlip,				xFlip,				j = l.numColumns()-(j+1); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_YFlip,				yFlip,				i = l.numRows()-(i+1); )
+	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_ZFlip,				zFlip,				k = l.numSlices()-(k+1); )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeSlice, 			distributeSlice,		k=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeColumn,			distributeColumn,		j=0; )
 	STANDARD_TRANSFORM_OPERATOR_DEFINITION( UnOp_distributeColumnSlice, 		distributeColumnSlice,		j=0; k=0; )
