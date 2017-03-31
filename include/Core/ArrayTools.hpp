@@ -2695,6 +2695,7 @@ namespace Kartet
 	{
 		// Prevent printing characters : 
 		typedef typename StaticIf<IsSame<T, char>::value || IsSame<T, unsigned char>::value, int, T>::Type CastType;
+		
 	
 		// Change the floatting point format if not specified :		
 		const std::ios_base::fmtflags originalFlags = os.flags();
@@ -2723,8 +2724,8 @@ namespace Kartet
 				{
 					const CastType v = static_cast<CastType>(tmp[layout.getPosition(i,j,k)]);
 					os.setf(std::ios_base::right);
-					if(!Traits<T>::isComplex && arg(v)==static_cast<CastType>(0))
-						os << ' ';
+					if((!Traits<T>::isComplex && real(v)>=0) || (IsSame<CastType, float>::value && v!=-0.0f) || (IsSame<CastType, double>::value && v!=-0.0))
+						os << '!';
 					os << v << spacing;
 				}
 				os.setf(std::ios_base::right);
