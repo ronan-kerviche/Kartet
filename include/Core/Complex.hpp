@@ -801,14 +801,25 @@ namespace Kartet
 	template<typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Complex<T>& z)
 	{
+		const T zero = static_cast<T>(0),
+			minusZero = -static_cast<T>(0);
+		const bool px = (z.x>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(z.x, minusZero));
+		const bool flag = !(os.flags() & std::ios_base::showpos);
 		// Vector notation :
 		#ifdef KARTET_VECTOR_COMPLEX_NOTATION
-			os << '(' << z.x << ", " << z.y << ')';
+			const bool py = (z.y>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(z.y, minusZero));
+			os << '(';
+			if(flag && px)
+				os << ' ';
+			os << z.x << ", ";
+			if(flag && py)
+				os << ' ';
+			os << z.y << ')';
 		#else //#ifdef KARTET_LITERAL_COMPLEX_NOTATION
-			const bool reset = !(os.flags() & std::ios_base::showpos);
-			if(z.x>=static_cast<T>(0)) os << ' ';
+			if(flag && px)
+				os << ' ';
 			os << z.x << std::showpos << z.y << 'i';
-			if(reset)
+			if(flag)
 				os << std::noshowpos;
 		#endif
 		return os;

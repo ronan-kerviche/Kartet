@@ -66,5 +66,20 @@
 		}
 	#endif
 
+	// Other tools :
+	template<typename T1, typename T2>
+	bool compareBits(const T1& x1, const T2& x2)
+	{
+		bool t = true;
+		const size_t m = min(sizeof(T1), sizeof(T2));
+		for(size_t k=0; k<m; k++)
+		{
+			const char *a = reinterpret_cast<const char*>(&x1)+k,
+				   *b = reinterpret_cast<const char*>(&x2)+k;
+			t = t && (*a==*b);
+		}
+		return (sizeof(T1)==sizeof(T2)) && t;
+	}
+
 #endif
 

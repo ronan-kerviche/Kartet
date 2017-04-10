@@ -2695,14 +2695,16 @@ namespace Kartet
 	{
 		// Prevent printing characters : 
 		typedef typename StaticIf<IsSame<T, char>::value || IsSame<T, unsigned char>::value, int, T>::Type CastType;
-		
-	
+		typedef Traits<CastType> TypeTraits;
+		typedef typename TypeTraits::BaseType BaseType;
+
 		// Change the floatting point format if not specified :		
 		const std::ios_base::fmtflags originalFlags = os.flags();
 		const bool forcedFloattingFormat = (os.flags() & std::ios_base::floatfield)!=0;
 		if(!forcedFloattingFormat)
 			os.setf(std::ios_base::scientific);
-	
+
+		const BaseType zero = static_cast<BaseType>(0);
 		const int precision = forcedFloattingFormat? os.precision() : 3;
 		const int originalPrecision = os.precision(precision);
 		const char fillCharacter = ' ';	
@@ -2719,13 +2721,13 @@ namespace Kartet
 	
 			for(int i=0; i<layout.numRows(); i++)
 			{
-				os << ' ';
+				os << spacing;
 				for(int j=0; j<(layout.numColumns()-1); j++)
 				{
 					const CastType v = static_cast<CastType>(tmp[layout.getPosition(i,j,k)]);
 					os.setf(std::ios_base::right);
-					if((!Traits<T>::isComplex && real(v)>=0) || (IsSame<CastType, float>::value && v!=-0.0f) || (IsSame<CastType, double>::value && v!=-0.0))
-						os << '!';
+					if(!TypeTraits::isComplex && real(v)>=zero && !equalsMinusZero(real(v)))
+						os << fillCharacter;
 					os << v << spacing;
 				}
 				os.setf(std::ios_base::right);

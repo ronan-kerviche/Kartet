@@ -331,6 +331,16 @@ namespace Kartet
 		else
 			DYNAMIC_COPY_CASE( Complex<TSrc> )
 	}
+
+	// Specific type tools :
+	template<typename T>
+	bool equalsMinusZero(const T& x)
+	{
+		typedef Traits<T> TypeTraits;
+		typedef typename TypeTraits::BaseType BaseType;
+		const BaseType minusZero = -static_cast<BaseType>(0);
+		return !TypeTraits::isComplex && (IsSame<BaseType, float>::value || IsSame<BaseType, double>::value) && compareBits(x, minusZero);
+	}
 }
 
 #endif
