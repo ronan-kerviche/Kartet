@@ -15,6 +15,7 @@
 # OBJ_DIR		: Directory for the object files.
 # CUDA_INCLUDE_PATH	: Path to CUDA headers directory.
 # CUDA_LIB_PATH		: Path to CUDA libraries.
+# CUDA_FAST_MATH	: Enable fast math.
 # KARTET_OPTIONS	: Options for the library
 #     -D KARTET_USE_64BITS_INDEXING		Use 64 bits indexing, slower operation (2x) but enable large arrays (>2e9 elements).
 #     -D KARTET_USE_ATLAS			Use ATLAS (requires -llapack -lf77blas -lcblas -latlas).
@@ -91,6 +92,12 @@ ifeq ($(CUDA_LIB_PATH),)
 	CUDA_LIB_PATH = /usr/local/cuda/lib64
 endif
 
+ifeq ($(CUDA_FAST_MATH),)
+	NVCC_PERFORMANCE_FLAGS = -fmad=true -ftz=false -prec-div=true -prec-sqrt=true
+else
+	NVCC_PERFORMANCE_FLAGS = -fmad=true -ftz=true -prec-div=false -prec-sqrt=false -use_fast_math
+endif
+
 # Generate :
 FILES_LIST	= $(wildcard $(SOURCES_DIR)$(FILES))
 OBJECTS		= $(patsubst %.cu,%.o,$(filter %.cu,$(FILES_LIST))) $(patsubst %.cpp,%.o,$(filter %.cpp,$(FILES_LIST))) $(patsubst %.c,%.o,$(filter %.c,$(FILES_LIST)))
@@ -101,7 +108,7 @@ NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs \
 			$(subst KARTET_USE_OMP, -fopenmp, $(findstring KARTET_USE_OMP,$(KARTET_OPTIONS))) \
 		   $(CC_EXTRA_FLAGS)
-NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) -ftz=false -prec-div=true -prec-sqrt=true -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)"
+NVCC_FLAGS 	= -arch=sm_$(DEVICE_CODE) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)"
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_LAPACK, -llapack, $(findstring KARTET_USE_LAPACK,$(KARTET_OPTIONS))) \

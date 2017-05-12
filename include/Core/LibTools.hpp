@@ -52,6 +52,22 @@
 		#define __shared__ 
 		#define cudaStream_t void*
 
+	// Common missing structures :
+		struct float2
+		{
+			float x, y, z;
+		};
+
+		struct float3
+		{
+			float x, y, z;
+		};
+
+		struct float4
+		{
+			float x, y, z, w;
+		};
+
 	// Missing functions :
 		template<typename T>
 		T min(T a, T b)
