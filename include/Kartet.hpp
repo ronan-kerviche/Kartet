@@ -37,6 +37,7 @@
 #define __KARTET_MAIN__
 
 	#include "Core/Traits.hpp"
+	#include "Core/Vec.hpp"
 	#include "Core/Array.hpp"
 	#include "Core/BLAS.hpp"
 	#include "Core/RandomSource.hpp"

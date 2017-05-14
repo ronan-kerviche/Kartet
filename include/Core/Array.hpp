@@ -60,6 +60,16 @@
 	#endif
 #endif
 
+/**
+\def KARTET_DEFAULT_COMPUTE_LAYOUT
+\brief Default computation layout.
+
+See also Kartet::ComputeLayout.
+**/
+#ifndef KARTET_DEFAULT_COMPUTE_LAYOUT
+	#define KARTET_DEFAULT_COMPUTE_LAYOUT (StripesLayout)
+#endif
+
 #ifndef KARTET_DEFAULT_BUFFER_SIZE
 	// 100 MB :
 	#define KARTET_DEFAULT_BUFFER_SIZE (104857600)
@@ -97,6 +107,15 @@ namespace Kartet
 		#ifdef __CUDACC__
 			inline cudaMemcpyKind getCudaDirection(const Direction& direction);
 		#endif
+
+		/// Computation Layout.
+		enum ComputeLayout
+		{
+			/// Stripes layout.
+			StripesLayout,
+			/// Blocks layout.
+			BlocksLayout
+		};
 
 	// Prototypes : 
 		template<typename, Location>
@@ -160,6 +179,7 @@ namespace Kartet
 			template<typename T>
 			struct StaticContainer
 			{
+				// Functions using this data cannot be device'd ...
 				STATIC_ASSERT_VERBOSE((IsSame<void,T>::value), STATIC_CONTAINER_MUST_HAVE_VOID_PARAMETER)
 				static index_t 	numThreads,
 						warpSize,
@@ -193,10 +213,8 @@ namespace Kartet
 				__host__ __device__ inline index_t slicesStride(void) const;
 				__host__ __device__ inline index_t offset(void) const;
 				__host__ __device__ inline index_t setOffset(index_t newOffset);
-				#ifdef __CUDACC__
 				__host__ __device__ inline dim3 dimensions(void) const;
 				__host__ __device__ inline dim3 strides(void) const;
-				#endif
 				__host__ __device__ inline bool isMonolithic(void) const;
 				__host__ __device__ inline bool isSliceMonolithic(void) const;
 				__host__            inline void reinterpretLayout(index_t r, index_t c=1, index_t s=1);
@@ -280,11 +298,13 @@ namespace Kartet
 				__host__ __device__ inline void moveToNext(index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline void moveToNext(index_t& j, index_t& k) const;
 
-			// Other Tools : 
-				#ifdef __CUDACC__
+			// Other Tools :
+				template<ComputeLayout cl>
+				__host__	    inline dim3 blockSize(void) const;
 				__host__ 	    inline dim3 blockSize(void) const;
+				template<ComputeLayout cl>
+				__host__	    inline dim3 numBlocks(void) const;
 				__host__ 	    inline dim3 numBlocks(void) const;
-				#endif
 				__host__	    inline Layout columnLayout(const bool& includeSlices=false) const;
 				__host__	    inline Layout sliceLayout(void) const;
 				__host__	    inline Layout monolithicLayout(void) const;
@@ -382,9 +402,72 @@ namespace Kartet
 	template<typename T>
 	const char Layout::StaticContainer<T>::streamHeader[] = "KARTET02";
 
-	// To compute on a specific layout : 
+	// To compute on a specific layout :
 	#ifdef __CUDACC__
+		/**
+		\def COMPUTE_LAYOUT_STRIPES
+		\brief Compute layout descriptor tool (CUDA), stripes version.
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT_STRIPES(myLayout) (...)
+\endcode
+		**/
+		#define COMPUTE_LAYOUT_STRIPES(x) <<<(x).numBlocks<StripesLayout>(), (x).blockSize<StripesLayout>()>>>
+
+		/**
+		\def COMPUTE_LAYOUT_STREAM_STRIPES
+		\brief Compute layout descriptor tool (CUDA), stripes version.
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT_STREAM_STRIPES(myLayout, stream) (...)
+\endcode
+		**/
+		#define COMPUTE_LAYOUT_STREAM_STRIPES(x, s) <<<(x).numBlocks<StripesLayout>(), (x).blockSize<StripesLayout>(), 0, (s)>>>
+
+		/**
+		\def COMPUTE_LAYOUT_BLOCKS
+		\brief Compute layout descriptor tool (CUDA), blocks version.
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT_BLOCKS(myLayout) (...)
+\endcode
+		**/
+		#define COMPUTE_LAYOUT_BLOCKS(x) <<<(x).numBlocks<BlocksLayout>(), (x).blockSize<BlocksLayout>()>>>
+
+/**
+		\def COMPUTE_LAYOUT_STREAM_BLOCKS
+		\brief Compute layout descriptor tool (CUDA), blocks version.
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT_STREAM_BLOCKS(myLayout, stream) (...)
+\endcode
+		**/
+		#define COMPUTE_LAYOUT_STREAM_BLOCKS(x, s) <<<(x).numBlocks<BlocksLayout>(), (x).blockSize<BlocksLayout>(), 0, (s)>>>
+
+		/**
+		\def COMPUTE_LAYOUT
+		\brief Compute layout descriptor tool (CUDA).
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT(myLayout) (...)
+\endcode
+		**/
 		#define COMPUTE_LAYOUT(x) <<<(x).numBlocks(), (x).blockSize()>>>
+
+/**
+		\def COMPUTE_LAYOUT_STREAM
+		\brief Compute layout descriptor tool (CUDA).
+
+		Call a global function with :
+\code
+functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
+\endcode
+		**/
 		#define COMPUTE_LAYOUT_STREAM(x, s) <<<(x).numBlocks(), (x).blockSize(), 0, (s)>>>
 	#endif
 

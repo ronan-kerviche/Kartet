@@ -28,7 +28,7 @@
 
 /**
 	\file    LibTools.hpp
-	\brief   Library Tools.
+	\brief   Library tools.
 	\author  R. Kerviche
 	\date    November 1st 2009
 **/
@@ -42,6 +42,16 @@
 	#define K_L10 (2.30258509299404568401)
 	#define K_L2  (0.69314718055994530941)
 
+	// Alignment :
+	#if defined(__GNUC__)
+		#define KARTET_ALIGN(b) __attribute__ ((aligned(b)))
+	#elif defined(_MSC_VER)
+		#define KARTET_ALIGN(b) __declspec(align(b))
+	#else
+		#warning "Kartet structures alignment not enforced."
+		#define KARTET_ALIGN(b)
+	#endif
+
 	#ifdef __CUDACC__
 		#define __cuda_typename typename
 	#else
@@ -53,30 +63,143 @@
 		#define cudaStream_t void*
 
 	// Common missing structures :
+		struct char2
+		{
+			char x, y;
+		} KARTET_ALIGN(2);
+
+		struct char3
+		{
+			char x, y, z;
+		} KARTET_ALIGN(4);
+
+		struct char4
+		{
+			char x, y, z, w;
+		} KARTET_ALIGN(4);
+
+		struct uchar2
+		{
+			unsigned char x, y;
+		} KARTET_ALIGN(2);
+
+		struct uchar3
+		{
+			unsigned char x, y, z;
+		} KARTET_ALIGN(4);
+
+		struct uchar4
+		{
+			unsigned char x, y, z, w;
+		} KARTET_ALIGN(4);
+
+		struct short2
+		{
+			short x, y;
+		} KARTET_ALIGN(4);
+
+		struct short3
+		{
+			short x, y, z;
+		} KARTET_ALIGN(8);
+
+		struct short4
+		{
+			short x, y, z, w;
+		} KARTET_ALIGN(8);
+
+		struct ushort2
+		{
+			unsigned short x, y;
+		} KARTET_ALIGN(4);
+
+		struct ushort3
+		{
+			unsigned short x, y, z;
+		} KARTET_ALIGN(8);
+
+		struct ushort4
+		{
+			unsigned short x, y, z, w;
+		} KARTET_ALIGN(8);
+
+		struct int2
+		{
+			int x, y;
+		} KARTET_ALIGN(8);
+
+		struct int3
+		{
+			int x, y, z;
+		} KARTET_ALIGN(16);
+
+		struct int4
+		{
+			int x, y, z, w;
+		} KARTET_ALIGN(16);
+
+		struct uint2
+		{
+			unsigned int x, y;
+		} KARTET_ALIGN(8);
+
+		struct uint3
+		{
+			unsigned int x, y, z;
+		} KARTET_ALIGN(16);
+
+		struct uint4
+		{
+			unsigned int x, y, z, w;
+		} KARTET_ALIGN(16);
+
 		struct float2
 		{
-			float x, y, z;
-		};
+			float x, y;
+		} KARTET_ALIGN(8);
 
 		struct float3
 		{
 			float x, y, z;
-		};
+		} KARTET_ALIGN(16);
 
 		struct float4
 		{
 			float x, y, z, w;
+		} KARTET_ALIGN(16);
+
+		struct double2
+		{
+			double x, y;
+		} KARTET_ALIGN(16);
+
+		struct double3
+		{
+			double x, y, z;
+		} KARTET_ALIGN(32);
+
+		struct double4
+		{
+			double x, y, z, w;
+		} KARTET_ALIGN(32);
+
+		struct dim3
+		{
+			unsigned int x, y, z;
+			inline dim3(const unsigned int& _x = 1, const unsigned int& _y = 1, const unsigned int& _z = 1)
+			 : x(_x), y(_y), z(_z)
+			{ }
 		};
 
 	// Missing functions :
 		template<typename T>
-		T min(T a, T b)
+		T min(const T& a, const T& b)
 		{
 			return (a<=b) ? a : b;
 		}
 
 		template<typename T>
-		T max(T a, T b)
+		T max(const T& a, const T& b)
 		{
 			return (a>=b) ? a : b;
 		}

@@ -344,7 +344,6 @@ namespace Kartet
 		return oldOffset;
 	}
 
-	#ifdef __CUDACC__
 	/**
 	\brief Returns the dimensions of the array in a dim3 structure.
 	\return The dimensions of the array in a dim3 structure.
@@ -365,7 +364,6 @@ namespace Kartet
 	{
 		return dim3(1, sColumns, sSlices);
 	}
-	#endif
 
 	/**
 	\brief Test if the layout is monolithic.
@@ -1190,19 +1188,82 @@ namespace Kartet
 		k = (j==0) ? (k+1) : k;
 	}
 
-	#ifdef __CUDACC__
 	/**
-	\brief Get the block size for CUDA computation.
+	\brief Get the block size for CUDA computation, with a stripes compute layout.
+	\return dim3 struct with correct block settings.
+	**/
+	template<>
+	__host__ inline dim3 Layout::blockSize<StripesLayout>(void) const
+	{
+		// Uses StaticContainer, cannot be device'd ...
+		dim3 d;
+		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
+		d.x = min(StaticContainer<void>::numThreads, nRows);
+		d.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x), nColumns);
+		d.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
+		//std::cout << "Layout::getBlockSize<StripesLayout> : " << d << std::endl;
+		return d;
+	}
+
+	/**
+	\brief Get the block size for CUDA computation, with a blocks compute layout.
+	\return dim3 struct with correct block settings.
+	**/
+	template<>
+	__host__ inline dim3 Layout::blockSize<BlocksLayout>(void) const
+	{
+		// Uses StaticContainer, cannot be device'd ...
+		dim3 d;
+		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
+		d.x = min(static_cast<index_t>(floor(sqrt(StaticContainer<void>::numThreads))), nRows);
+		d.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x), nColumns);
+		d.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
+		//std::cout << "Layout::getBlockSize<BlocksLayout> : " << d << std::endl;
+		return d;
+	}
+
+	/**
+	\brief Get the block size for CUDA computation, with the default compute layout.
 	\return dim3 struct with correct block settings.
 	**/
 	__host__ inline dim3 Layout::blockSize(void) const
 	{
+		return blockSize<KARTET_DEFAULT_COMPUTE_LAYOUT>();
+	}
+
+	/**
+	\brief Get the grid size for CUDA computation, with a stripes compute layout.
+	\return dim3 struct with correct grid settings.
+	**/
+	template<>
+	__host__ inline dim3 Layout::numBlocks<StripesLayout>(void) const
+	{
+		// Uses StaticContainer, cannot be device'd ...
 		dim3 d;
 		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
-		d.x = min(StaticContainer<void>::numThreads, nRows);
-		d.y = min(StaticContainer<void>::numThreads/d.x, nColumns);
-		d.z = min(min(StaticContainer<void>::numThreads/(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
-		//std::cout << "Layout::getBlockSize : " << d.x << ", " << d.y << ", " << d.z << std::endl;
+		const dim3 b = blockSize<StripesLayout>();
+		d.x = (nRows + b.x - 1)/b.x;
+		d.y = (nColumns + b.y - 1)/b.y;
+		d.z = (nSlices + b.z - 1)/b.z;
+		//std::cout << "Layout::numBlock<StripesLayout> : " << d << std::endl;
+		return d;
+	}
+
+	/**
+	\brief Get the grid size for CUDA computation, with a blocks compute layout.
+	\return dim3 struct with correct grid settings.
+	**/
+	template<>
+	__host__ inline dim3 Layout::numBlocks<BlocksLayout>(void) const
+	{
+		// Uses StaticContainer, cannot be device'd ...
+		dim3 d;
+		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
+		const dim3 b = blockSize<BlocksLayout>();
+		d.x = (nRows + b.x - 1)/b.x;
+		d.y = (nColumns + b.y - 1)/b.y;
+		d.z = (nSlices + b.z - 1)/b.z;
+		//std::cout << "Layout::numBlock<BlocksLayout> : " << d << std::endl;
 		return d;
 	}
 
@@ -1212,16 +1273,8 @@ namespace Kartet
 	**/
 	__host__ inline dim3 Layout::numBlocks(void) const
 	{
-		dim3 d;
-		// From inner most dimension (I <-> X, J <-> Y, K <-> Z) :
-		const dim3 b = blockSize();
-		d.x = (nRows + b.x - 1)/b.x;
-		d.y = (nColumns + b.y - 1)/b.y;
-		d.z = (nSlices + b.z - 1)/b.z;
-		//std::cout << "Layout::numBlock : " << d.x << ", " << d.y << ", " << d.z << std::endl;
-		return d;
+		return numBlocks<KARTET_DEFAULT_COMPUTE_LAYOUT>();
 	}
-	#endif
 
 	/**
 	\brief Get the layout corresponding to a column. Retains strides.
