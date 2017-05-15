@@ -424,19 +424,19 @@ namespace Kartet
 	\return 1 if the argument is finite.
 	\param a Real expression.
 	**/
-	T isFinite(Expression a) { }
+	T isfinite(Expression a) { }
 
 	/**
 	\return 1 if the argument is infinite.
 	\param a Real expression.
 	**/
-	T isInf(Expression a) { }
+	T isinf(Expression a) { }
 
 	/**
 	\return 1 if the argument is NaN.
 	\param a Real expression.
 	**/
-	T isNan(Expression a) { }
+	T isnan(Expression a) { }
 
 	/**
 	\return The ceiling of the argument.
