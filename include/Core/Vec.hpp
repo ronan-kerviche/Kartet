@@ -150,7 +150,7 @@
 		} \
 
 	#define VEC2_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC2_TOOLS(T, TBase, SQRTFUN) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
 					minusZero = -static_cast<TBase>(0); \
@@ -169,7 +169,7 @@
 		}
 
 	#define VEC2_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC2_TOOLS(T, TBase, SQRTFUN) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
 			os << '('; \
@@ -317,7 +317,7 @@
 		} \
 	
 	#define VEC3_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC3_TOOLS(T, TBase, SQRTFun) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
 					minusZero = -static_cast<TBase>(0); \
@@ -340,7 +340,7 @@
 		}
 
 	#define VEC3_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC3_TOOLS(T, TBase, SQRTFun) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
 			os << '('; \
@@ -492,7 +492,7 @@
 		} \
 
 	#define VEC4_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC4_TOOLS(T, TBase, SQRTFUN) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
 					minusZero = -static_cast<TBase>(0); \
@@ -519,7 +519,7 @@
 		}
 
 	#define VEC4_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC4_TOOLS(T, TBase, SQRTFUN) \
-		inline __host__ std::ostream& operator<<(std::ostream& os, const T& z) \
+		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
 			os << '('; \
