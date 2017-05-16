@@ -688,6 +688,28 @@ namespace Kartet
 		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? K_PI : 0,		0)
 	#undef SPECIAL_ReFUNCTION
 
+		// More specials :
+		template<typename T>
+		__host__ __device__ T fabs(const Complex<T>& z)
+		{
+			return ::sqrt(z.x*z.x+z.y*z.y);
+		}
+
+		__host__ __device__ inline float fabs(const cuFloatComplex& z)
+		{
+			return ::sqrt(z.x*z.x+z.y*z.y);
+		}
+
+		__host__ __device__ inline float fabsf(const cuFloatComplex& z)
+		{
+			return ::sqrtf(z.x*z.x+z.y*z.y);
+		}
+
+		__host__ __device__ inline double fabs(const cuDoubleComplex& z)
+		{
+			return ::sqrt(z.x*z.x+z.y*z.y);
+		}
+
 	#define SPECIAL_CxFUNCTION( function, CxOperation, ReOperation ) \
 		__host__ __device__ inline int function (const int& r) \
 		{ \

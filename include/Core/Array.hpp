@@ -67,9 +67,13 @@
 See also Kartet::ComputeLayout.
 **/
 #ifndef KARTET_DEFAULT_COMPUTE_LAYOUT
-	#define KARTET_DEFAULT_COMPUTE_LAYOUT (StripesLayout)
+	#define KARTET_DEFAULT_COMPUTE_LAYOUT (Kartet::StripesLayout)
 #endif
 
+/**
+\def KARTET_DEFAULT_BUFFER_SIZE
+\brief Default buffer size for transfer operations.
+**/
 #ifndef KARTET_DEFAULT_BUFFER_SIZE
 	// 100 MB :
 	#define KARTET_DEFAULT_BUFFER_SIZE (104857600)
@@ -782,8 +786,7 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 	
 } // namespace Kartet
 
-// Include sub-definitions : 
-	//#include "Core/TypeTools.hpp"
+// Include sub-definitions :
 	#include "Core/ArrayTools.hpp"
 	#include "Core/ArrayExpressions.hpp"
 	#include "Core/ArrayOperators.hpp"

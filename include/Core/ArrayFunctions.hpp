@@ -198,6 +198,7 @@
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_real, 			real,			return real(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_imag,			imag,			return imag(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_abs,			abs,			return abs(a); )
+	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_fabs,			fabs,			return fabs(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_absSq,			absSq,			return absSq(a); )
 	C2R_UNARY_OPERATOR_DEFINITION(		UnOp_arg,			arg,			return arg(a); )
 	R2C_UNARY_OPERATOR_DEFINITION(		UnOp_polar,			polar,			return polar(a); )
