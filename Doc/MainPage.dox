@@ -23,9 +23,12 @@
 		KARTET_PATH=<path to Kartet location>
 	\endcode
 
-	By default, the build tool will assume a 35 device code. To change this, set the following variable :
+	By default, the build tool will prepare for devices code from 30 to 60. However if you are targeting for on specific architecture, you can reduce the compilation time (and the executable size) by selecting only the right code. To change this, set the following environment variable :
 	\code
 		DEVICE_CODE=<platform code>
+		# Examples :
+		DEVICE_CODE=35
+		DEVICE_CODE=50 52 60
 	\endcode 
 
 	To only produce one of the two targets, you can also set the variable : 
@@ -45,8 +48,8 @@
 		export EXEC_DEVICE	= <name of the device binary>
 		export EXEC_HOST	= <name of the host binary>
 		export FILES		= <list of source files>
-		export KARTET_OPTIONS	= <Kartet options>
-		#export CC_EXTRA_FLAGS	= <extra flags and options>
+		export KARTET_OPTIONS	+= <Kartet options>
+		#export CC_EXTRA_FLAGS	+= <extra flags and options>
 		all :
 		% :
 			@$(MAKE) -s -f $(KARTET_PATH)/Tools/Makefile $@
@@ -54,6 +57,8 @@
 
 	Make targets : 
 	\code
+		# Default behavior, with KARTET_DEFAULT_TARGET (on a machine with Cuda, it will generate two executables) :
+		make
 		# Only make the device binary :
 		make deviceBinary
 		# Only make the host binary :
@@ -64,6 +69,8 @@
 		make test
 		# (will print the build information)
 	\endcode
+
+	Options for KARTET_OPTIONS :
 
 	- Use 64 bits indexing, slower operation (2x) but enable processing of large arrays (>2e9 elements).
 	\code

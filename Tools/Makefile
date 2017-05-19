@@ -33,8 +33,8 @@
 #	export EXEC_DEVICE	= execNameDevice
 #	export EXEC_HOST	= execNameTestHost
 #	export FILES		= main.cu
-#	export KARTET_OPTIONS	= -D KARTET_USE_ATLAS
-#	#export CC_EXTRA_LIB	= -shared # For a shared object/dynamic library
+#	export KARTET_OPTIONS	+= -D KARTET_USE_ATLAS
+#	#export CC_EXTRA_LIB	+= -shared # For a shared object/dynamic library
 #	all :
 #	% :
 #		@$(MAKE) -s -f $(KARTET_PATH)/Tools/Makefile $@
@@ -69,7 +69,7 @@ $(error Undefined variable FILES)
 endif
 
 ifeq ($(DEVICE_CODE),)
-	DEVICE_CODE = 35 37 50 52 60
+	DEVICE_CODE = 30 35 37 50 52 60
 #$(info Using default platform codes : $(DEVICE_CODE))
 #$(info To speed up compilation, specify the environment variable DEVICE_CODE.)
 endif

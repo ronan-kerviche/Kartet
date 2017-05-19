@@ -789,6 +789,12 @@ namespace Kartet
 	T abs(Expression a) { }
 
 	/**
+	\return The absolute value of the argument (magnitude), for floating point arguments.
+	\param a Expression.
+	**/
+	T fabs(Expression a) { }
+
+	/**
 	\return The squqred absolute value of the argument (magnitude squared).
 	\param a Expression.
 	**/
@@ -873,7 +879,7 @@ namespace Kartet
 	- This function cannot be used in-place.
 	- This function can be slow on device.
 	**/
-	T yFlip(Expression a) { }
+	T zFlip(Expression a) { }
 
 	/**
 	\return Distribute the first slice of the argument on all slices of the output expression.

@@ -318,7 +318,7 @@ namespace Kartet
 	{
 		Layout layout;
 		T a;
-		
+
 		__host__ LayoutReinterpretationExpression(const Layout& _layout, const T& _a)
 		 : layout(_layout), a(_a) 
 		{ }
@@ -367,7 +367,7 @@ namespace Kartet
 		T1 a;
 		T2 b;
 		T3 c;
-		
+
 		__host__ TernaryExpression(const T1& _a, const T2& _b, const T3& _c)
 		 : a(_a), b(_b), c(_c)
 		{ }
@@ -382,8 +382,7 @@ namespace Kartet
 	template<typename T, Location l, typename TExpr>
 	__global__ void evaluateExpression(const Accessor<T,l> array, const TExpr expr)
 	{
-		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
+		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		index_t i = array.getI(),
 			j = array.getJ(),
 			k = array.getK();
@@ -396,8 +395,7 @@ namespace Kartet
 	template<typename T, Location l, typename TExpr>
 	__host__ void evaluateExpressionOverLayout(const Accessor<T,l>& array, const TExpr& expr)
 	{
-		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
+		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
 
@@ -419,8 +417,7 @@ namespace Kartet
 	__global__ void evaluateExpressionWithMask(const Accessor<T> array, const TExprMask exprMask, const TExpr expr)
 	{
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
-		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
+		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		index_t i = array.getI(),
 			j = array.getJ(),
 			k = array.getK();
@@ -438,8 +435,7 @@ namespace Kartet
 	__host__ void evaluateExpressionWithMaskOverLayout(const Accessor<T,l>& array, const TExprMask& exprMask, const TExpr& expr)
 	{
 		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
-		typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
-
+		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
 	#ifdef KARTET_USE_OMP
