@@ -112,6 +112,7 @@ int main(int argc, char** argv)
 		// Start here :
 		Kartet::initialize();
 		Kartet::Layout::StaticContainer<void>::numThreads = 512;
+		Kartet::Layout::StaticContainer<void>::maxBlockRepetition = 64;
 
 		CuTimer timer;
 		Kartet::BLASContext blasContext;

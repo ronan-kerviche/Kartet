@@ -47,8 +47,8 @@
 		#define NORMALIZE(a) (a/norm(a))
 	#endif
 	// Maths :
-	#define VEC2_TOOLS(T, TBase, SQRTFUN) \
-		__host__ __device__ inline T makeFloat2(const TBase& x, const TBase& y) \
+	#define VEC2_TOOLS(NAME, T, TBase, SQRTFUN) \
+		__host__ __device__ inline T make##NAME##2(const TBase& x, const TBase& y) \
 		{ \
 			T c; \
 			c.x = x; \
@@ -56,6 +56,13 @@
 			return c; \
 		} \
 		 \
+		__host__ __device__ inline T operator-(const T& a) \
+		{ \
+			T c; \
+			c.x = -a.x; \
+			c.y = -a.y; \
+			return c; \
+		} \
 		__host__ __device__ inline T operator+(const T& a, const T& b) \
 		{ \
 			T c; \
@@ -149,7 +156,7 @@
 			return dir - (2.0f*dot(dir, normal))*normal; \
 		} \
 
-	#define VEC2_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC2_TOOLS(T, TBase, SQRTFUN) \
+	#define VEC2_TOOLS_SIGNED(NAME, T, TBase, SQRTFUN)	VEC2_TOOLS(NAME, T, TBase, SQRTFUN) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
@@ -168,7 +175,7 @@
 			return os; \
 		}
 
-	#define VEC2_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC2_TOOLS(T, TBase, SQRTFUN) \
+	#define VEC2_TOOLS_UNSIGNED(NAME, T, TBase, SQRTFUN)	VEC2_TOOLS(NAME, T, TBase, SQRTFUN) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
@@ -182,26 +189,35 @@
 			return os; \
 		}
 
-		VEC2_TOOLS_SIGNED(char2, 	char,		::sqrtf)
-		VEC2_TOOLS_UNSIGNED(uchar2,	unsigned char,	::sqrtf)
-		VEC2_TOOLS_SIGNED(short2, 	short,		::sqrtf)
-		VEC2_TOOLS_UNSIGNED(ushort2,	unsigned short,	::sqrtf)
-		VEC2_TOOLS_SIGNED(int2,		int,		::sqrtf)
-		VEC2_TOOLS_UNSIGNED(uint2,	unsigned int,	::sqrtf)
-		VEC2_TOOLS_SIGNED(float2, 	float,		::sqrtf)
-		VEC2_TOOLS_SIGNED(double2,	double,		::sqrt)
+		VEC2_TOOLS_SIGNED(	Char,		char2, 		char,		::sqrtf)
+		VEC2_TOOLS_UNSIGNED(	UChar,		uchar2,		unsigned char,	::sqrtf)
+		VEC2_TOOLS_SIGNED(	Short,		short2, 	short,		::sqrtf)
+		VEC2_TOOLS_UNSIGNED(	UShort,		ushort2,	unsigned short,	::sqrtf)
+		VEC2_TOOLS_SIGNED(	Int,		int2,		int,		::sqrtf)
+		VEC2_TOOLS_UNSIGNED(	UInt,		uint2,		unsigned int,	::sqrtf)
+		VEC2_TOOLS_SIGNED(	Float,		float2, 	float,		::sqrtf)
+		VEC2_TOOLS_SIGNED(	Double,		double2,	double,		::sqrt)
 
 	#undef VEC2_TOOLS_UNSIGNED 
 	#undef VEC2_TOOLS_SIGNED
 	#undef VEC2_TOOLS
 
-	#define VEC3_TOOLS(T, TBase, SQRTFUN) \
-		__host__ __device__ inline T makeFloat3(const TBase& x, const TBase& y, const TBase& z) \
+	#define VEC3_TOOLS(NAME, T, TBase, SQRTFUN) \
+		__host__ __device__ inline T make##NAME##3(const TBase& x, const TBase& y, const TBase& z) \
 		{ \
 			T c; \
 			c.x = x; \
 			c.y = y; \
 			c.z = z; \
+			return c; \
+		} \
+		 \
+		__host__ __device__ inline T operator-(const T& a) \
+		{ \
+			T c; \
+			c.x = -a.x; \
+			c.y = -a.y; \
+			c.z = -a.z; \
 			return c; \
 		} \
 		 \
@@ -316,7 +332,7 @@
 			return dir - (2.0f*dot(dir, normal))*normal; \
 		} \
 	
-	#define VEC3_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC3_TOOLS(T, TBase, SQRTFun) \
+	#define VEC3_TOOLS_SIGNED(NAME, T, TBase, SQRTFUN)	VEC3_TOOLS(NAME, T, TBase, SQRTFun) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
@@ -339,7 +355,7 @@
 			return os; \
 		}
 
-	#define VEC3_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC3_TOOLS(T, TBase, SQRTFun) \
+	#define VEC3_TOOLS_UNSIGNED(NAME, T, TBase, SQRTFUN)	VEC3_TOOLS(NAME, T, TBase, SQRTFun) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
@@ -356,27 +372,37 @@
 			return os; \
 		}
 
-		VEC3_TOOLS_SIGNED(char3, 	char,		::sqrtf)
-		VEC3_TOOLS_UNSIGNED(uchar3,	unsigned char,	::sqrtf)
-		VEC3_TOOLS_SIGNED(short3, 	short,		::sqrtf)
-		VEC3_TOOLS_UNSIGNED(ushort3,	unsigned short,	::sqrtf)
-		VEC3_TOOLS_SIGNED(int3,		int,		::sqrtf)
-		VEC3_TOOLS_UNSIGNED(uint3,	unsigned int,	::sqrtf)
-		VEC3_TOOLS_SIGNED(float3, 	float,		::sqrtf)
-		VEC3_TOOLS_SIGNED(double3,	double,		::sqrt)
+		VEC3_TOOLS_SIGNED(	Char,		char3, 		char,		::sqrtf)
+		VEC3_TOOLS_UNSIGNED(	UChar,		uchar3,		unsigned char,	::sqrtf)
+		VEC3_TOOLS_SIGNED(	Short,		short3, 	short,		::sqrtf)
+		VEC3_TOOLS_UNSIGNED(	UShort,		ushort3,	unsigned short,	::sqrtf)
+		VEC3_TOOLS_SIGNED(	Int,		int3,		int,		::sqrtf)
+		VEC3_TOOLS_UNSIGNED(	UInt,		uint3,		unsigned int,	::sqrtf)
+		VEC3_TOOLS_SIGNED(	Float,		float3, 	float,		::sqrtf)
+		VEC3_TOOLS_SIGNED(	Double,		double3,	double,		::sqrt)
 
 	#undef VEC3_TOOLS_SIGNED
 	#undef VEC3_TOOLS_UNSIGNED
 	#undef VEC3_TOOLS
 
-	#define VEC4_TOOLS(T, TBase, SQRTFUN) \
-		__host__ __device__ inline T makeFloat3(const TBase& x, const TBase& y, const TBase& z, const TBase& w) \
+	#define VEC4_TOOLS(NAME, T, TBase, SQRTFUN) \
+		__host__ __device__ inline T make##NAME##3(const TBase& x, const TBase& y, const TBase& z, const TBase& w) \
 		{ \
 			T c; \
 			c.x = x; \
 			c.y = y; \
 			c.z = z; \
 			c.w = w; \
+			return c; \
+		} \
+		 \
+		__host__ __device__ inline T operator-(const T& a) \
+		{ \
+			T c; \
+			c.x = -a.x; \
+			c.y = -a.y; \
+			c.z = -a.z; \
+			c.w = -a.w; \
 			return c; \
 		} \
 		 \
@@ -491,7 +517,7 @@
 			return dir - (2.0f*dot(dir, normal))*normal; \
 		} \
 
-	#define VEC4_TOOLS_SIGNED(T, TBase, SQRTFUN)	VEC4_TOOLS(T, TBase, SQRTFUN) \
+	#define VEC4_TOOLS_SIGNED(NAME, T, TBase, SQRTFUN)	VEC4_TOOLS(NAME, T, TBase, SQRTFUN) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const TBase 	zero = static_cast<TBase>(0), \
@@ -518,7 +544,7 @@
 			return os; \
 		}
 
-	#define VEC4_TOOLS_UNSIGNED(T, TBase, SQRTFUN)	VEC4_TOOLS(T, TBase, SQRTFUN) \
+	#define VEC4_TOOLS_UNSIGNED(NAME, T, TBase, SQRTFUN)	VEC4_TOOLS(NAME, T, TBase, SQRTFUN) \
 		__host__ inline std::ostream& operator<<(std::ostream& os, const T& z) \
 		{ \
 			const bool flag = !(os.flags() & std::ios_base::showpos); \
@@ -538,14 +564,14 @@
 			return os; \
 		}
 
-		VEC4_TOOLS_SIGNED(char4, 	char,		::sqrtf)
-		VEC4_TOOLS_UNSIGNED(uchar4,	unsigned char,	::sqrtf)
-		VEC4_TOOLS_SIGNED(short4, 	short,		::sqrtf)
-		VEC4_TOOLS_UNSIGNED(ushort4,	unsigned short,	::sqrtf)
-		VEC4_TOOLS_SIGNED(int4,		int,		::sqrtf)
-		VEC4_TOOLS_UNSIGNED(uint4,	unsigned int,	::sqrtf)
-		VEC4_TOOLS_SIGNED(float4, 	float,		::sqrtf)
-		VEC4_TOOLS_SIGNED(double4,	double,		::sqrt)
+		VEC4_TOOLS_SIGNED(	Char,		char4, 		char,		::sqrtf)
+		VEC4_TOOLS_UNSIGNED(	Uchar,		uchar4,		unsigned char,	::sqrtf)
+		VEC4_TOOLS_SIGNED(	Short,		short4, 	short,		::sqrtf)
+		VEC4_TOOLS_UNSIGNED(	UShort,		ushort4,	unsigned short,	::sqrtf)
+		VEC4_TOOLS_SIGNED(	Int,		int4,		int,		::sqrtf)
+		VEC4_TOOLS_UNSIGNED(	UInt,		uint4,		unsigned int,	::sqrtf)
+		VEC4_TOOLS_SIGNED(	Float,		float4, 	float,		::sqrtf)
+		VEC4_TOOLS_SIGNED(	Double,		double4,	double,		::sqrt)
 	#undef VEC4_TOOLS_UNSIGNED
 	#undef VEC4_TOOLS_SIGNED
 	#undef VEC4_TOOLS

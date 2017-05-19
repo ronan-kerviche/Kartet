@@ -403,7 +403,7 @@ namespace Kartet
 					index_t i = ib + id*blockDim.x,
 						j = jb + jd*blockDim.y,
 						k = kb + kd*blockDim.z;
-					if(array.isInside(i, j, k)) // Costs 20% perf.
+					if(array.isInside(i, j, k))
 						array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 				}
 	}
