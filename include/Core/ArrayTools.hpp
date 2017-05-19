@@ -697,6 +697,36 @@ namespace Kartet
 	{
 		return blockIdx.z*blockDim.z+threadIdx.z;
 	}
+
+	/**
+	\brief Get the current row index.
+	\param blockRepetition The number of block repetitions.
+	\return The current row index.
+	**/
+	__device__ inline index_t Layout::getI(dim3 blockRepetition)
+	{
+		return blockIdx.x*(blockDim.x*blockRepetition.x)+threadIdx.x;
+	}
+
+	/**
+	\brief Get the current column index.
+	\param blockRepetition The number of block repetitions.
+	\return The current column index.
+	**/
+	__device__ inline index_t Layout::getJ(dim3 blockRepetition)
+	{
+		return blockIdx.y*(blockDim.y*blockRepetition.y)+threadIdx.y;
+	}
+
+	/**
+	\brief Get the current slice index.
+	\param blockRepetition The number of block repetitions.
+	\return The current slice index.
+	**/
+	__device__ inline index_t Layout::getK(dim3 blockRepetition)
+	{
+		return blockIdx.z*(blockDim.z*blockRepetition.z)+threadIdx.z;
+	}
 	#endif
 
 	/**
@@ -771,6 +801,39 @@ namespace Kartet
 	{
 		return getKNorm<TOut>(getK());
 	}
+
+	/**
+	\brief Get the current normalized row index.
+	\param blockRepetition The number of block repetitions.
+	\return The normalized row index (i/nRows).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getINorm(dim3 blockRepetition) const
+	{
+		return getINorm<TOut>(getI(blockRepetition));
+	}
+
+	/**
+	\brief Get the current normalized column index.
+	\param blockRepetition The number of block repetitions.
+	\return The normalized column index (j/nColumns).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getJNorm(dim3 blockRepetition) const
+	{
+		return getJNorm<TOut>(getJ(blockRepetition));
+	}
+
+	/**
+	\brief Get the current normalized slice index.
+	\param blockRepetition The number of block repetitions.
+	\return The normalized slice index (k/nSlices).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getKNorm(dim3 blockRepetition) const
+	{
+		return getKNorm<TOut>(getK(blockRepetition));
+	}
 	#endif
 
 	/**
@@ -844,6 +907,39 @@ namespace Kartet
 	__device__ inline TOut Layout::getKNormIncl(void) const
 	{
 		return getKNormIncl<TOut>(getK());
+	}
+
+	/**
+	\brief Get the current inclusive normalized row index.
+	\param blockRepetition The number of block repetitions.
+	\return The inclusive normalized row index (i/(nRows-1)).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getINormIncl(dim3 blockRepetition) const
+	{
+		return getINormIncl<TOut>(getI(blockRepetition));
+	}
+
+	/**
+	\brief Get the current inclusive normalized column index.
+	\param blockRepetition The number of block repetitions.
+	\return The inclusive normalized column index (i/(nColumns-1)).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getJNormIncl(dim3 blockRepetition) const
+	{
+		return getJNormIncl<TOut>(getJ(blockRepetition));
+	}
+
+	/**
+	\brief Get the current inclusive normalized slice index.
+	\param blockRepetition The number of block repetitions.
+	\return The inclusive normalized slice index (i/(nSlices-1)).
+	**/
+	template<typename TOut>
+	__device__ inline TOut Layout::getKNormIncl(dim3 blockRepetition) const
+	{
+		return getKNormIncl<TOut>(getK(blockRepetition));
 	}
 	#endif
 
@@ -966,6 +1062,26 @@ namespace Kartet
 	{
 		return getPosition(getI(), getJ(), getK());
 	}
+
+	/**
+	\brief Get the index of the current element.
+	\param blockRepetition The number of block repetitions.
+	\return The index of the current element.
+	**/
+	__device__ inline index_t Layout::getIndex(dim3 blockRepetition) const
+	{
+		return getIndex(getI(blockRepetition), getJ(blockRepetition), getK(blockRepetition));
+	}
+
+	/**
+	\brief Get the position of the current element.
+	\param blockRepetition The number of block repetitions.
+	\return The position of the current element.
+	**/
+	__device__ inline index_t Layout::getPosition(dim3 blockRepetition) const
+	{
+		return getPosition(getI(blockRepetition), getJ(blockRepetition), getK(blockRepetition));
+	}
 	#endif
 
 	/**
@@ -1064,6 +1180,32 @@ namespace Kartet
 			k = getK();
 		return getPositionFFTInverseShift(i, j, k);
 	}
+
+	/**
+	\brief Get the index of the current element, after fftshift.
+	\param blockRepetition The number of block repetitions.
+	\return The position of the current element, after fftshift.
+	**/
+	__device__ inline index_t Layout::getPositionFFTShift(dim3 blockRepetition) const
+	{
+		index_t	i = getI(blockRepetition),
+			j = getJ(blockRepetition),
+			k = getK(blockRepetition);
+		return getPositionFFTShift(i, j, k);
+	}
+
+	/**
+	\brief Get the index of the current element, after inverse fftshift.
+	\param blockRepetition The number of block repetitions.
+	\return The position of the current element, after inverse fftshift.
+	**/
+	__device__ inline index_t Layout::getPositionFFTInverseShift(dim3 blockRepetition) const
+	{
+		index_t	i = getI(blockRepetition),
+			j = getJ(blockRepetition),
+			k = getK(blockRepetition);
+		return getPositionFFTInverseShift(i, j, k);
+	}
 	#endif
 	
 	/**
@@ -1086,6 +1228,16 @@ namespace Kartet
 	__device__ inline bool Layout::isInside(void) const
 	{
 		return  isInside(getI(), getJ(), getK());
+	}
+
+	/**
+	\brief Test if the current coordinates are inside a layout.
+	\param blockRepetition The number of block repetitions.
+	\return True if the coordinates are inside the layout.
+	**/
+	__device__ inline bool Layout::isInside(dim3 blockRepetition) const
+	{
+		return  isInside(getI(blockRepetition), getJ(blockRepetition), getK(blockRepetition));
 	}
 	#endif
 
@@ -1201,7 +1353,6 @@ namespace Kartet
 		d.x = min(StaticContainer<void>::numThreads, nRows);
 		d.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x), nColumns);
 		d.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
-		//std::cout << "Layout::getBlockSize<StripesLayout> : " << d << std::endl;
 		return d;
 	}
 
@@ -1218,7 +1369,6 @@ namespace Kartet
 		d.x = min(static_cast<index_t>(floor(sqrt(StaticContainer<void>::numThreads))), nRows);
 		d.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x), nColumns);
 		d.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(d.x*d.y), nSlices), StaticContainer<void>::maxZThreads);
-		//std::cout << "Layout::getBlockSize<BlocksLayout> : " << d << std::endl;
 		return d;
 	}
 
@@ -1245,7 +1395,6 @@ namespace Kartet
 		d.x = (nRows + b.x - 1)/b.x;
 		d.y = (nColumns + b.y - 1)/b.y;
 		d.z = (nSlices + b.z - 1)/b.z;
-		//std::cout << "Layout::numBlock<StripesLayout> : " << d << std::endl;
 		return d;
 	}
 
@@ -1263,7 +1412,6 @@ namespace Kartet
 		d.x = (nRows + b.x - 1)/b.x;
 		d.y = (nColumns + b.y - 1)/b.y;
 		d.z = (nSlices + b.z - 1)/b.z;
-		//std::cout << "Layout::numBlock<BlocksLayout> : " << d << std::endl;
 		return d;
 	}
 
@@ -1274,6 +1422,75 @@ namespace Kartet
 	__host__ inline dim3 Layout::numBlocks(void) const
 	{
 		return numBlocks<KARTET_DEFAULT_COMPUTE_LAYOUT>();
+	}
+
+	/*
+	\brief Get all the compute parameters, including block repetition, with a stripes compute layout.
+	\param[out] blockSize The size of the blocks.
+	\param[out] numBlocks The number of blocks in the grid.
+	\param[out] blockRepetition The number of operation repetition for efficient computation.
+
+	See also Layout::StaticContainer<T>::maxBlockRepetition.
+	*/
+	template<>
+	__host__ inline void Layout::computeLayout<StripesLayout>(dim3& blockSize, dim3& numBlocks, dim3& blockRepetition) const
+	{
+		blockSize.x = min(StaticContainer<void>::numThreads, nRows);
+		blockSize.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(blockSize.x), nColumns);
+		blockSize.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(blockSize.x*blockSize.y), nSlices), StaticContainer<void>::maxZThreads);
+		numBlocks.x = (nRows + blockSize.x - 1)/blockSize.x;
+		numBlocks.y = (nColumns + blockSize.y - 1)/blockSize.y;
+		numBlocks.z = (nSlices + blockSize.z - 1)/blockSize.z;
+		index_t remainingRepeat = StaticContainer<void>::maxBlockRepetition;
+		blockRepetition.x = min(static_cast<index_t>(numBlocks.x), remainingRepeat);
+		remainingRepeat /= blockRepetition.x;
+		blockRepetition.y = min(static_cast<index_t>(numBlocks.y), remainingRepeat);
+		remainingRepeat /= blockRepetition.y;
+		blockRepetition.z = min(static_cast<index_t>(numBlocks.z), remainingRepeat);
+		numBlocks.x = (numBlocks.x+blockRepetition.x-1)/blockRepetition.x;
+		numBlocks.y = (numBlocks.y+blockRepetition.y-1)/blockRepetition.y;
+		numBlocks.z = (numBlocks.z+blockRepetition.z-1)/blockRepetition.z;
+	}
+
+	/*
+	\brief Get all the compute parameters, including block repetition, with a blocks compute layout.
+	\param[out] blockSize The size of the blocks.
+	\param[out] numBlocks The number of blocks in the grid.
+	\param[out] blockRepetition The number of operation repetition for efficient computation.
+
+	See also Layout::StaticContainer<T>::maxBlockRepetition.
+	*/
+	template<>
+	__host__ inline void Layout::computeLayout<BlocksLayout>(dim3& blockSize, dim3& numBlocks, dim3& blockRepetition) const
+	{
+		blockSize.x = min(static_cast<index_t>(floor(sqrt(StaticContainer<void>::numThreads))), nRows);
+		blockSize.y = min(StaticContainer<void>::numThreads/static_cast<index_t>(blockSize.x), nColumns);
+		blockSize.z = min(min(StaticContainer<void>::numThreads/static_cast<index_t>(blockSize.x*blockSize.y), nSlices), StaticContainer<void>::maxZThreads);
+		numBlocks.x = (nRows + blockSize.x - 1)/blockSize.x;
+		numBlocks.y = (nColumns + blockSize.y - 1)/blockSize.y;
+		numBlocks.z = (nSlices + blockSize.z - 1)/blockSize.z;
+		index_t remainingRepeat = StaticContainer<void>::maxBlockRepetition;
+		blockRepetition.x = min(static_cast<index_t>(numBlocks.x), remainingRepeat);
+		remainingRepeat /= blockRepetition.x;
+		blockRepetition.y = min(static_cast<index_t>(numBlocks.y), remainingRepeat);
+		remainingRepeat /= blockRepetition.y;
+		blockRepetition.z = min(static_cast<index_t>(numBlocks.z), remainingRepeat);
+		numBlocks.x = (numBlocks.x+blockRepetition.x-1)/blockRepetition.x;
+		numBlocks.y = (numBlocks.y+blockRepetition.y-1)/blockRepetition.y;
+		numBlocks.z = (numBlocks.z+blockRepetition.z-1)/blockRepetition.z;
+	}
+
+	/*
+	\brief Get all the compute parameters, including block repetition.
+	\param[out] blockSize The size of the blocks.
+	\param[out] numBlocks The number of blocks in the grid.
+	\param[out] blockRepetition The number of operation repetition for efficient computation.
+
+	See also Layout::StaticContainer<T>::maxBlockRepetition.
+	*/
+	__host__ inline void Layout::computeLayout(dim3& blockSize, dim3& numBlocks, dim3& blockRepetition) const
+	{
+		computeLayout<KARTET_DEFAULT_COMPUTE_LAYOUT>(blockSize, numBlocks, blockRepetition);
 	}
 
 	/**
@@ -1803,6 +2020,51 @@ namespace Kartet
 	__device__ inline T& Accessor<T,l>::dataFFTInverseShift(void) const
 	{
 		return ptr[getPositionFFTInverseShift()];
+	}
+
+	/**
+	\brief Access the underlying data directly, at the current coordinates.
+	\param blockRepetition The number of block repetitions.
+	\return A reference to the data at the current coordinates.
+	**/
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::data(dim3 blockRepetition) const
+	{
+		return ptr[getPosition(blockRepetition)];
+	}
+
+	/**
+	\brief Access the underlying data directly, at the current coordinates, in another slice.
+	\param k Slice index.
+	\param blockRepetition The number of block repetitions.
+	\return A reference to the data at the current coordinates, in the specified slice.
+	**/
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataInSlice(int k, dim3 blockRepetition) const
+	{
+		return ptr[getPosition(getI(blockRepetition),getJ(blockRepetition),k)];
+	}
+
+	/**
+	\brief Access the underlying data directly, at the current fftshift coordinates.
+	\param blockRepetition The number of block repetitions.
+	\return A reference to the data at the current fftshift coordinates.
+	**/
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataFFTShift(dim3 blockRepetition) const
+	{
+		return ptr[getPositionFFTShift(blockRepetition)];
+	}
+
+	/**
+	\brief Access the underlying data directly, at the current inverse fftshift coordinates.
+	\param blockRepetition The number of block repetitions.
+	\return A reference to the data at the current inverse fftshift coordinates.
+	**/
+	template<typename T, Location l>
+	__device__ inline T& Accessor<T,l>::dataFFTInverseShift(dim3 blockRepetition) const
+	{
+		return ptr[getPositionFFTInverseShift(blockRepetition)];
 	}
 	#endif
 

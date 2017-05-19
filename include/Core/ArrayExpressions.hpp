@@ -386,9 +386,26 @@ namespace Kartet
 		index_t i = array.getI(),
 			j = array.getJ(),
 			k = array.getK();
-
 		if(array.isInside(i, j, k))
 			array.data() = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
+	}
+
+	template<typename T, Location l, typename TExpr>
+	__global__ void evaluateExpressionRepeat(const Accessor<T,l> array, const TExpr expr, const dim3 blockRepetition)
+	{
+		const index_t 	ib = array.getI(blockRepetition),
+				jb = array.getJ(blockRepetition),
+				kb = array.getK(blockRepetition);
+		for(index_t kd=0; kd<blockRepetition.z; kd++)
+			for(index_t jd=0; jd<blockRepetition.y; jd++)
+				for(index_t id=0; id<blockRepetition.x; id++)
+				{
+					index_t i = ib + id*blockDim.x,
+						j = jb + jd*blockDim.y,
+						k = kb + kd*blockDim.z;
+					if(array.isInside(i, j, k)) // Costs 20% perf.
+						array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
+				}
 	}
 #endif
 
@@ -421,13 +438,35 @@ namespace Kartet
 		index_t i = array.getI(),
 			j = array.getJ(),
 			k = array.getK();
-
 		if(array.isInside(i, j, k))
 		{
 			const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
 			if(test)
 				array.data() = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
 		}
+	}
+
+	template<typename T, typename TExprMask, typename TExpr>
+	__global__ void evaluateExpressionWithMaskRepeat(const Accessor<T> array, const TExprMask exprMask, const TExpr expr, const dim3 blockRepetition)
+	{
+		typedef typename ExpressionEvaluation<TExprMask>::ReturnType MaskType;
+		const index_t 	ib = array.getI(blockRepetition),
+				jb = array.getJ(blockRepetition),
+				kb = array.getK(blockRepetition);
+		for(index_t kd=0; kd<blockRepetition.z; kd++)
+			for(index_t jd=0; jd<blockRepetition.y; jd++)
+				for(index_t id=0; id<blockRepetition.x; id++)
+				{
+					index_t i = ib + id*blockDim.x,
+						j = jb + jd*blockDim.y,
+						k = kb + kd*blockDim.z;
+					if(array.isInside(i, j, k))
+					{
+						const MaskType test = ExpressionEvaluation<TExprMask>::evaluate(exprMask, array, i, j, k);
+						if(test)
+							array.data(i, j, k) = ExpressionEvaluation<TExpr>::evaluate(expr, array, i, j, k);
+					}
+				}
 	}
 #endif
 

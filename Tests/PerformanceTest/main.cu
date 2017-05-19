@@ -54,7 +54,6 @@ namespace thrust
 	THRUST_UNARY_FUNCTION(uasin,	asin(x))
 	THRUST_UNARY_FUNCTION(uatan,	atan(x))
 	THRUST_UNARY_FUNCTION(uextra,	sqrt(exp(tan(cos(sin(x))))))
-
 	#undef THRUST_UNARY_FUNCTION
 
 	#define THRUST_BINARY_FUNCTION(NAME, RESULT) \
@@ -74,22 +73,7 @@ namespace thrust
 	THRUST_BINARY_FUNCTION(basin,	asin(x+y))
 	THRUST_BINARY_FUNCTION(batan,	atan(x+y))
 	THRUST_BINARY_FUNCTION(bextra,	sqrt(exp(tan(cos(sin(x+y))))))
-
 	#undef THRUST_BINARY_FUNCTION
-}
-
-STANDARD_UNARY_OPERATOR_DEFINITION(mySinObj, mySin, return sin(a); )
-
-template<typename T>
-__global__ void mySinFun(const Kartet::Accessor<T> acc)
-{
-	const Kartet::index_t k = threadIdx.x;//acc.getIndex();
-	acc.data(k) = sin(acc.data(k));
-}
-
-__global__ void mySinFun2(float* data)
-{
-	data[threadIdx.x] = sin(data[threadIdx.x]);
 }
 
 int main(int argc, char** argv)
@@ -157,7 +141,7 @@ int main(int argc, char** argv)
 		timer.start();
 		timer.stop();
 
-		/*// Test :
+		// Test :
 		timer.start();
 		for(int l=0; l<L; l++)
 			A = A+B;
@@ -172,13 +156,12 @@ int main(int argc, char** argv)
 		timer.start();
 		for(int l=0; l<L; l++)
 			thrust::transform(devPtrA, devPtrA + A.numElements(), devPtrB, devPtrB, thrust::plus<T>());
-			//thrust::transform(devPtrA, devPtrA + A.numElements(), devPtrA, thrust::tsin<T>());
 		timer.stop();
 		t = timer.getElapsedTime_s();
 		std::cout << "[THRUST] Addition : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 
 		// Tests :
 		#define TEST_UNARY_EXPRESSION(TITLE, EXPRESSION, THRUST_EXPRESSION) \
@@ -216,11 +199,6 @@ int main(int argc, char** argv)
 		TEST_UNARY_EXPRESSION("[Unary] Asin(x) : ",	A = asin(A),	uasin)
 		TEST_UNARY_EXPRESSION("[Unary] Atan(x) : ",	A = atan(A),	uatan)
 		TEST_UNARY_EXPRESSION("[Unary] Extra(x) : ",	A = sqrt(exp(tan(cos(sin(A))))), uextra)
-
-		/*TEST_UNARY_EXPRESSION("TEST #1 : ", A = mySin(B), usin)
-		TEST_UNARY_EXPRESSION("TEST #2 : ", mySinFun COMPUTE_LAYOUT(A) (A), usin)
-		TEST_UNARY_EXPRESSION("TEST #3 : ", mySinFun2 COMPUTE_LAYOUT(A) (A.dataPtr()), usin)*/
-
 		#undef TEST_UNARY_EXPRESSION
 
 		#define TEST_BINARY_EXPRESSION(TITLE, EXPRESSION, THRUST_EXPRESSION) \
@@ -257,25 +235,14 @@ int main(int argc, char** argv)
 		TEST_BINARY_EXPRESSION("[Binary] Acos(x+y) : ",	A = acos(A+B),	bacos)
 		TEST_BINARY_EXPRESSION("[Binary] Asin(x+y) : ",	A = asin(A+B),	basin)
 		TEST_BINARY_EXPRESSION("[Binary] Atan(x+y) : ",	A = atan(A+B),	batan)
-		TEST_BINARY_EXPRESSION("[Binary] Sin(x+y) : ",	A = mySin(A+B),	bsin)
 		TEST_BINARY_EXPRESSION("[Binary] Extra(x+y) : ",A = sqrt(exp(tan(cos(sin(A+B))))), bextra)
-
 		#undef TEST_BINARY_EXPRESSION
 
-		// Test :
-		//timer.start();
-		//for(int l=0; l<L; l++)
-		//	A = exp(cos(sin(A*l+B)));
-		//timer.stop();
-		//t = timer.getElapsedTime_s();
-		//std::cout << "Expression : " << std::endl;
-		//std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
-		//std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
-		//std::cout << std::endl;
-
 		// Test :	
-		/*v = 0.0;
+		v = 0.0;
 		A = 1;
+		A = Kartet::IndexI() + Kartet::IndexJ();
+		A.writeToFile("tmp.dat");
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += reduceContext.sum(A);
@@ -288,6 +255,7 @@ int main(int argc, char** argv)
 
 		// Against Thrust :
 		v = 0.0;
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += thrust::reduce(devPtrA, devPtrA + A.numElements(), 0.0, thrust::plus<T>());
@@ -300,6 +268,7 @@ int main(int argc, char** argv)
 
 		// Test :
 		v = 0.0;
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += reduceContext.sum(A.layout(), A*l);
@@ -312,6 +281,7 @@ int main(int argc, char** argv)
 
 		// Against Thrust :
 		v = 0.0;
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
@@ -326,6 +296,7 @@ int main(int argc, char** argv)
 		std::cout << std::endl;
 
 		// Test :
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 			reduceContext.sumBlock(A.layout(), A*A, C);
@@ -337,6 +308,7 @@ int main(int argc, char** argv)
 		std::cout << std::endl;
 
 		// Against BLAS (1) :
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
@@ -351,6 +323,7 @@ int main(int argc, char** argv)
 		std::cout << std::endl;
 
 		// Against BLAS (2) :
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
@@ -365,6 +338,7 @@ int main(int argc, char** argv)
 		std::cout << std::endl;
 
 		// Against Thrust :
+		A = Kartet::IndexI() + Kartet::IndexJ();
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
@@ -379,7 +353,7 @@ int main(int argc, char** argv)
 		std::cout << "[THRUST] Expression Reduction multi-sum : " << std::endl;
 		std::cout << "Elapsed time         : " << (t/L) << " second(s)" << std::endl;
 		std::cout << "Cumulative bandwidth : " << (L*3.0*A.size())/(GB*t) << " GB/s" << std::endl;
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 	}
 	catch(const Kartet::Exception& e)
 	{

@@ -55,24 +55,29 @@ namespace Kartet
 		#ifndef __CUDACC__
 			UNUSED_PARAMETER(stream)
 		#endif
-
 		// Make sure we are not computing complex numbers to store in a real array :
 		STATIC_ASSERT_VERBOSE(!Traits<typename ExpressionEvaluation<TExpr>::ReturnType>::isComplex || Traits<T>::isComplex, RHS_IS_COMPLEX_BUT_LHS_IS_NOT)
 		// Make sure the expression is on the same side :
 		STATIC_ASSERT_VERBOSE(ExpressionEvaluation<TExpr>::location==l || ExpressionEvaluation<TExpr>::location==Kartet::AnySide, LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
-
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, expr);
-
+				if(sizeof(typename ExpressionEvaluation<TExpr>::ReturnType)<=sizeof(float))
+				{
+					// With repetition (better for single precision) :
+					dim3 blockSize, numBlocks, blockRepetition;
+					computeLayout(blockSize, numBlocks, blockRepetition);
+					evaluateExpressionRepeat <<<numBlocks, blockSize, 0, stream>>> (*this, expr, blockRepetition);
+				}
+				else // Without repetition (better for double precision) :
+					evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, expr);
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
 			#else
 				throw NotSupported;
 			#endif
-		}		
+		}
 		else
 			evaluateExpressionOverLayout(*this, expr);
 
@@ -91,12 +96,18 @@ namespace Kartet
 		#ifndef __CUDACC__
 			UNUSED_PARAMETER(stream)
 		#endif
-
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, a);
-	
+				if(sizeof(typename ExpressionEvaluation<T>::ReturnType)<=sizeof(float))
+				{
+					// With repetition (better for single precision) :
+					dim3 blockSize, numBlocks, blockRepetition;
+					computeLayout(blockSize, numBlocks, blockRepetition);
+					evaluateExpressionRepeat <<<numBlocks, blockSize, 0, stream>>> (*this, a, blockRepetition);
+				}
+				else // Without repetition (better for double precision) :
+					evaluateExpression COMPUTE_LAYOUT_STREAM(*this, stream) (*this, a);
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)
 					throw static_cast<Exception>(CudaExceptionsOffset + err);
@@ -161,7 +172,6 @@ namespace Kartet
 		#ifdef __CUDACC__
 			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, stream);
 			dualScan(*this, dataPtr(), a, a.dataPtr(), op);
-			
 			return *this;
 		#else
 			throw NotSupported;
@@ -434,7 +444,15 @@ namespace Kartet
 		if(l==DeviceSide)
 		{
 			#ifdef __CUDACC__
-				evaluateExpressionWithMask COMPUTE_LAYOUT_STREAM(*this, stream) (*this, exprMask, expr);
+				if(sizeof(typename ExpressionEvaluation<TExprMask>::ReturnType)<=sizeof(float) && sizeof(typename ExpressionEvaluation<TExpr>::ReturnType)<=sizeof(float))
+				{
+					// With repetition (better for single precision) :
+					dim3 blockSize, numBlocks, blockRepetition;
+					computeLayout(blockSize, numBlocks, blockRepetition);
+					evaluateExpressionWithMaskRepeat <<<numBlocks, blockSize, 0, stream>>> (*this, exprMask, expr, blockRepetition);
+				}
+				else // Without repetition (better for double precision) :
+					evaluateExpressionWithMask COMPUTE_LAYOUT_STREAM(*this, stream) (*this, exprMask, expr);
 
 				cudaError_t err = cudaGetLastError();
 				if(err!=cudaSuccess)
@@ -452,7 +470,7 @@ namespace Kartet
 // Standard operators tool :
 	/*
 		Given types cannot be expressions.
-		To change arity, set type of ith argument to void.
+		To change arity, set the type of the i'th argument to void.
 	*/
 	template<typename T1, typename T2, typename T3, bool preferComplexOutput, bool preferRealOutput, bool inputMustBeComplex, bool inputMustBeReal, typename forceReturnType, typename enforceT1, typename enforceT2, typename enforceT3>
 	struct StandardOperatorTypeToolbox

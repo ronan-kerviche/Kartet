@@ -189,7 +189,8 @@ namespace Kartet
 						warpSize,
 						maxXThreads,
 						maxYThreads,
-						maxZThreads;
+						maxZThreads,
+						maxBlockRepetition;
 				static const char streamHeader[];
 				static size_t streamHeaderLength();
 			};
@@ -241,6 +242,9 @@ namespace Kartet
 			static		 __device__ inline index_t getI(void);
 			static 		 __device__ inline index_t getJ(void);
 			static		 __device__ inline index_t getK(void);
+			static		 __device__ inline index_t getI(dim3 blockRepetition);
+			static 		 __device__ inline index_t getJ(dim3 blockRepetition);
+			static		 __device__ inline index_t getK(dim3 blockRepetition);
 			#endif
 					template<typename TOut>
 				__host__ __device__ inline TOut getINorm(index_t i) const; // exclusive, from 0 to 1, (1 NOT INCLUDED)
@@ -254,7 +258,13 @@ namespace Kartet
 					template<typename TOut>
 					 __device__ inline TOut getJNorm(void) const; // exclusive
 					template<typename TOut>
-					 __device__ inline TOut getKNorm(void) const; // exclusive 
+					 __device__ inline TOut getKNorm(void) const; // exclusive
+					template<typename TOut>
+					 __device__ inline TOut getINorm(dim3 blockRepetition) const; // exclusive
+					template<typename TOut>
+					 __device__ inline TOut getJNorm(dim3 blockRepetition) const; // exclusive
+					template<typename TOut>
+					 __device__ inline TOut getKNorm(dim3 blockRepetitio) const; // exclusive
 			#endif
 					 template<typename TOut>
 				__host__ __device__ inline TOut getINormIncl(index_t i) const; // inclusive
@@ -269,6 +279,12 @@ namespace Kartet
 					 __device__ inline TOut getJNormIncl(void) const; // inclusive
 					template<typename TOut>
 					 __device__ inline TOut getKNormIncl(void) const; // inclusive
+					template<typename TOut>
+					 __device__ inline TOut getINormIncl(dim3 blockRepetition) const; // inclusive
+					template<typename TOut>
+					 __device__ inline TOut getJNormIncl(dim3 blockRepetition) const; // inclusive
+					template<typename TOut>
+					 __device__ inline TOut getKNormIncl(dim3 blockRepetition) const; // inclusive
 			#endif
 				__host__ __device__ inline index_t getIClamped(index_t i) const;
 				__host__ __device__ inline index_t getJClamped(index_t j) const;
@@ -281,6 +297,8 @@ namespace Kartet
 			#ifdef __CUDACC__
 					 __device__ inline index_t getIndex(void) const;
 					 __device__ inline index_t getPosition(void) const;
+					 __device__ inline index_t getIndex(dim3 repetition) const;
+					 __device__ inline index_t getPosition(dim3 repetition) const;
 			#endif
 				__host__ __device__ inline index_t getPositionFFTShift(index_t& i, index_t& j, index_t& k) const;
 				__host__ __device__ inline index_t getPositionFFTInverseShift(index_t& i, index_t& j, index_t& k) const;
@@ -289,10 +307,13 @@ namespace Kartet
 			#ifdef __CUDACC__
 					 __device__ inline index_t getPositionFFTShift(void) const;
 					 __device__ inline index_t getPositionFFTInverseShift(void) const;
+					 __device__ inline index_t getPositionFFTShift(dim3 blockRepetition) const;
+					 __device__ inline index_t getPositionFFTInverseShift(dim3 blockRepetition) const;
 			#endif
 				__host__ __device__ inline bool isInside(index_t i, index_t j, index_t k=0) const;	
 			#ifdef __CUDACC__
 					 __device__ inline bool isInside(void) const;
+					 __device__ inline bool isInside(dim3 blockRepetition) const;
 			#endif
 				__host__ __device__ inline bool isRowValid(index_t i) const;
 				__host__ __device__ inline bool isColumnValid(index_t j) const;
@@ -309,6 +330,9 @@ namespace Kartet
 				template<ComputeLayout cl>
 				__host__	    inline dim3 numBlocks(void) const;
 				__host__ 	    inline dim3 numBlocks(void) const;
+				template<ComputeLayout cl>
+				__host__	    inline void computeLayout(dim3& blockSize, dim3& numBlocks, dim3& repeatBlock) const;
+				__host__	    inline void computeLayout(dim3& blockSize, dim3& numBlocks, dim3& repeatBlock) const;
 				__host__	    inline Layout columnLayout(const bool& includeSlices=false) const;
 				__host__	    inline Layout sliceLayout(void) const;
 				__host__	    inline Layout monolithicLayout(void) const;
@@ -392,6 +416,14 @@ namespace Kartet
 	**/
 	template<typename T>
 	index_t Layout::StaticContainer<T>::maxZThreads = 64; // For some reason, CUDA allows less threads in the Z direction, operations on native arrays with only X-Z or Y-Z dimensions will be somewhat slower
+
+	/**
+	\var Layout::StaticContainer<T>::maxBlockRepetition
+	\related Kartet::Layout
+	\brief Maximum number of block repetitions.
+	**/
+	template<typename T>
+	index_t Layout::StaticContainer<T>::maxBlockRepetition = 64;
 
 	/**
 	\var Layout::StaticContainer<void>::streamHeader
@@ -515,6 +547,11 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 					 __device__ inline T& dataInSlice(int k) const;
 					 __device__ inline T& dataFFTShift(void) const;
 					 __device__ inline T& dataFFTInverseShift(void) const;
+					 __device__ inline T& data(dim3 blockRepetition) const;
+					 __device__ inline T& dataInSlice(int k, dim3 blockRepetition) const;
+					 __device__ inline T& dataFFTShift(dim3 blockRepetition) const;
+					 __device__ inline T& dataFFTInverseShift(dim3 blockRepetition) const;
+
 				#endif
 				__host__                   T* getData(void) const;
 				__host__                   void getData(T* ptr, const Location lout=HostSide) const;
@@ -598,7 +635,6 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 				ACCESSOR_COMPOUND_ASSIGNMENT( operator^= )
 				ACCESSOR_COMPOUND_ASSIGNMENT( operator<<= )
 				ACCESSOR_COMPOUND_ASSIGNMENT( operator>>= )
-
 				#undef ACCESSOR_COMPOUND_ASSIGNMENT
 
 			// Masked assignment : 
