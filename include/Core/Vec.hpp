@@ -292,6 +292,7 @@ namespace Kartet
 	}
 }
 
+// For builtin types :
 	// Tools :
 	#ifdef __CUDACC__
 		#define NORMALIZE(a) (a*::rsqrtf(normSquared(a)))
