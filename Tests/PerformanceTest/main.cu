@@ -89,11 +89,17 @@ int main(int argc, char** argv)
 	{
 		// Select the device from the arguments ?
 		int 	deviceId = 0,
+			numThreads = 512,
+			maxBlockRepetition = 64,
 			numSamples = 32;
 		std::map<const char, int*> arguments;
 		std::map<const char, std::string> argumentsHelp;
 		arguments['d'] = &deviceId;
 		argumentsHelp['d'] = "Target device Id, per nvidia-smi indexing.";
+		arguments['t'] = &numThreads;
+		argumentsHelp['t'] = "Number of threads per block (~512).";
+		arguments['r'] = &maxBlockRepetition;
+		argumentsHelp['r'] = "Number of block repetition (~64).";
 		arguments['l'] = &numSamples;
 		argumentsHelp['l'] = "Number of samples, for the average.";
 		if(!getArgs(argc, argv, arguments, argumentsHelp))
@@ -111,8 +117,10 @@ int main(int argc, char** argv)
 
 		// Start here :
 		Kartet::initialize();
-		Kartet::Layout::StaticContainer<void>::numThreads = 512;
-		Kartet::Layout::StaticContainer<void>::maxBlockRepetition = 64;
+		Kartet::Layout::StaticContainer<void>::numThreads = numThreads;
+		Kartet::Layout::StaticContainer<void>::maxBlockRepetition = maxBlockRepetition;
+		std::cout << "Number of threads per block : " << numThreads << std::endl;
+		std::cout << "Number of block repetitions : " << maxBlockRepetition << std::endl;
 
 		CuTimer timer;
 		Kartet::BLASContext blasContext;

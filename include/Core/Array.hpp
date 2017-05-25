@@ -360,7 +360,7 @@ namespace Kartet
 	\related Kartet::Layout
 	\brief Number of CUDA threads per block (global setting).
 
-	Number of threads per block can be changed as follow : 
+	Number of threads per block can be changed as follow :
 	\code
 	Kartet::Layout::StaticContainer<void>::numThreads = 512;
 	\endcode
@@ -421,6 +421,12 @@ namespace Kartet
 	\var Layout::StaticContainer<T>::maxBlockRepetition
 	\related Kartet::Layout
 	\brief Maximum number of block repetitions.
+
+	Number of threads per block can be changed as follow :
+	\code
+	Kartet::Layout::StaticContainer<void>::maxBlockRepetition = 64;
+	\endcode
+
 	**/
 	template<typename T>
 	index_t Layout::StaticContainer<T>::maxBlockRepetition = 64;

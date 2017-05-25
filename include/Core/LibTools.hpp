@@ -37,10 +37,14 @@
 #define __KARTET_LIBRARY_TOOLS__
 
 	#define UNUSED_PARAMETER(x) (void)(x);
-	#define K_PI  (3.14159265358979323846)
-	#define K_2PI (6.28318530717958647692)
-	#define K_L10 (2.30258509299404568401)
-	#define K_L2  (0.69314718055994530941)
+	#define K_PI	(3.14159265358979323846)
+	#define K_PIf	(3.14159265358979323846f)
+	#define K_2PI	(6.28318530717958647692)
+	#define K_2PIf	(6.28318530717958647692f)
+	#define K_L10	(2.30258509299404568401)
+	#define K_L10f	(2.30258509299404568401f)
+	#define K_L2	(0.69314718055994530941)
+	#define K_L2f	(0.69314718055994530941f)
 
 	// Alignment :
 	#if defined(__GNUC__)
@@ -50,6 +54,21 @@
 	#else
 		#warning "Kartet structures alignment not enforced."
 		#define KARTET_ALIGN(b)
+	#endif
+
+	// Anonymous structures support :
+	#if defined(__GNUC__) && !defined( __STRICT_ANSI__ )
+		#define KARTET_SUPPORTS_ANON_STRUCT 1
+		#define KARTET_ANON_STRUCT __extension__
+	#elif defined(_WIN32) && (_MSC_VER>=1500)
+		// Microsoft Developer Studio 2008 supports anonymous structs, but complains by default.
+		#define KARTET_SUPPORTS_ANON_STRUCT 1
+		#define KARTET_ANON_STRUCT
+		#pragma warning( push )
+		#pragma warning( disable : 4201 )
+	#else
+		#define KARTET_SUPPORTS_ANON_STRUCT 0
+		#define KARTET_ANON_STRUCT
 	#endif
 
 	#ifdef __CUDACC__

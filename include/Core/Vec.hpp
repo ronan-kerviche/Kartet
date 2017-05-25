@@ -38,8 +38,6 @@
 
 	#include "Core/LibTools.hpp"
 
-//namespace Kartet
-//{
 	// Tools :
 	#ifdef __CUDACC__
 		#define NORMALIZE(a) (a*::rsqrtf(normSquared(a)))
@@ -376,8 +374,8 @@
 		VEC3_TOOLS_UNSIGNED(	UChar,		uchar3,		unsigned char,	::sqrtf)
 		VEC3_TOOLS_SIGNED(	Short,		short3, 	short,		::sqrtf)
 		VEC3_TOOLS_UNSIGNED(	UShort,		ushort3,	unsigned short,	::sqrtf)
-		VEC3_TOOLS_SIGNED(	Int,		int3,		int,		::sqrtf)
-		VEC3_TOOLS_UNSIGNED(	UInt,		uint3,		unsigned int,	::sqrtf)
+		VEC3_TOOLS_SIGNED(	Int,		int3,		int,		::sqrt)
+		VEC3_TOOLS_UNSIGNED(	UInt,		uint3,		unsigned int,	::sqrt)
 		VEC3_TOOLS_SIGNED(	Float,		float3, 	float,		::sqrtf)
 		VEC3_TOOLS_SIGNED(	Double,		double3,	double,		::sqrt)
 
@@ -386,7 +384,7 @@
 	#undef VEC3_TOOLS
 
 	#define VEC4_TOOLS(NAME, T, TBase, SQRTFUN) \
-		__host__ __device__ inline T make##NAME##3(const TBase& x, const TBase& y, const TBase& z, const TBase& w) \
+		__host__ __device__ inline T make##NAME##4(const TBase& x, const TBase& y, const TBase& z, const TBase& w) \
 		{ \
 			T c; \
 			c.x = x; \
@@ -575,7 +573,6 @@
 	#undef VEC4_TOOLS_UNSIGNED
 	#undef VEC4_TOOLS_SIGNED
 	#undef VEC4_TOOLS
-//}
 
 #endif
 
