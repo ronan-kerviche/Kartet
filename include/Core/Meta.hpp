@@ -115,6 +115,215 @@ namespace Kartet
 	{
 		static const bool value = true;
 	};
+
+		// Loop Unrolling via metaprogramming :
+	template<int d, int k=0>
+	struct ForLoop
+	{
+		template<typename TOp>
+		__host__ __device__ static inline void run(TOp& op)
+		{
+			op.apply(k);
+			ForLoop<d, k+1>::run(op);
+		}
+
+		template<typename TOp>
+		__host__ __device__ static inline typename TOp::TResult sum(TOp& op)
+		{
+			return op.applySoft(k) + ForLoop<d, k+1>::sum(op);
+		}
+	};
+
+	template<int d>
+	struct ForLoop<d, d> // Stop condition.
+	{
+		template<typename TOp>
+		__host__ __device__ static inline void run(TOp&)
+		{ }
+
+		template<typename TOp>
+		__host__ __device__ static inline typename TOp::TResult sum(TOp&)
+		{
+			return static_cast<typename TOp::TResult>(0);
+		}
+	};
+
+	#define META_UNARY_OPERATOR(NAME, ...) \
+		template<typename B, typename A> \
+		struct MetaUnary##NAME \
+		{ \
+			typedef B TResult; \
+			B	*pb; \
+			const A	*pa; \
+			__host__ __device__ inline MetaUnary##NAME(B* _pb, const A* _pa) \
+			 : 	pb(_pb), \
+				pa(_pa) \
+			{ } \
+			__host__ __device__ inline void apply(const int& k) \
+			{ \
+				pb[k] = operate(pa[k]); \
+			} \
+			__host__ __device__ inline B applySoft(const int& k) \
+			{ \
+				return operate(pa[k]); \
+			} \
+			__host__ __device__ static inline B operate(const A& a) \
+			{ \
+				return static_cast<B>(__VA_ARGS__); \
+			} \
+		}; \
+		template<typename B, typename A> \
+		struct MetaUnary##NAME##Right \
+		{ \
+			typedef B TResult; \
+			B	*pb; \
+			const A	pa; \
+			__host__ __device__ inline MetaUnary##NAME##Right(B* _pb, const A& _pa) \
+			 : 	pb(_pb), \
+				pa(_pa) \
+			{ } \
+			__host__ __device__ inline void apply(const int& k) \
+			{ \
+				pb[k] = operate(pa); \
+			} \
+			__host__ __device__ inline B applySoft(const int&) \
+			{ \
+				return operate(pa); \
+			} \
+			__host__ __device__ static inline B operate(const A& a) \
+			{ \
+				return static_cast<B>(__VA_ARGS__); \
+			} \
+		}; \
+		template<int d, typename B, typename A> \
+		__host__ __device__ inline void metaUnary##NAME(B* pb, const A* pa) \
+		{ \
+			MetaUnary##NAME<B, A> op(pb, pa); \
+			ForLoop<d>::run(op); \
+		} \
+		template<int d, typename B, typename A> \
+		__host__ __device__ inline void metaUnary##NAME(B* pb, const A& pa) \
+		{ \
+			MetaUnary##NAME##Right<B, A> op(pb, pa); \
+			ForLoop<d>::run(op); \
+		} \
+		template<int d, typename A> \
+		__host__ __device__ inline typename MetaUnary##NAME<A, A>::TResult metaUnary##NAME##Sum(const A* pa) \
+		{ \
+			MetaUnary##NAME<A, A> op(NULL, pa); \
+			return ForLoop<d>::sum(op); \
+		}
+
+	#define META_BINARY_OPERATOR(NAME, ...) \
+		template<typename C, typename A, typename B> \
+		struct MetaBinary##NAME \
+		{ \
+			typedef C TResult; \
+			C	*pc; \
+			const A	*pa; \
+			const B	*pb; \
+			__host__ __device__ inline MetaBinary##NAME(C* _pc, const A* _pa, const B* _pb) \
+			 : 	pc(_pc), \
+				pa(_pa), \
+				pb(_pb) \
+			{ } \
+			__host__ __device__ inline void apply(const int& k) \
+			{ \
+				pc[k] = operate(pa[k], pb[k]); \
+			} \
+			__host__ __device__ inline C applySoft(const int& k) \
+			{ \
+				return operate(pa[k], pb[k]); \
+			} \
+			__host__ __device__ static inline C operate(const A& a, const B& b) \
+			{ \
+				return static_cast<C>(__VA_ARGS__); \
+			} \
+		}; \
+		template<typename C, typename A, typename B> \
+		struct MetaBinary##NAME##Left \
+		{ \
+			typedef C TResult; \
+			C	*pc; \
+			const A	pa; \
+			const B	*pb; \
+			__host__ __device__ inline MetaBinary##NAME##Left(C* _pc, const A& _pa, const B* _pb) \
+			 : 	pc(_pc), \
+				pa(_pa), \
+				pb(_pb) \
+			{ } \
+			__host__ __device__ inline void apply(const int& k) \
+			{ \
+				pc[k] = operate(pa, pb[k]); \
+			} \
+			__host__ __device__ inline C applySoft(const int& k) \
+			{ \
+				return operate(pa, pb[k]); \
+			} \
+			__host__ __device__ static inline C operate(const A& a, const B& b) \
+			{ \
+				return static_cast<C>(__VA_ARGS__); \
+			} \
+		}; \
+		template<typename C, typename A, typename B> \
+		struct MetaBinary##NAME##Right \
+		{ \
+			typedef C TResult; \
+			C	*pc; \
+			const A	*pa; \
+			const B	pb; \
+			__host__ __device__ inline MetaBinary##NAME##Right(C* _pc, const A* _pa, const B& _pb) \
+			 : 	pc(_pc), \
+				pa(_pa), \
+				pb(_pb) \
+			{ } \
+			__host__ __device__ inline void apply(const int& k) \
+			{ \
+				pc[k] = operate(pa[k], pb); \
+			} \
+			__host__ __device__ inline C applySoft(const int& k) \
+			{ \
+				return operate(pa[k], pb); \
+			} \
+			__host__ __device__ static inline C operate(const A& a, const B& b) \
+			{ \
+				return static_cast<C>(__VA_ARGS__); \
+			} \
+		}; \
+		template<int d, typename C, typename A, typename B> \
+		__host__ __device__ inline void metaBinary##NAME(C* pc, const A* pa, const B* pb) \
+		{ \
+			MetaBinary##NAME<C, A, B> op(pc, pa, pb); \
+			ForLoop<d>::run(op); \
+		} \
+		template<int d, typename C, typename A, typename B> \
+		__host__ __device__ inline void metaBinary##NAME(C* pc, const A& pa, const B* pb) \
+		{ \
+			MetaBinary##NAME##Left<C, A, B> op(pc, pa, pb); \
+			ForLoop<d>::run(op); \
+		} \
+		template<int d, typename C, typename A, typename B> \
+		__host__ __device__ inline void metaBinary##NAME(C* pc, const A* pa, const B& pb) \
+		{ \
+			MetaBinary##NAME##Right<C, A, B> op(pc, pa, pb); \
+			ForLoop<d>::run(op); \
+		} \
+		template<int d, typename C, typename A, typename B> \
+		__host__ __device__ inline typename MetaBinary##NAME<C, A, B>::TResult metaBinary##NAME##Sum(const A* pa, const B* pb) \
+		{ \
+			MetaBinary##NAME<C, A, B> op(NULL, pa, pb); \
+			return ForLoop<d>::sum(op); \
+		}
+
+	META_UNARY_OPERATOR(Equal, a)
+	META_UNARY_OPERATOR(Square, a*a)
+	META_BINARY_OPERATOR(Plus, a+b)
+	META_BINARY_OPERATOR(Minus, a-b)
+	META_BINARY_OPERATOR(Product, a*b)
+	META_BINARY_OPERATOR(Quotient, a/b)
+
+	#undef META_UNARY_OPERATOR
+	#undef META_BINARY_OPERATOR
 }
 
 #endif

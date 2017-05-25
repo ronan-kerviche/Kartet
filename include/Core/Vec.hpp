@@ -37,6 +37,260 @@
 #define __KARTET_VECTOR_MATHS_TOOLS__
 
 	#include "Core/LibTools.hpp"
+	#include "Core/Meta.hpp"
+
+namespace Kartet
+{
+	template<int d, typename T>
+	struct Vec
+	{
+		STATIC_ASSERT_VERBOSE(d>1, INVALID_DIMENSION)
+		typedef T BaseType;
+		static const int dim = d;
+		T m[d];
+
+		__host__ __device__ inline Vec(void);
+		__host__ __device__ inline Vec(const T& val);
+		__host__ __device__ inline Vec(const Vec<d, T>& c);
+		template<typename U>
+		__host__ __device__ inline Vec(const Vec<d, U>& c);
+		template<typename U>
+		__host__ __device__ inline Vec(const U* ptr);
+
+		__host__ __device__ inline const T& x(void) const;
+		__host__ __device__ inline T& x(void);
+		__host__ __device__ inline const T& y(void) const;
+		__host__ __device__ inline T& y(void);
+		__host__ __device__ inline const T& z(void) const;
+		__host__ __device__ inline T& z(void);
+		__host__ __device__ inline const T& w(void) const;
+		__host__ __device__ inline T& w(void);
+
+		__host__ __device__ inline const Vec<d,T>& operator=(const Vec<d, T>& c);
+		template<typename U>
+		__host__ __device__ inline const Vec<d,T>& operator=(const Vec<d, U>& c);
+		__host__ __device__ inline const Vec<d,T>& clear(const T& val);
+	};
+
+	// Functions :
+	template<int d, typename T>
+	__host__ __device__ inline Vec<d,T>::Vec(void)
+	{ } // Leave unitialized.
+
+	template<int d, typename T>
+	__host__ __device__ inline Vec<d,T>::Vec(const T& val)
+	{
+		clear(val);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline Vec<d,T>::Vec(const Vec<d,T>& c)
+	{
+		metaUnaryEqual<d>(m, c.m);
+	}
+
+	template<int d, typename T>
+	template<typename U>
+	__host__ __device__ inline Vec<d,T>::Vec(const Vec<d,U>& c)
+	{
+		metaUnaryEqual<d>(m, c.m);
+	}
+
+	template<int d, typename T>
+	template<typename U>
+	__host__ __device__ inline Vec<d,T>::Vec(const U* ptr)
+	{
+		metaUnaryEqual<d>(m, ptr);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const T& Vec<d,T>::x(void) const
+	{
+		return m[0];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T& Vec<d,T>::x(void)
+	{
+		return m[0];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const T& Vec<d,T>::y(void) const
+	{
+		return m[1];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T& Vec<d,T>::y(void)
+	{
+		return m[1];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const T& Vec<d,T>::z(void) const
+	{
+		STATIC_ASSERT_VERBOSE(d>2, INVALID_DIMENSION)
+		return m[2];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T& Vec<d,T>::z(void)
+	{
+		STATIC_ASSERT_VERBOSE(d>2, INVALID_DIMENSION)
+		return m[2];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const T& Vec<d,T>::w(void) const
+	{
+		STATIC_ASSERT_VERBOSE(d>3, INVALID_DIMENSION)
+		return m[3];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T& Vec<d,T>::w(void)
+	{
+		STATIC_ASSERT_VERBOSE(d>3, INVALID_DIMENSION)
+		return m[3];
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const Vec<d,T>& Vec<d,T>::operator=(const Vec<d,T>& c)
+	{
+		metaUnaryEqual<d>(this->m, c.m);
+		return (*this);
+	}
+
+	template<int d, typename T>
+	template<typename U>
+	__host__ __device__ inline const Vec<d,T>& Vec<d,T>::operator=(const Vec<d,U>& c)
+	{
+		metaUnaryEqual<d>(this->m, c.m);
+		return (*this);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline const Vec<d,T>& Vec<d,T>::clear(const T& val)
+	{
+		metaUnaryEqual<d>(this->m, val);
+		return (*this);
+	}
+
+	// Non-members :
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> operator+(const Vec<d,T>& a, const Vec<d,U>& b)
+	{
+		Vec<d,typename ResultingType<T,U>::Type> r;
+		metaBinaryPlus<d>(r.m, a.m, b.m);
+		return r;
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> operator-(const Vec<d,T>& a, const Vec<d,U>& b)
+	{
+		Vec<d,typename ResultingType<T,U>::Type> r;
+		metaBinaryMinus<d>(r.m, a.m, b.m);
+		return r;
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> operator*(const Vec<d,T>& a, const U& b)
+	{
+		Vec<d,typename ResultingType<T,U>::Type> r;
+		metaBinaryProduct<d>(r.m, a.m, b.m);
+		return r;
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> operator*(const T& a, const Vec<d,U>& b)
+	{
+		Vec<d,typename ResultingType<T,U>::Type> r;
+		metaBinaryProduct<d>(r.m, a, b.m);
+		return r;
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> operator/(const Vec<d,T>& a, const U& b)
+	{
+		Vec<d,typename ResultingType<T,U>::Type> r;
+		metaBinaryQuotient<d>(r.m, a.m, b);
+		return r;
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline typename ResultingType<T,U>::Type dot(const Vec<d,T>& a, const Vec<d,U>& b)
+	{
+		return metaBinaryProductSum<d, typename ResultingType<T,U>::Type>(a.m, b.m);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T normSquared(const Vec<d,T>& v)
+	{
+		return metaUnarySquareSum<d>(v.m);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T lengthSquared(const Vec<d,T>& v) // alias normSquared
+	{
+		return metaUnarySquareSum<d>(v.m);
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T norm(const Vec<d,T>& v)
+	{
+		return ::sqrt(metaUnarySquareSum<d>(v.m));
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline T length(const Vec<d,T>& v) // alias norm
+	{
+		return ::sqrt(metaUnarySquareSum<d>(v.m));
+	}
+
+	template<int d, typename T>
+	__host__ __device__ inline Vec<d,T> normalize(const Vec<d,T>& v)
+	{
+		return v/norm(v);
+	}
+
+	template<int d, typename T, typename U>
+	__host__ __device__ inline Vec<d,typename ResultingType<T,U>::Type> reflect(const Vec<d,T>& dir, const Vec<d,U>& normal)
+	{
+		return dir - (static_cast<typename ResultingType<T,U>::Type>(2)*dot(dir, normal))*normal;
+	}
+
+	template<typename T, typename U>
+	__host__ __device__ inline Vec<3,typename ResultingType<T,U>::Type> cross(const Vec<3,T>& a, const Vec<3,U>& b)
+	{
+		Vec<3,typename ResultingType<T,U>::Type> c;
+		c.m[0] = a.m[1]*b.m[2]-a.m[2]*b.m[1];
+		c.m[1] = a.m[2]*b.m[0]-a.m[0]*b.m[2];
+		c.m[2] = a.m[0]*b.m[1]-a.m[1]*b.m[0];
+		return c;
+	}
+
+	template<int d, typename T>
+	__host__ std::ostream& operator<<(std::ostream& os, const Vec<d,T>& v)
+	{
+		const T zero = static_cast<T>(0),
+			minusZero = -static_cast<T>(0);
+		const bool flag = !(os.flags() & std::ios_base::showpos);
+		os << '(';
+		for(int k=0; k<(d-1); k++)
+		{
+			const bool f = (v.m[k]>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[k], minusZero));
+			if(flag && f)
+				os << ' ';
+			os << v.m[k] << ", ";
+		}
+		const bool f = (v.m[d-1]>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[d-1], minusZero));
+		if(flag && f)
+			os << ' ';
+		os << v.m[d-1] << ')';
+		return os;
+	}
+}
 
 	// Tools :
 	#ifdef __CUDACC__
