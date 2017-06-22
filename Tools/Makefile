@@ -123,7 +123,7 @@ NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs \
 			$(subst KARTET_USE_OMP, -fopenmp, $(findstring KARTET_USE_OMP,$(KARTET_OPTIONS))) \
 		   $(CC_EXTRA_FLAGS)
-NVCC_FLAGS	= $(CUDA_GENCODES) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)"
+NVCC_FLAGS	= $(CUDA_GENCODES) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)" -ccbin=$(HSCC)
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_LAPACK, -llapack, $(findstring KARTET_USE_LAPACK,$(KARTET_OPTIONS))) \
