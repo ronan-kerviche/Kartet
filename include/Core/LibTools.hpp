@@ -85,12 +85,12 @@
 		struct char2
 		{
 			char x, y;
-		} KARTET_ALIGN(2);
+		} /*KARTET_ALIGN(2)*/;
 
 		struct char3
 		{
 			char x, y, z;
-		} KARTET_ALIGN(4);
+		} /*KARTET_ALIGN(4)*/;
 
 		struct char4
 		{
@@ -105,7 +105,7 @@
 		struct uchar3
 		{
 			unsigned char x, y, z;
-		} KARTET_ALIGN(4);
+		} /*KARTET_ALIGN(4)*/;
 
 		struct uchar4
 		{
@@ -120,7 +120,7 @@
 		struct short3
 		{
 			short x, y, z;
-		} KARTET_ALIGN(8);
+		} /*KARTET_ALIGN(8)*/;
 
 		struct short4
 		{
@@ -135,7 +135,7 @@
 		struct ushort3
 		{
 			unsigned short x, y, z;
-		} KARTET_ALIGN(8);
+		} /*KARTET_ALIGN(8)*/;
 
 		struct ushort4
 		{
@@ -150,7 +150,7 @@
 		struct int3
 		{
 			int x, y, z;
-		} KARTET_ALIGN(16);
+		} /*KARTET_ALIGN(16)*/;
 
 		struct int4
 		{
@@ -165,7 +165,7 @@
 		struct uint3
 		{
 			unsigned int x, y, z;
-		} KARTET_ALIGN(16);
+		} /*KARTET_ALIGN(16)*/;
 
 		struct uint4
 		{
@@ -180,7 +180,7 @@
 		struct float3
 		{
 			float x, y, z;
-		} KARTET_ALIGN(16);
+		} /*KARTET_ALIGN(16)*/;
 
 		struct float4
 		{
@@ -195,7 +195,7 @@
 		struct double3
 		{
 			double x, y, z;
-		} KARTET_ALIGN(32);
+		} /*KARTET_ALIGN(32)*/;
 
 		struct double4
 		{
