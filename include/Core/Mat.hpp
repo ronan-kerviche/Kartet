@@ -62,6 +62,7 @@ namespace Kartet
 		__host__ __device__ inline Mat(const U* ptr);
 		__host__ __device__ inline const T& operator()(const int& i, const int& j) const;
 		__host__ __device__ inline T& operator()(const int& i, const int& j);
+		__host__ __device__ inline Mat<r,1,T> col(const int& j);
 		// Coumpound assignment operators :
 		#define COUMPOUND_ASSIGNMENT(OP) \
 			__host__ __device__ inline const Mat<r,c,T>& operator OP (const Mat<r, c, T>& o); \
@@ -152,6 +153,13 @@ namespace Kartet
 	__host__ __device__ inline T& Mat<r,c,T>::operator()(const int& i, const int& j)
 	{
 		return m[j*r+i];
+	}
+
+	template<int r, int c, typename T>
+	__host__ __device__ inline Mat<r,1,T> Mat<r,c,T>::col(const int& j)
+	{
+		Mat<r,1,T> v(m+j*r);
+		return v;
 	}
 
 	template<int r, int c, typename T>
@@ -416,6 +424,62 @@ namespace Kartet
 		return dir - (static_cast<typename ResultingType<T,U>::Type>(2)*dot(dir, normal))*normal;
 	}
 
+// Dimension specific :
+	template<typename T>
+	__host__ __device__ inline Mat<2,2,T> rot2(const T& angle)
+	{
+		Mat<2,2,T> res;
+		const T c = cos(angle),
+			s = sin(angle);
+		res(0,0) = c;
+		res(1,0) = -s;
+		res(0,1) = s;
+		res(1,1) = c;
+		return res;
+	}
+
+	template<typename T>
+	__host__ __device__ inline Mat<3,3,T> rot3x(const T& angle)
+	{
+		Mat<3,3,T> res(static_cast<T>(0));
+		const T	c = cos(angle),
+			s = sin(angle);	
+		res(0,0) = static_cast<T>(1);
+		res(1,1) = c;
+		res(2,1) = -s;
+		res(1,2) = s;
+		res(2,2) = c;
+		return res;
+	}
+
+	template<typename T>
+	__host__ __device__ inline Mat<3,3,T> rot3y(const T& angle)
+	{
+		Mat<3,3,T> res(static_cast<T>(0));
+		const T	c = cos(angle),
+			s = sin(angle);
+		res(0,0) = c;
+		res(2,0) = -s;	
+		res(1,1) = static_cast<T>(1);
+		res(0,2) = s;
+		res(2,2) = c;
+		return res;
+	}
+
+	template<typename T>
+	__host__ __device__ inline Mat<3,3,T> rot3z(const T& angle)
+	{
+		Mat<3,3,T> res(static_cast<T>(0));
+		const T	c = cos(angle),
+			s = sin(angle);
+		res(0,0) = c;
+		res(1,0) = -s;
+		res(0,1) = s;
+		res(1,1) = c;	
+		res(2,2) = static_cast<T>(1);
+		return res;
+	}
+
 	template<typename T, typename U>
 	__host__ __device__ inline Mat<3,1,typename ResultingType<T,U>::Type> cross(const Mat<3,1,T>& a, const Mat<3,1,U>& b)
 	{
@@ -426,6 +490,7 @@ namespace Kartet
 		return c;
 	}
 
+// Misc. :
 	template<int r, int c, typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Mat<r,c,T>& v)
 	{
