@@ -155,17 +155,21 @@ namespace Kartet
 			typedef B TResult; \
 			B	*pb; \
 			const A	*pa; \
-			__host__ __device__ inline MetaUnary##NAME(B* _pb, const A* _pa) \
+			const int bStride, \
+				  aStride; \
+			__host__ __device__ inline MetaUnary##NAME(B* _pb, const A* _pa, const int _bStride=1, const int _aStride=1) \
 			 : 	pb(_pb), \
-				pa(_pa) \
+				pa(_pa), \
+				bStride(_bStride), \
+				aStride(_aStride) \
 			{ } \
 			__host__ __device__ inline void apply(const int& k) \
 			{ \
-				pb[k] = operate(pa[k]); \
+				pb[k*bStride] = operate(pa[k*aStride]); \
 			} \
 			__host__ __device__ inline B applySoft(const int& k) \
 			{ \
-				return operate(pa[k]); \
+				return operate(pa[k*aStride]); \
 			} \
 			__host__ __device__ static inline B operate(const A& a) \
 			{ \
@@ -208,9 +212,9 @@ namespace Kartet
 			ForLoop<d>::run(op); \
 		} \
 		template<int d, typename A> \
-		__host__ __device__ inline typename MetaUnary##NAME<A, A>::TResult metaUnary##NAME##Sum(const A* pa) \
+		__host__ __device__ inline typename MetaUnary##NAME<A, A>::TResult metaUnary##NAME##Sum(const A* pa, const int& aStride=1) \
 		{ \
-			MetaUnary##NAME<A, A> op(NULL, pa); \
+			MetaUnary##NAME<A, A> op(NULL, pa, 1, aStride); \
 			return ForLoop<d>::sum(op); \
 		}
 
@@ -222,18 +226,24 @@ namespace Kartet
 			C	*pc; \
 			const A	*pa; \
 			const B	*pb; \
-			__host__ __device__ inline MetaBinary##NAME(C* _pc, const A* _pa, const B* _pb) \
+			const int cStride, \
+				  aStride, \
+				  bStride; \
+			__host__ __device__ inline MetaBinary##NAME(C* _pc, const A* _pa, const B* _pb, const int& _cStride=1, const int& _aStride=1, const int& _bStride=1) \
 			 : 	pc(_pc), \
 				pa(_pa), \
-				pb(_pb) \
+				pb(_pb), \
+				cStride(_cStride), \
+				aStride(_aStride), \
+				bStride(_bStride) \
 			{ } \
 			__host__ __device__ inline void apply(const int& k) \
 			{ \
-				pc[k] = operate(pa[k], pb[k]); \
+				pc[k*cStride] = operate(pa[k*aStride], pb[k*bStride]); \
 			} \
 			__host__ __device__ inline C applySoft(const int& k) \
 			{ \
-				return operate(pa[k], pb[k]); \
+				return operate(pa[k*aStride], pb[k*bStride]); \
 			} \
 			__host__ __device__ static inline C operate(const A& a, const B& b) \
 			{ \
@@ -309,21 +319,21 @@ namespace Kartet
 			ForLoop<d>::run(op); \
 		} \
 		template<int d, typename C, typename A, typename B> \
-		__host__ __device__ inline typename MetaBinary##NAME<C, A, B>::TResult metaBinary##NAME##Sum(const A* pa, const B* pb) \
+		__host__ __device__ inline typename MetaBinary##NAME<C, A, B>::TResult metaBinary##NAME##Sum(const A* pa, const B* pb, const int& aStride=1, const int& bStride=1) \
 		{ \
-			MetaBinary##NAME<C, A, B> op(NULL, pa, pb); \
+			MetaBinary##NAME<C, A, B> op(NULL, pa, pb, 1, aStride, bStride); \
 			return ForLoop<d>::sum(op); \
 		}
 
 	META_UNARY_OPERATOR(Equal, a)
+	META_UNARY_OPERATOR(Plus, a)
+	META_UNARY_OPERATOR(Minus, -a)
 	META_UNARY_OPERATOR(Square, a*a)
 	META_BINARY_OPERATOR(Plus, a+b)
 	META_BINARY_OPERATOR(Minus, a-b)
 	META_BINARY_OPERATOR(Product, a*b)
 	META_BINARY_OPERATOR(Quotient, a/b)
-
-	#undef META_UNARY_OPERATOR
-	#undef META_BINARY_OPERATOR
+	// Other operators can be added thereafter.
 }
 
 #endif

@@ -38,6 +38,7 @@
 
 	#include "Core/Traits.hpp"
 	#include "Core/Vec.hpp"
+	#include "Core/Mat.hpp"
 	#include "Core/Array.hpp"
 	#include "Core/BLAS.hpp"
 	#include "Core/RandomSource.hpp"

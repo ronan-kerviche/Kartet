@@ -847,6 +847,9 @@ namespace Kartet
 		return os;
 	}
 
+	// Extra Meta operators :
+	META_UNARY_OPERATOR(AbsSquare, absSq(a))
+	META_BINARY_OPERATOR(HermProduct, conj(a)*b)
 } // namespace Kartet
 
 // The following functions must be kept in the global namespace (::) :
