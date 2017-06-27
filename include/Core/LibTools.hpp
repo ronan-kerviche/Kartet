@@ -104,6 +104,40 @@
 	#endif
 
 	// Other tools :
+namespace Kartet
+{
+	template<typename T>
+	void swap(T& a, T& b)
+	{
+		const T c = a;
+		a = b;
+		b = c;
+	}
+
+	template<typename T>
+	bool softLargerThan(const T& a, const T& b)
+	{
+		return (a>b);
+	}
+
+	template<typename T>
+	bool softLargerEqual(const T& a, const T& b)
+	{
+		return (a>=b);
+	}
+
+	template<typename T>
+	bool softSmallerThan(const T& a, const T& b)
+	{
+		return (a<b);
+	}
+
+	template<typename T>
+	bool softSmallerEqual(const T& a, const T& b)
+	{
+		return (a<=b);
+	}
+
 	template<typename T1, typename T2>
 	bool compareBits(const T1& x1, const T2& x2)
 	{
@@ -117,6 +151,7 @@
 		}
 		return (sizeof(T1)==sizeof(T2)) && t;
 	}
+}
 
 #endif
 

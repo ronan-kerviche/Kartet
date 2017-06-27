@@ -40,6 +40,8 @@
 	#include "Core/Exceptions.hpp"
 	#include "Core/Meta.hpp"
 	#include "Core/Complex.hpp"
+	//#include "Core/Mat.hpp"
+	//#include "Core/Vec.hpp"
 
 namespace Kartet
 {
@@ -54,7 +56,9 @@ namespace Kartet
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
-					isFloatingPoint	= false;
+					isFloatingPoint	= false,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<typename T>
@@ -62,13 +66,14 @@ namespace Kartet
 	{
 		typedef Traits<T> SubTraits;
 		typedef typename SubTraits::BaseType BaseType;
-
 		static const bool 	isConst 	= SubTraits::isConst,
 					isArray		= true,
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= SubTraits::isReference,
 					isComplex 	= SubTraits::isComplex,
-					isFloatingPoint	= SubTraits::isFloatingPoint;
+					isFloatingPoint	= SubTraits::isFloatingPoint,
+					isVector	= SubTraits::isVector,
+					isMatrix	= SubTraits::isMatrix;
 	};
 
 	template<typename T>
@@ -76,13 +81,14 @@ namespace Kartet
 	{
 		typedef Traits<T> SubTraits;
 		typedef typename SubTraits::BaseType BaseType;
-
 		static const bool 	isConst 	= SubTraits::isConst,
 					isArray		= SubTraits::isArray,
 					isPointer 	= true,
 					isReference 	= SubTraits::isReference,
 					isComplex 	= SubTraits::isComplex,
-					isFloatingPoint	= SubTraits::isFloatingPoint;
+					isFloatingPoint	= SubTraits::isFloatingPoint,
+					isVector	= SubTraits::isVector,
+					isMatrix	= SubTraits::isMatrix;
 	};
 
 	template<typename T>
@@ -90,13 +96,14 @@ namespace Kartet
 	{
 		typedef Traits<T> SubTraits;
 		typedef typename SubTraits::BaseType BaseType;
-
 		static const bool 	isConst 	= SubTraits::isConst,
 					isArray		= SubTraits::isArray,
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= true,
 					isComplex 	= SubTraits::isComplex,
-					isFloatingPoint = SubTraits::isFloatingPoint;
+					isFloatingPoint = SubTraits::isFloatingPoint,
+					isVector	= SubTraits::isVector,
+					isMatrix	= SubTraits::isMatrix;
 	};
 
 	template<typename T>
@@ -104,55 +111,59 @@ namespace Kartet
 	{
 		typedef Traits<T> SubTraits;
 		typedef typename SubTraits::BaseType BaseType;
-
 		static const bool 	isConst 	= true,
 					isArray		= SubTraits::isArray,	
 					isPointer 	= SubTraits::isPointer,
 					isReference 	= SubTraits::isReference,
 					isComplex 	= SubTraits::isComplex,
-					isFloatingPoint = SubTraits::isFloatingPoint;
+					isFloatingPoint = SubTraits::isFloatingPoint,
+					isVector	= SubTraits::isVector,
+					isMatrix	= SubTraits::isMatrix;
 	};
 
 	template<>
 	struct Traits<float>
 	{
 		typedef void SubTraits;
-		typedef float BaseType;
-		
+		typedef float BaseType;	
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
-					isFloatingPoint = true;
+					isFloatingPoint = true,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<>
 	struct Traits<double>
 	{
 		typedef void SubTraits;
-		typedef double BaseType;
-		
+		typedef double BaseType;	
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
-					isFloatingPoint = true;
+					isFloatingPoint = true,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<>
 	struct Traits<long double>
 	{
 		typedef void SubTraits;
-		typedef long double BaseType;
-		
+		typedef long double BaseType;	
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= false,
-					isFloatingPoint = true;
+					isFloatingPoint = true,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<>
@@ -160,13 +171,14 @@ namespace Kartet
 	{
 		typedef void SubTraits;
 		typedef float BaseType;
-
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,
-					isFloatingPoint = true;
+					isFloatingPoint = true,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<>
@@ -174,13 +186,14 @@ namespace Kartet
 	{
 		typedef void SubTraits;
 		typedef double BaseType;
-
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,
-					isFloatingPoint = true;
+					isFloatingPoint = true,
+					isVector	= false,
+					isMatrix	= false;
 	};
 
 	template<typename T>
@@ -188,15 +201,16 @@ namespace Kartet
 	{
 		typedef Traits<T> SubTraits;
 		typedef T BaseType;
-
 		static const bool 	isConst 	= false,
 					isArray		= false,
 					isPointer 	= false,
 					isReference 	= false,
 					isComplex 	= true,
-					isFloatingPoint = SubTraits::isFloatingPoint;
+					isFloatingPoint = SubTraits::isFloatingPoint,
+					isVector	= false,
+					isMatrix	= false;
 	};
-
+	
 	// Resulting types :
 	template<typename T1, typename T2>
 	class ResultingType

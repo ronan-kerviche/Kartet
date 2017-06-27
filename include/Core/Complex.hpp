@@ -847,6 +847,39 @@ namespace Kartet
 		return os;
 	}
 
+	// Extra tools :
+	template<typename T>
+	bool softLargerThan(const Complex<T>& a, const Complex<T>& b)
+	{
+		UNUSED_PARAMETER(a)
+		UNUSED_PARAMETER(b)
+		return false;
+	}
+
+	template<typename T>
+	bool softLargerEqual(const Complex<T>& a, const Complex<T>& b)
+	{
+		UNUSED_PARAMETER(a)
+		UNUSED_PARAMETER(b)
+		return false;
+	}
+
+	template<typename T>
+	bool softSmallerThan(const Complex<T>& a, const Complex<T>& b)
+	{
+		UNUSED_PARAMETER(a)
+		UNUSED_PARAMETER(b)
+		return false;
+	}
+
+	template<typename T>
+	bool softSmallerEqual(const Complex<T>& a, const Complex<T>& b)
+	{
+		UNUSED_PARAMETER(a)
+		UNUSED_PARAMETER(b)
+		return false;
+	}
+
 	// Extra Meta operators :
 	META_UNARY_OPERATOR(AbsSquare, absSq(a))
 	META_BINARY_OPERATOR(HermProduct, conj(a)*b)

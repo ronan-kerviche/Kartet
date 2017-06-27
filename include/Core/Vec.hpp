@@ -57,7 +57,6 @@ namespace Kartet
 		using Mat<d,1,T>::operator ();
 		using Mat<d,1,T>::operator=;
 		using Mat<d,1,T>::clear;
-
 		__host__ __device__ inline const T& x(void) const;
 		__host__ __device__ inline T& x(void);
 		__host__ __device__ inline const T& y(void) const;
@@ -67,6 +66,36 @@ namespace Kartet
 		__host__ __device__ inline const T& w(void) const;
 		__host__ __device__ inline T& w(void);
 
+	};
+
+	// Type aliases :
+	typedef Vec<2,float> Vec2f;
+	typedef Vec<3,float> Vec3f;
+	typedef Vec<4,float> Vec4f;
+	typedef Vec<2,Complex<float> > Vec2c;
+	typedef Vec<3,Complex<float> > Vec3c;
+	typedef Vec<4,Complex<float> > Vec4c;
+	typedef Vec<2,double> Vec2d;
+	typedef Vec<3,double> Vec3d;
+	typedef Vec<4,double> Vec4d;
+	typedef Vec<2,Complex<double> > Vec2z;
+	typedef Vec<3,Complex<double> > Vec3z;
+	typedef Vec<4,Complex<double> > Vec4z;
+
+	// Traits :
+	template<int d, typename T>
+	struct Traits<Vec<d,T> >
+	{
+		typedef Traits<T> SubTraits;
+		typedef typename SubTraits::BaseType BaseType;
+		static const bool 	isConst 	= false,
+					isArray		= false,
+					isPointer 	= false,
+					isReference 	= false,
+					isComplex 	= SubTraits::isComplex,
+					isFloatingPoint = SubTraits::isFloatingPoint,
+					isMatrix	= true,
+					isVector	= true;
 	};
 
 	// Functions :
@@ -180,12 +209,12 @@ namespace Kartet
 		os << '(';
 		for(int k=0; k<(d-1); k++)
 		{
-			const bool f = (v.m[k]>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[k], minusZero));
+			const bool f = (!Traits<T>::isComplex && softLargerEqual(v.m[k], zero)) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[k], minusZero));
 			if(flag && f)
 				os << ' ';
 			os << v.m[k] << ", ";
 		}
-		const bool f = (v.m[d-1]>=zero) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[d-1], minusZero));
+		const bool f = (!Traits<T>::isComplex && softLargerEqual(v.m[d-1], zero)) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[d-1], minusZero));
 		if(flag && f)
 			os << ' ';
 		os << v.m[d-1] << ')';
