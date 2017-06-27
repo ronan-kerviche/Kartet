@@ -230,6 +230,14 @@ namespace Kartet
 	}
 
 	// Non-members :
+	template<int r, int c, typename T>
+	__host__ __device__ inline Mat<r,c,T> operator-(const Mat<r,c,T>& a)
+	{
+		Mat<r,c,T> res;
+		metaUnaryMinus<Mat<r,c,T>::dim>(res.m, a.m);
+		return res;
+	}
+
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator+(const Mat<r,c,T>& a, const Mat<r,c,U>& b)
 	{

@@ -190,6 +190,36 @@ namespace Kartet
 	}
 
 	// Non-members :
+	template<typename T0, typename T1>
+	__host__ __device__ inline Vec<2,typename ResultingType<T0,T1>::Type> makeVec2(const T0& x, const T1& y)
+	{
+		Vec<2,typename ResultingType<T0,T1>::Type> v;
+		v(0) = x;
+		v(1) = y;
+		return v;
+	}
+
+	template<typename T0, typename T1, typename T2>
+	__host__ __device__ inline Vec<3,typename ResultingType<T0,T1>::Type> makeVec3(const T0& x, const T1& y, const T2& z)
+	{
+		Vec<3,typename ResultingType<T0,T1>::Type> v;
+		v(0) = x;
+		v(1) = y;
+		v(2) = z;
+		return v;
+	}
+
+	template<typename T0, typename T1, typename T2, typename T3>
+	__host__ __device__ inline Vec<4,typename ResultingType<T0,T1>::Type> makeVec4(const T0& x, const T1& y, const T2& z, const T2& w)
+	{
+		Vec<4,typename ResultingType<T0,T1>::Type> v;
+		v(0) = x;
+		v(1) = y;
+		v(2) = z;
+		v(3) = w;
+		return v;
+	}
+
 	template<int ra, int ca, typename Ta, int rb, typename Tb>
 	__host__ __device__ inline Vec<ra,typename ResultingType<Ta,Tb>::Type> operator*(const Mat<ra,ca,Ta>& a, const Vec<rb,Tb>& b)
 	{
