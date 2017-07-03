@@ -78,6 +78,8 @@ namespace Kartet
 	\code
 	Kartet::Complex<float>	z1(-3.0f, 2),
 				z2(4, 1.0);
+	z1 = -3.0f + 2.0 * I<float>();
+	z2 = 4 + 1.0*I();
 	std::cout << (z1*2+3*z2)*z2 << std::endl;
 	std::cout << abs(z1) << std::endl;
 	std::cout << conj(z1)/z2 << std::endl;
@@ -95,10 +97,10 @@ namespace Kartet
 
 		// Constructors : 
 		/**
-		\brief Default constructor to zero.
+		\brief Default constructor, no initialization is performed.
 		**/
 		__host__ __device__ Complex(void)
-		 : x(0), y(0)
+		// : x(0), y(0)
 		{ }
 
 		/**

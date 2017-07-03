@@ -3028,12 +3028,11 @@ namespace Kartet
 		const Kartet::Layout layout = (A.location()==DeviceSide) ? A.monolithicLayout() : A.layout();
 		T* tmp = (A.location()==DeviceSide) ? A.getData() : A.dataPtr();
 	
-		os << "(Array of size " << A.layout() << ", " << ((A.location()==DeviceSide) ? "DeviceSide" : "HostSide") << ')' << std::endl;
+		os << "(Array of size " << A.layout() << ", " << ((A.location()==DeviceSide) ? "DeviceSide" : (A.location()==HostSide) ? "HostSide" : "Unknown") << ')' << std::endl;
 		for(int k=0; k<layout.numSlices(); k++)
 		{
 			if(layout.numSlices()>1)
 				os << "Slice " << k << " : "<< std::endl;
-	
 			for(int i=0; i<layout.numRows(); i++)
 			{
 				os << spacing;

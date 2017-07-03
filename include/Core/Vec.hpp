@@ -42,19 +42,32 @@
 
 namespace Kartet
 {
+	/**
+	\brief Small vector object (of static size).
+	\tparam d Number of rows.
+	\tparam T Type of the matrix.
+
+	Small vector object with static size :
+	\code
+	Kartet::Vec<4,double> v1; // Unitialized value.
+	Kartet::Mat<2float> v2(0.0); // Cleared to 0.
+	Vec3f v3 = makeVec3(1,0,0); // 3x<float>.
+	Vec4z v4 = makeVec4(0,0,1,1.0+2.0*I()); // 4xComplex<double>.
+	\endcode
+	**/
 	template<int d, typename T>
 	struct Vec : public Mat<d,1,T>
 	{
 		__host__ __device__ inline const T& operator()(const int& i) const;
 		__host__ __device__ inline T& operator()(const int& i);
 		__host__ __device__ inline Vec(void);
-		//__host__ __device__ inline Vec(const T& val); // Ambiguous
+		__host__ __device__ inline Vec(const T& val); // Ambiguous?
 		__host__ __device__ inline Vec(const Mat<d,1,T>& o);
 		template<typename U>
 		__host__ __device__ inline Vec(const Mat<d,1,U>& o);
 		template<typename U>
 		__host__ __device__ inline Vec(const U* ptr);
-		using Mat<d,1,T>::operator ();
+		using Mat<d,1,T>::operator();
 		using Mat<d,1,T>::operator=;
 		using Mat<d,1,T>::clear;
 		__host__ __device__ inline const T& x(void) const;
@@ -69,6 +82,44 @@ namespace Kartet
 	};
 
 	// Type aliases :
+	/**
+	\typedef Vec2f
+	\brief Alias to Vec<2,float> type, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec3f
+	\brief Alias to Vec<3,float>, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec4f
+	\brief Alias to Vec<4,float>, see Kartet::Vec for more information.
+	\relatedalso Kartet::Vec
+	\typedef Vec2c
+	\brief Alias to Vec<2,Complex<float> > type, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec3c
+	\brief Alias to Vec<3,Complex<float> >, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec4c
+	\brief Alias to Vec<4,Complex<float> >, see Kartet::Vec for more information.
+	\relatedalso Kartet::Vec
+	\typedef Vec2d
+	\brief Alias to Vec<2,double> type, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec3d
+	\brief Alias to Vec<3,double>, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec4d
+	\brief Alias to Vec<4,double>, see Kartet::Vec for more information.
+	\relatedalso Kartet::Vec
+	\typedef Vec2z
+	\brief Alias to Vec<2,Complex<double> > type, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec3z
+	\brief Alias to Vec<3,Complex<double> >, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec4z
+	\brief Alias to Vec<4,Complex<double> >, see Kartet::Vec for more information.
+	\relatedalso Kartet::Vec
+	**/
 	typedef Vec<2,float> Vec2f;
 	typedef Vec<3,float> Vec3f;
 	typedef Vec<4,float> Vec4f;
@@ -103,10 +154,10 @@ namespace Kartet
 	__host__ __device__ inline Vec<d,T>::Vec(void)
 	{ }
 
-	/*template<int d, typename T>
+	template<int d, typename T>
 	__host__ __device__ inline Vec<d,T>::Vec(const T& val)
 	 : Mat<d,1,T>(val)
-	{ }*/
+	{ }
 
 	template<int d, typename T>
 	__host__ __device__ inline Vec<d,T>::Vec(const Mat<d,1,T>& o)
@@ -235,19 +286,33 @@ namespace Kartet
 	{
 		const T zero = static_cast<T>(0),
 			minusZero = -static_cast<T>(0);
+		// Change the floatting point format if not specified :
+		const std::ios_base::fmtflags originalFlags = os.flags();
+		const bool forcedFloattingFormat = (os.flags() & std::ios_base::floatfield)!=0;
+		if(!forcedFloattingFormat)
+			os.setf(std::ios_base::scientific);
+
+		const int precision = forcedFloattingFormat? os.precision() : 3;
+		const int originalPrecision = os.precision(precision);
+		const char fillCharacter = ' ';
+		const char originalFill = os.fill(fillCharacter);
 		const bool flag = !(os.flags() & std::ios_base::showpos);
 		os << '(';
 		for(int k=0; k<(d-1); k++)
 		{
 			const bool f = (!Traits<T>::isComplex && softLargerEqual(v.m[k], zero)) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[k], minusZero));
 			if(flag && f)
-				os << ' ';
+				os << fillCharacter;
 			os << v.m[k] << ", ";
 		}
 		const bool f = (!Traits<T>::isComplex && softLargerEqual(v.m[d-1], zero)) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(v.m[d-1], minusZero));
 		if(flag && f)
-			os << ' ';
+			os << fillCharacter;
 		os << v.m[d-1] << ')';
+		// Reset :
+		os.precision(originalPrecision);
+		os.fill(originalFill);
+		os.flags(originalFlags);
 		return os;
 	}
 }

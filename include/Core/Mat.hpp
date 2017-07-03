@@ -43,6 +43,20 @@
 
 namespace Kartet
 {
+	/**
+	\brief Small matrix object (of static size).
+	\tparam r Number of rows.
+	\tparam c Number of columns.
+	\tparam T Type of the matrix.
+
+	Small matrix object with static size :
+	\code
+	Kartet::Mat<3,4,double> m1; // Unitialized value.
+	Kartet::Mat<2,4,float> m2(0.0); // Cleared to 0.
+	Mat3f m3 = Mat3f::identity(); // 3x3 <float> identity.
+	Mat4z m4 = Mat4d::identity(); // 4x4 Complex<double> identity, initialized from a double identity.
+	\endcode
+	**/
 	template<int r, int c, typename T>
 	struct Mat
 	{
@@ -83,6 +97,44 @@ namespace Kartet
 	};
 
 	// Type aliases :
+	/**
+	\typedef Mat2f
+	\brief Alias to Mat<2,2,float> type, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat3f
+	\brief Alias to Mat<3,3,float>, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat4f
+	\brief Alias to Mat<4,4,float>, see Kartet::Mat for more information.
+	\relatedalso Kartet::Mat
+	\typedef Mat2c
+	\brief Alias to Mat<2,2,Complex<float> > type, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat3c
+	\brief Alias to Mat<3,3,Complex<float> >, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat4c
+	\brief Alias to Mat<4,4,Complex<float> >, see Kartet::Mat for more information.
+	\relatedalso Kartet::Mat
+	\typedef Mat2d
+	\brief Alias to Mat<2,2,double> type, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat3d
+	\brief Alias to Mat<3,3,double>, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat4d
+	\brief Alias to Mat<4,4,double>, see Kartet::Mat for more information.
+	\relatedalso Kartet::Mat
+	\typedef Mat2z
+	\brief Alias to Mat<2,2,Complex<double> > type, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat3z
+	\brief Alias to Mat<3,3,Complex<double> >, see Kartet::Mat for more information.
+	\related Kartet::Mat
+	\typedef Mat4z
+	\brief Alias to Mat<4,4,Complex<double> >, see Kartet::Mat for more information.
+	\relatedalso Kartet::Mat
+	**/
 	typedef Mat<2,2,float> Mat2f;
 	typedef Mat<3,3,float> Mat3f;
 	typedef Mat<4,4,float> Mat4f;
@@ -504,6 +556,16 @@ namespace Kartet
 	{
 		const T zero = static_cast<T>(0),
 			minusZero = -static_cast<T>(0);
+		// Change the floatting point format if not specified :
+		const std::ios_base::fmtflags originalFlags = os.flags();
+		const bool forcedFloattingFormat = (os.flags() & std::ios_base::floatfield)!=0;
+		if(!forcedFloattingFormat)
+			os.setf(std::ios_base::scientific);
+
+		const int precision = forcedFloattingFormat? os.precision() : 3;
+		const int originalPrecision = os.precision(precision);
+		const char fillCharacter = ' ';
+		const char originalFill = os.fill(fillCharacter);
 		const bool flag = !(os.flags() & std::ios_base::showpos);
 		for(int i=0; i<r; i++)
 		{
@@ -513,7 +575,7 @@ namespace Kartet
 				const T val = v(i,j);
 				const bool f = (!Traits<T>::isComplex && softLargerEqual(val,zero)) && !((IsSame<T, float>::value || IsSame<T, double>::value) && compareBits(val, minusZero));
 				if(flag && f)
-					os << ' ';
+					os << fillCharacter;
 				os << val << ", ";
 			}
 			const T val = v(i, c-1);
@@ -522,6 +584,10 @@ namespace Kartet
 				os << ' ';
 			os << val << " | " << std::endl;
 		}
+		// Reset :
+		os.precision(originalPrecision);
+		os.fill(originalFill);
+		os.flags(originalFlags);
 		return os;
 	}
 }
