@@ -211,10 +211,10 @@ namespace Kartet
 			MetaUnary##NAME##Right<B, A> op(pb, pa); \
 			ForLoop<d>::run(op); \
 		} \
-		template<int d, typename A> \
-		__host__ __device__ inline typename MetaUnary##NAME<A, A>::TResult metaUnary##NAME##Sum(const A* pa, const int& aStride=1) \
+		template<int d, typename TResult, typename A> \
+		__host__ __device__ inline typename MetaUnary##NAME<TResult, A>::TResult metaUnary##NAME##Sum(const A* pa, const int& aStride=1) \
 		{ \
-			MetaUnary##NAME<A, A> op(NULL, pa, 1, aStride); \
+			MetaUnary##NAME<TResult, A> op(NULL, pa, 1, aStride); \
 			return ForLoop<d>::sum(op); \
 		}
 
@@ -318,10 +318,10 @@ namespace Kartet
 			MetaBinary##NAME##Right<C, A, B> op(pc, pa, pb); \
 			ForLoop<d>::run(op); \
 		} \
-		template<int d, typename C, typename A, typename B> \
-		__host__ __device__ inline typename MetaBinary##NAME<C, A, B>::TResult metaBinary##NAME##Sum(const A* pa, const B* pb, const int& aStride=1, const int& bStride=1) \
+		template<int d, typename TResult, typename A, typename B> \
+		__host__ __device__ inline typename MetaBinary##NAME<TResult, A, B>::TResult metaBinary##NAME##Sum(const A* pa, const B* pb, const int& aStride=1, const int& bStride=1) \
 		{ \
-			MetaBinary##NAME<C, A, B> op(NULL, pa, pb, 1, aStride, bStride); \
+			MetaBinary##NAME<TResult, A, B> op(NULL, pa, pb, 1, aStride, bStride); \
 			return ForLoop<d>::sum(op); \
 		}
 

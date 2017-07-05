@@ -251,9 +251,9 @@ namespace Kartet
 	}
 
 	template<typename T0, typename T1, typename T2>
-	__host__ __device__ inline Vec<3,typename ResultingType<T0,T1>::Type> makeVec3(const T0& x, const T1& y, const T2& z)
+	__host__ __device__ inline Vec<3,typename ResultingType3<T0,T1,T2>::Type> makeVec3(const T0& x, const T1& y, const T2& z)
 	{
-		Vec<3,typename ResultingType<T0,T1>::Type> v;
+		Vec<3,typename ResultingType3<T0,T1,T2>::Type> v;
 		v(0) = x;
 		v(1) = y;
 		v(2) = z;
@@ -261,9 +261,9 @@ namespace Kartet
 	}
 
 	template<typename T0, typename T1, typename T2, typename T3>
-	__host__ __device__ inline Vec<4,typename ResultingType<T0,T1>::Type> makeVec4(const T0& x, const T1& y, const T2& z, const T2& w)
+	__host__ __device__ inline Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type> makeVec4(const T0& x, const T1& y, const T2& z, const T2& w)
 	{
-		Vec<4,typename ResultingType<T0,T1>::Type> v;
+		Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type::Type> v;
 		v(0) = x;
 		v(1) = y;
 		v(2) = z;

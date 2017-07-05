@@ -352,7 +352,7 @@ namespace Kartet
 	template<int r, typename T>
 	__host__ __device__ inline T trace(const Mat<r,r,T>& a)
 	{
-		return metaUnaryPlusSum<r>(a.m, r+1);
+		return metaUnaryPlusSum<r, T>(a.m, r+1);
 	}
 
 	template<int r, int c, typename T>
@@ -418,7 +418,7 @@ namespace Kartet
 		else if(r==3)
 			return determinant3x3(a);
 		else
-			throw InvalidOperation; // To be implemented
+			throw InvalidOperation; // To be implemented.
 	}
 
 	template<int r, typename T>
@@ -449,27 +449,27 @@ namespace Kartet
 	}
 
 	template<int r, typename T>
-	__host__ __device__ inline T normSquared(const Mat<r,1,T>& v)
+	__host__ __device__ inline typename Traits<T>::BaseType normSquared(const Mat<r,1,T>& v)
 	{
-		return metaUnaryAbsSquareSum<r>(v.m);
+		return metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m);
 	}
 
 	template<int r, typename T>
-	__host__ __device__ inline T lengthSquared(const Mat<r,1,T>& v) // alias normSquared
+	__host__ __device__ inline typename Traits<T>::BaseType lengthSquared(const Mat<r,1,T>& v) // alias normSquared
 	{
-		return metaUnaryAbsSquareSum<r>(v.m);
+		return metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m);
 	}
 
 	template<int r, typename T>
-	__host__ __device__ inline T norm(const Mat<r,1,T>& v)
+	__host__ __device__ inline typename Traits<T>::BaseType norm(const Mat<r,1,T>& v)
 	{
-		return ::sqrt(metaUnaryAbsSquareSum<r>(v.m));
+		return ::sqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
 	}
 
 	template<int r, typename T>
-	__host__ __device__ inline T length(const Mat<r,1,T>& v) // alias norm
+	__host__ __device__ inline typename Traits<T>::BaseType length(const Mat<r,1,T>& v) // alias norm
 	{
-		return ::sqrt(metaUnaryAbsSquareSum<r>(v.m));
+		return ::sqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
 	}
 
 	template<int r, typename T>
@@ -485,6 +485,56 @@ namespace Kartet
 	}
 
 // Dimension specific :
+	template<typename T0, typename T1, typename T2, typename T3>
+	__host__ __device__ inline Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> makeMat2(const T0& m0, const T1& m2, const T2& m1, const T3& m3)
+	{
+		Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> m;
+		m(0,0) = m0;
+		m(1,0) = m1;
+		m(0,1) = m2;
+		m(1,1) = m3;
+		return m;
+	}
+
+	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
+	__host__ __device__ inline Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> makeMat3(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8)
+	{
+		Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> m;
+		m(0,0) = m0;
+		m(1,0) = m1;
+		m(2,0) = m2;
+		m(0,1) = m3;
+		m(1,1) = m4;
+		m(2,1) = m5;
+		m(0,2) = m6;
+		m(1,2) = m7;
+		m(2,2) = m8;
+		return m;
+	}
+
+	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11, typename T12, typename T13, typename T14, typename T15>
+	__host__ __device__ inline Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> makeMat4(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8,const T9& m9, const T10& m10, const T11& m11, const T12& m12, const T13& m13, const T14& m14, const T15& m15)
+	{
+		Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> m;
+		m(0,0) = m0;
+		m(1,0) = m1;
+		m(2,0) = m2;
+		m(3,0) = m3;
+		m(0,1) = m4;
+		m(1,1) = m5;
+		m(2,1) = m6;
+		m(3,1) = m7;
+		m(0,2) = m8;
+		m(1,2) = m9;
+		m(2,2) = m10;
+		m(3,2) = m11;
+		m(0,3) = m12;
+		m(1,3) = m13;
+		m(2,3) = m14;
+		m(3,3) = m15;
+		return m;
+	}
+
 	template<typename T>
 	__host__ __device__ inline Mat<2,2,T> rot2(const T& angle)
 	{

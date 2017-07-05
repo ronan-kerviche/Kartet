@@ -232,6 +232,41 @@ namespace Kartet
 			typedef typename StaticIf< U1::isComplex || U2::isComplex, Complex<Br>, Br>::Type Type;
 	};
 
+	template<typename T1, typename T2>
+	class ResultingType2 // Alias.
+	{
+		public :
+			typedef typename ResultingType<T1,T2>::Type Type;
+	};
+
+	template<typename T1, typename T2, typename T3>
+	class ResultingType3
+	{
+		public :
+			typedef typename ResultingType<T1,typename ResultingType<T2,T3>::Type>::Type Type;
+	};
+
+	template<typename T1, typename T2, typename T3, typename T4>
+	class ResultingType4
+	{
+		public :
+			typedef typename ResultingType<T1,typename ResultingType<T2,typename ResultingType<T3,T4>::Type>::Type>::Type Type;
+	};
+
+	template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
+	class ResultingType9
+	{
+		public :
+			typedef typename ResultingType<T1,typename ResultingType<T2,typename ResultingType<T3,typename ResultingType<T4,typename ResultingType<T5,typename ResultingType<T6,typename ResultingType<T7,typename ResultingType<T8,T9>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type Type;
+	};
+
+	template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11, typename T12, typename T13, typename T14, typename T15, typename T16>
+	class ResultingType16
+	{
+		public :
+			typedef typename ResultingType<T1,typename ResultingType<T2,typename ResultingType<T3,typename ResultingType<T4,typename ResultingType<T5,typename ResultingType<T6,typename ResultingType<T7, typename ResultingType<T8, typename ResultingType<T9,typename ResultingType<T10,typename ResultingType<T11,typename ResultingType<T12,typename ResultingType<T13,typename ResultingType<T14,typename ResultingType<T15,T16>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type>::Type Type;
+	};
+
 	// Type index/list :
 	template<typename T, typename N> 
 	struct TypeIndex
