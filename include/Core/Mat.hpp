@@ -457,7 +457,7 @@ namespace Kartet
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType lengthSquared(const Mat<r,1,T>& v) // alias normSquared
 	{
-		return metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m);
+		return normSquared(v);
 	}
 
 	template<int r, typename T>
@@ -467,15 +467,35 @@ namespace Kartet
 	}
 
 	template<int r, typename T>
+	__host__ __device__ inline typename Traits<T>::BaseType rnorm(const Mat<r,1,T>& v)
+	{
+		#ifdef __CUDACC__
+			return ::rsqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
+		#else
+			return static_cast<typename Traits<T>::BaseType>(1)/::sqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
+		#endif
+	}
+
+	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType length(const Mat<r,1,T>& v) // alias norm
 	{
-		return ::sqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
+		return norm(v);
+	}
+
+	template<int r, typename T>
+	__host__ __device__ inline typename Traits<T>::BaseType rlength(const Mat<r,1,T>& v) // alias norm
+	{
+		return rnorm(v);
 	}
 
 	template<int r, typename T>
 	__host__ __device__ inline Mat<r,1,T> normalize(const Mat<r,1,T>& v)
 	{
-		return v/norm(v);
+		#ifdef __CUDACC__
+			return v*::rsqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
+		#else
+			return v/norm(v);
+		#endif
 	}
 
 	template<int r, typename T, typename U>
