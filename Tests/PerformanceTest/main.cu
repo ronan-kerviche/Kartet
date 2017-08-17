@@ -4,7 +4,7 @@
 /*     A Simple C++ Array Library for CUDA                                                                       */
 /*                                                                                                               */
 /*     LICENSE : The MIT License                                                                                 */
-/*     Copyright (c) 2015 Ronan Kerviche                                                                         */
+/*     Copyright (c) 2015-2017 Ronan Kerviche                                                                    */
 /*                                                                                                               */
 /*     Permission is hereby granted, free of charge, to any person obtaining a copy                              */
 /*     of this software and associated documentation files (the "Software"), to deal                             */
@@ -127,7 +127,12 @@ int main(int argc, char** argv)
 		Kartet::ReduceContext reduceContext;
 	
 		// Setup :
-		typedef float T;
+		#ifdef DOUBLE_PRECISION
+			typedef double T;
+		#else
+			typedef float T;
+		#endif
+		// As an example :
 		if(Kartet::IsSame<T,float>::value)
 			std::cout << "In single precision." << std::endl;
 		else

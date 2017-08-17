@@ -4,7 +4,7 @@
 /*     A Simple C++ Array Library for CUDA                                                                       */
 /*                                                                                                               */
 /*     LICENSE : The MIT License                                                                                 */
-/*     Copyright (c) 2015 Ronan Kerviche                                                                         */
+/*     Copyright (c) 2015-2017 Ronan Kerviche                                                                    */
 /*                                                                                                               */
 /*     Permission is hereby granted, free of charge, to any person obtaining a copy                              */
 /*     of this software and associated documentation files (the "Software"), to deal                             */
@@ -70,6 +70,7 @@ namespace Kartet
 		using Mat<d,1,T>::operator();
 		using Mat<d,1,T>::operator=;
 		using Mat<d,1,T>::clear;
+		using Mat<d,1,T>::set;
 		__host__ __device__ inline const T& x(void) const;
 		__host__ __device__ inline T& x(void);
 		__host__ __device__ inline const T& y(void) const;

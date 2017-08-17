@@ -4,7 +4,7 @@
 /*     A Simple C++ Array Library for CUDA                                                                       */
 /*                                                                                                               */
 /*     LICENSE : The MIT License                                                                                 */
-/*     Copyright (c) 2015 Ronan Kerviche                                                                         */
+/*     Copyright (c) 2015-2017 Ronan Kerviche                                                                    */
 /*                                                                                                               */
 /*     Permission is hereby granted, free of charge, to any person obtaining a copy                              */
 /*     of this software and associated documentation files (the "Software"), to deal                             */
@@ -77,20 +77,22 @@ namespace Kartet
 		__host__ __device__ inline const T& operator()(const int& i, const int& j) const;
 		__host__ __device__ inline T& operator()(const int& i, const int& j);
 		__host__ __device__ inline Mat<r,1,T> col(const int& j);
-		// Coumpound assignment operators :
-		#define COUMPOUND_ASSIGNMENT(OP) \
-			__host__ __device__ inline const Mat<r,c,T>& operator OP (const Mat<r, c, T>& o); \
-			template<typename U> \
-			__host__ __device__ inline const Mat<r,c,T>& operator OP (const Mat<r, c, U>& o);
-		COUMPOUND_ASSIGNMENT(=)
-		COUMPOUND_ASSIGNMENT(+=)
-		COUMPOUND_ASSIGNMENT(-=)	
-		#undef COUMPOUND_ASSIGNMENT
+		__host__ __device__ inline const Mat<r,c,T>& operator=(const Mat<r, c, T>& o);
+		template<typename U>
+		__host__ __device__ inline const Mat<r,c,T>& operator=(const Mat<r, c, U>& o);
+		__host__ __device__ inline const Mat<r,c,T>& operator+=(const Mat<r, c, T>& o);
+		template<typename U>
+		__host__ __device__ inline const Mat<r,c,T>& operator+=(const Mat<r, c, U>& o);
+		__host__ __device__ inline const Mat<r,c,T>& operator-=(const Mat<r, c, T>& o);
+		template<typename U>
+		__host__ __device__ inline const Mat<r,c,T>& operator-=(const Mat<r, c, U>& o);
 		template<typename U>
 		__host__ __device__ inline const Mat<r,c,T>& operator*=(const U& o);
 		template<typename U>
 		__host__ __device__ inline const Mat<r,c,T>& operator/=(const U& o);
 		__host__ __device__ inline const Mat<r,c,T>& clear(const T& val);
+		template<typename U>
+		__host__ __device__ inline const Mat<r,c,T>& set(const U* ptr);
 
 		// Tools :
 		__host__ __device__ inline static Mat<r,c,T> identity(void);
@@ -165,22 +167,38 @@ namespace Kartet
 	};
 
 	// Functions :
+	/**
+	\brief Matrix constructor.
+	The values are left unitialized.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T>::Mat(void)
-	{ } // Leave unitialized.
+	{ }
 
+	/**
+	\brief Matrix constructor.
+	\param val Fill value.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T>::Mat(const T& val)
 	{
 		clear(val);
 	}
 
+	/**
+	\brief Matrix copy constructor.
+	\param o The matrix to be copied.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T>::Mat(const Mat<r,c,T>& o)
 	{
 		metaUnaryEqual<dim>(m, o.m);
 	}
 
+	/**
+	\brief Matrix copy constructor.
+	\param o The matrix to be copied.
+	**/
 	template<int r, int c, typename T>
 	template<typename U>
 	__host__ __device__ inline Mat<r,c,T>::Mat(const Mat<r,c,U>& o)
@@ -188,6 +206,10 @@ namespace Kartet
 		metaUnaryEqual<dim>(m, o.m);
 	}
 
+	/**
+	\brief Matrix constructor.
+	\param ptr Pointer to the array to be copied. It must contain r*c elements.
+	**/
 	template<int r, int c, typename T>
 	template<typename U>
 	__host__ __device__ inline Mat<r,c,T>::Mat(const U* ptr)
@@ -195,18 +217,35 @@ namespace Kartet
 		metaUnaryEqual<dim>(m, ptr);
 	}
 
+	/**
+	\brief Read a matrix element.
+	\param i Row index.
+	\param j Column index.
+	\return A constant reference to the value of the matrix at the index \f$(i,j)\f$.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline const T& Mat<r,c,T>::operator()(const int& i, const int& j) const
 	{
 		return m[j*r+i];
 	}
 
+	/**
+	\brief Read/write a matrix element.
+	\param i Row index.
+	\param j Column index.
+	\return A reference to the value of the matrix at the index \f$(i,j)\f$.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline T& Mat<r,c,T>::operator()(const int& i, const int& j)
 	{
 		return m[j*r+i];
 	}
 
+	/**
+	\brief Copy a matrix column.
+	\param j Column index.
+	\return A matrix containing a copy of column j.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,1,T> Mat<r,c,T>::col(const int& j)
 	{
@@ -214,6 +253,11 @@ namespace Kartet
 		return v;
 	}
 
+	/**
+	\brief Copy operator.
+	\param o The matrix to be copied.
+	\return A constant reference to this.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,T>& o)
 	{
@@ -221,6 +265,11 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Copy operator.
+	\param o The matrix to be copied.
+	\return A constant reference to this.
+	**/
 	template<int r, int c, typename T>
 	template<typename U>
 	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,U>& o)
@@ -229,26 +278,61 @@ namespace Kartet
 		return (*this);
 	}
 
-	#define COUMPOUND_ASSIGNMENT(OP, METAFUN) \
-		template<int r, int c, typename T> \
-		__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator OP (const Mat<r,c,T>& o) \
-		{ \
-			METAFUN <dim>(this->m, reinterpret_cast<const T*>(this->m), o.m); \
-			return (*this); \
-		} \
-		 \
-		template<int r, int c, typename T> \
-		template<typename U> \
-		__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator OP (const Mat<r,c,U>& o) \
-		{ \
-			METAFUN <dim>(this->m, reinterpret_cast<const T*>(this->m), o.m); \
-			return (*this); \
-		}
-	
-	COUMPOUND_ASSIGNMENT(+=, metaBinaryPlus)
-	COUMPOUND_ASSIGNMENT(-=, metaBinaryMinus)
-	#undef COUMPOUNT_ASSIGNMENT
+	/**
+	\brief Coumpound addition operator.
+	\param o The matrix to be added to this.
+	\return A constant reference to this.
+	**/
+	template<int r, int c, typename T>
+	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,T>& o)
+	{
+		metaBinaryPlus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
+		return (*this);
+	}
 
+	/**
+	\brief Coumpound addition operator.
+	\param o The matrix to be added to this.
+	\return A constant reference to this.
+	**/
+	template<int r, int c, typename T>
+	template<typename U>
+	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,U>& o)
+	{
+		metaBinaryPlus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
+		return (*this);
+	}
+
+	/**
+	\brief Coumpound substraction operator.
+	\param o The matrix to be removed to this.
+	\return A constant reference to this.
+	**/
+	template<int r, int c, typename T>
+	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,T>& o)
+	{
+		metaBinaryMinus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
+		return (*this);
+	}
+
+	/**
+	\brief Coumpound substraction operator.
+	\param o The matrix to be removed to this.
+	\return A constant reference to this.
+	**/
+	template<int r, int c, typename T>
+	template<typename U>
+	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,U>& o)
+	{
+		metaBinaryMinus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
+		return (*this);
+	}
+
+	/**
+	\brief Coumpound product operator.
+	\param o The scalar to be multiplied with this.
+	\return A constant reference to this.
+	**/
 	template<int r, int c, typename T>
 	template<typename U>
 	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator*=(const U& o)
@@ -257,14 +341,24 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Coumpound quotient operator.
+	\param o The scalar to be multiplied with this.
+	\return A constant reference to this.
+	**/
 	template<int r, int c, typename T>
 	template<typename U>
 	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator/=(const U& o)
 	{
 		metaBinaryQuotient<dim>(this->m, this->m, o);
 		return (*this);
-	}	
+	}
 
+	/**
+	\brief Clear a matrix with a fill value.
+	\param val The fill value.
+	\return A constant reference to this.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::clear(const T& val)
 	{
@@ -272,6 +366,25 @@ namespace Kartet
 		return (*this);
 	}
 
+	/**
+	\brief Set matrix components.
+	\param ptr A pointer to the array of r*c elements.
+	\return A constant reference to this.
+	**/
+	template<int r, int c, typename T>
+	template<typename U>
+	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::set(const U* ptr)
+	{
+		metaUnaryEqual<dim>(m, ptr);
+		return (*this);
+	}
+
+	/**
+	\brief Create a pseudo-identity matrix.
+	\return A pseudo-identity matrix.
+
+	If the matrix is squarred then this is a correct identity. Otherwise, the matrix will have one on all the elements for which \f$i==j\f$.
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T> Mat<r,c,T>::identity(void)
 	{
@@ -281,7 +394,13 @@ namespace Kartet
 		return res;
 	}
 
-	// Non-members :
+// Non-members :
+	/**
+	\brief Unary minus operator.
+	\param a Input matrix.
+	\return A new matrix set to \f$-a\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T> operator-(const Mat<r,c,T>& a)
 	{
@@ -290,6 +409,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary addition operator.
+	\param a Input matrix.
+	\param b Input matrix.
+	\return A new matrix set to \f$a+b\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator+(const Mat<r,c,T>& a, const Mat<r,c,U>& b)
 	{
@@ -298,6 +424,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary substraction operator.
+	\param a Input matrix.
+	\param b Input matrix.
+	\return A new matrix set to \f$a-b\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator-(const Mat<r,c,T>& a, const Mat<r,c,U>& b)
 	{
@@ -306,6 +439,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary scalar product operator.
+	\param a Input matrix.
+	\param b Input scalar.
+	\return A new vector set to \f$ab\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator*(const Mat<r,c,T>& a, const U& b)
 	{
@@ -314,6 +454,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary scalar product operator.
+	\param a Input scalar.
+	\param b Input matrix.
+	\return A new matrix set to \f$ab\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator*(const T& a, const Mat<r,c,U>& b)
 	{
@@ -322,6 +469,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary element-wise product operator.
+	\param a Input matrix.
+	\param b Input matrix.
+	\return A new matrix set to \f$a.b\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> modulate(const Mat<r,c,T>& a, const Mat<r,c,U>& b)
 	{
@@ -330,6 +484,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary matrix product operator.
+	\param a Input matrix.
+	\param b Input matrix.
+	\return A new matrix set to \f$a \times b\f$.
+	\related Mat
+	**/
 	template<int ra, int ca, typename Ta, int rb, int cb, typename Tb>
 	__host__ __device__ inline Mat<ra,cb,typename ResultingType<Ta,Tb>::Type> operator*(const Mat<ra,ca,Ta>& a, const Mat<rb,cb,Tb>& b)
 	{
@@ -341,6 +502,13 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Binary scalar quotient operator.
+	\param a Input matrix.
+	\param b Input scalar.
+	\return A new matrix set to \f$a/b\f$.
+	\related Mat
+	**/
 	template<int r, int c, typename T, typename U>
 	__host__ __device__ inline Mat<r,c,typename ResultingType<T,U>::Type> operator/(const Mat<r,c,T>& a, const U& b)
 	{
@@ -349,12 +517,24 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Trace operator.
+	\param a Square input matrix.
+	\return The trace of the input matrix : \f$Tr(a)\f$ (sum of the elements on the main diagonal).
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline T trace(const Mat<r,r,T>& a)
 	{
 		return metaUnaryPlusSum<r, T>(a.m, r+1);
 	}
 
+	/**
+	\brief Transpose operator.
+	\param a Input matrix.
+	\return A new matrix, being the transpose of the input matrix : \f$a^\intercal\f$ (\f$(i,j)\rightarrow (j,i)\f$).
+	\related Mat
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<c,r,T> transpose(const Mat<r,c,T>& a)
 	{	
@@ -365,6 +545,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief In place transpose operator.
+	\param a Square input matrix.
+	\return A reference to the input matrix, after transposition : \f$a^\intercal\f$ (\f$(i,j)\rightarrow (j,i)\f$).
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline Mat<r,r,T>& transposeInPlace(Mat<r,r,T>& a)
 	{	
@@ -374,6 +560,12 @@ namespace Kartet
 		return a;
 	}
 
+	/**
+	\brief Hermitian transpose operator.
+	\param a Input matrix.
+	\return A new matrix, being the hermitian transpose of the input matrix : \f$a^\dagger\f$ (\f$\overline{(i,j)}\rightarrow (j,i)\f$).
+	\related Mat
+	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<c,r,T> hermTranspose(const Mat<r,c,T>& a)
 	{	
@@ -384,24 +576,48 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Compute the determinant of a 2x2 matrix.
+	\param m Input pointer.
+	\return The determinant.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline T determinant2x2(const T* m)
 	{
 		return m[0]*m[3] - m[1]*m[2];
 	}
 
+	/**
+	\brief Compute the determinant of a 2x2 matrix.
+	\param a Input matrix.
+	\return The determinant.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline T determinant2x2(const Mat<2,2,T>& a)
 	{
 		return determinant2x2(a.m);
 	}
 
+	/**
+	\brief Compute the determinant of a 3x3 matrix.
+	\param m Input pointer.
+	\return The determinant.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline T determinant3x3(const T* m)
 	{
 		return m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7] - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7];
 	}
 
+	/**
+	\brief Compute the determinant of a 3x3 matrix.
+	\param a Input matrix.
+	\return The determinant.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline T determinant3x3(const Mat<3,3,T>& a)
 	{
@@ -427,18 +643,38 @@ namespace Kartet
 		return determinant<r>(a.m);
 	}
 
+	/**
+	\brief Compute the dot product between two vectors.
+	\param a Input vector.
+	\param b Input vector.
+	\return The dot product \f$ a \cdot b = \sum_k a_k b_k\f$.
+	\related Mat
+	**/
 	template<int r, typename T, typename U>
 	__host__ __device__ inline typename ResultingType<T,U>::Type dot(const Mat<r,1,T>& a, const Mat<r,1,U>& b)
 	{
 		return metaBinaryProductSum<r, typename ResultingType<T,U>::Type>(a.m, b.m);
 	}
 
+	/**
+	\brief Compute the hermitian dot product between two vectors.
+	\param a Input vector.
+	\param b Input vector.
+	\return The hermitian dot product \f$ a \cdot b = \sum_k \overline{a_k} b_k \f$.
+	\related Mat
+	**/
 	template<int r, typename T, typename U>
 	__host__ __device__ inline typename ResultingType<T,U>::Type hermDot(const Mat<r,1,T>& a, const Mat<r,1,U>& b)
 	{
 		return metaBinaryHermProductSum<r, typename ResultingType<T,U>::Type>(a.m, b.m);
 	}
 
+	/**
+	\brief Compute the Frobenius norm of the square matrix.
+	\param a Square input matrix.
+	\return The Froebenius norm of the matrix : \f$ \sqrt{Tr\left[a a^\dagger\right]} \f$.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline T frobenius(const Mat<r,r,T>& a)
 	{
@@ -448,24 +684,48 @@ namespace Kartet
 		return ::sqrt(val);
 	}
 
+	/**
+	\brief Compute the \f$\mathcal{L}_2\f$ norm squared of the vector.
+	\param v Input vector.
+	\return The \f$\mathcal{L}_2\f$ norm squared of the vector.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType normSquared(const Mat<r,1,T>& v)
 	{
 		return metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m);
 	}
 
+	/**
+	\brief Compute the \f$\mathcal{L}_2\f$ norm squared of the vector.
+	\param v Input vector.
+	\return The \f$\mathcal{L}_2\f$ norm squared of the vector.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType lengthSquared(const Mat<r,1,T>& v) // alias normSquared
 	{
 		return normSquared(v);
 	}
 
+	/**
+	\brief Compute the \f$\mathcal{L}_2\f$ norm of the vector.
+	\param v Input vector.
+	\return The \f$\mathcal{L}_2\f$ norm of the vector.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType norm(const Mat<r,1,T>& v)
 	{
 		return ::sqrt(metaUnaryAbsSquareSum<r, typename Traits<T>::BaseType>(v.m));
 	}
 
+	/**
+	\brief Compute the inverse of the \f$\mathcal{L}_2\f$ norm of the vector.
+	\param v Input vector.
+	\return The inverse of the \f$\mathcal{L}_2\f$ norm of the vector : \f$ 1/||v|| \f$.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType rnorm(const Mat<r,1,T>& v)
 	{
@@ -476,18 +736,36 @@ namespace Kartet
 		#endif
 	}
 
+	/**
+	\brief Compute the \f$\mathcal{L}_2\f$ norm of the vector.
+	\param v Input vector.
+	\return The \f$\mathcal{L}_2\f$ norm of the vector.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType length(const Mat<r,1,T>& v) // alias norm
 	{
 		return norm(v);
 	}
 
+	/**
+	\brief Compute the inverse of the \f$\mathcal{L}_2\f$ norm of the vector.
+	\param v Input vector.
+	\return The inverse of the \f$\mathcal{L}_2\f$ norm of the vector : \f$ 1/||v|| \f$.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline typename Traits<T>::BaseType rlength(const Mat<r,1,T>& v) // alias norm
 	{
 		return rnorm(v);
 	}
 
+	/**
+	\brief Normalize the vector by its \f$\mathcal{L}_2\f$ norm.
+	\param v Input vector.
+	\return A vector of same direction as a but of unit length : \f$ a/||a|| \f$.
+	\related Mat
+	**/
 	template<int r, typename T>
 	__host__ __device__ inline Mat<r,1,T> normalize(const Mat<r,1,T>& v)
 	{
@@ -498,6 +776,13 @@ namespace Kartet
 		#endif
 	}
 
+	/**
+	\brief Reflect the vector dir around a normal.
+	\param dir Input vector, direction.
+	\param normal Input vector, normal. This vector must be unitary, this constraint is not tested.
+	\return The vector dir reflected around the normal : \f$ dir - (dir \cdot normal) normal \f$.
+	\related Mat
+	**/
 	template<int r, typename T, typename U>
 	__host__ __device__ inline Mat<r,1,typename ResultingType<T,U>::Type> reflect(const Mat<r,1,T>& dir, const Mat<r,1,U>& normal)
 	{
@@ -621,6 +906,19 @@ namespace Kartet
 	}
 
 // Misc. :
+	/**
+	\brief Print the matrix to a standard stream.
+	\param os Output standard stream.
+	\param v Input matrix.
+	\return The output stream.
+
+	Example :
+	\code
+		Mat4d m = Mat2d::identity();
+		std::cout << "4x4 Identity : " << std::endl;
+		std::cout << m << std::endl;
+	\endcode
+	**/
 	template<int r, int c, typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Mat<r,c,T>& v)
 	{
