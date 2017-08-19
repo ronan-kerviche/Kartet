@@ -168,8 +168,8 @@ namespace Kartet
 
 	// Functions :
 	/**
-	\brief Matrix constructor.
-	The values are left unitialized.
+	\brief Default matrix constructor.
+	The elements are left unitialized.
 	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline Mat<r,c,T>::Mat(void)
@@ -790,6 +790,15 @@ namespace Kartet
 	}
 
 // Dimension specific :
+	/**
+	\brief Make a 2x2 matrix.
+	\param m0 Element at \f$(0,0)\f$.
+	\param m1 Element at \f$(1,0)\f$.
+	\param m2 Element at \f$(0,1)\f$.
+	\param m3 Element at \f$(1,1)\f$.
+	\return A 2x2 matrix with the given elements and the highest rated type.
+	\related Mat
+	**/
 	template<typename T0, typename T1, typename T2, typename T3>
 	__host__ __device__ inline Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> makeMat2(const T0& m0, const T1& m2, const T2& m1, const T3& m3)
 	{
@@ -801,6 +810,20 @@ namespace Kartet
 		return m;
 	}
 
+	/**
+	\brief Make a 3x3 matrix.
+	\param m0 Element at \f$(0,0)\f$.
+	\param m1 Element at \f$(1,0)\f$.
+	\param m2 Element at \f$(2,0)\f$.
+	\param m3 Element at \f$(0,1)\f$.
+	\param m4 Element at \f$(1,1)\f$.
+	\param m5 Element at \f$(2,1)\f$.
+	\param m6 Element at \f$(0,2)\f$.
+	\param m7 Element at \f$(1,2)\f$.
+	\param m8 Element at \f$(2,2)\f$.
+	\return A 3x3 matrix with the given elements and the highest rated type.
+	\related Mat
+	**/
 	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
 	__host__ __device__ inline Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> makeMat3(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8)
 	{
@@ -817,6 +840,27 @@ namespace Kartet
 		return m;
 	}
 
+	/**
+	\brief Make a 4x4 matrix.
+	\param m0 Element at \f$(0,0)\f$.
+	\param m1 Element at \f$(1,0)\f$.
+	\param m2 Element at \f$(2,0)\f$.
+	\param m3 Element at \f$(3,0)\f$.
+	\param m4 Element at \f$(0,1)\f$.
+	\param m5 Element at \f$(1,1)\f$.
+	\param m6 Element at \f$(2,1)\f$.
+	\param m7 Element at \f$(3,1)\f$.
+	\param m8 Element at \f$(0,2)\f$.
+	\param m9 Element at \f$(1,2)\f$.
+	\param m10 Element at \f$(2,2)\f$.
+	\param m11 Element at \f$(3,2)\f$.
+	\param m12 Element at \f$(0,3)\f$.
+	\param m13 Element at \f$(1,3)\f$.
+	\param m14 Element at \f$(2,3)\f$.
+	\param m15 Element at \f$(3,3)\f$.
+	\return A 4x4 matrix with the given elements and the highest rated type.
+	\related Mat
+	**/
 	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11, typename T12, typename T13, typename T14, typename T15>
 	__host__ __device__ inline Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> makeMat4(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8,const T9& m9, const T10& m10, const T11& m11, const T12& m12, const T13& m13, const T14& m14, const T15& m15)
 	{
@@ -840,6 +884,12 @@ namespace Kartet
 		return m;
 	}
 
+	/**
+	\brief Make a 2x2 rotation matrix.
+	\param angle Rotation angle, in radians.
+	\return The 2x2 rotation matrix for the given angle.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline Mat<2,2,T> rot2(const T& angle)
 	{
@@ -853,6 +903,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Make a 3x3 rotation matrix around the X axis.
+	\param angle Rotation angle, in radians.
+	\return The 3x3 rotation matrix for the given angle, around the X axis.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline Mat<3,3,T> rot3x(const T& angle)
 	{
@@ -867,6 +923,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Make a 3x3 rotation matrix around the Y axis.
+	\param angle Rotation angle, in radians.
+	\return The 3x3 rotation matrix for the given angle, around the Y axis.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline Mat<3,3,T> rot3y(const T& angle)
 	{
@@ -881,6 +943,12 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Make a 3x3 rotation matrix around the Z axis.
+	\param angle Rotation angle, in radians.
+	\return The 3x3 rotation matrix for the given angle, around the Z axis.
+	\related Mat
+	**/
 	template<typename T>
 	__host__ __device__ inline Mat<3,3,T> rot3z(const T& angle)
 	{
@@ -895,6 +963,70 @@ namespace Kartet
 		return res;
 	}
 
+	/**
+	\brief Make a 3x3 rotation matrix around an arbitrary axis.
+	\param axis Rotation axis, this vector must be normalized and this condition is not tested.
+	\param angle Rotation angle, in radians.
+	\return The 3x3 rotation matrix for the given angle, around the given axis.
+	\related Mat
+	**/
+	template<typename T, typename U>
+	__host__ __device__ inline Mat<3,3,typename ResultingType<T,U>::Type> rot3(const Mat<3,1,T>& axis, const U& angle)
+	{
+		Mat<3,3,typename ResultingType<T,U>::Type> res;
+		const T	c = cos(angle),
+			s = sin(angle),
+			m = (static_cast<T>(1)-c);
+		const T& x = axis(0,0),
+			 y = axis(1,0),
+			 z = axis(2,0);
+		res(0,0) = c+x*x*m;
+		res(1,0) = x*y*m+z*s;
+		res(2,0) = z*x*m-y*s;
+		res(0,1) = x*y*m-z*s;
+		res(1,1) = c+y*y*m;
+		res(2,1) = z*y*m+x*s;
+		res(0,2) = x*z*m+y*s;
+		res(1,2) = y*z*m-x*s;
+		res(2,2) = c+z*z*m;
+		return res;
+	}
+
+	/**
+	\brief Compute the rotation axis from a 3x3 rotation matrix.
+	\param m A 3x3 rotation matrix (not verified).
+	\return The rotation axis vector of length \f$ 2\sin(\theta) \f$.
+	\related Mat
+	**/
+	template<typename T>
+	__host__ __device__ inline Mat<3, 1, T> rotationAxis(const Mat<3,3,T>& m)
+	{
+		Mat<3, 1, T> res;
+		res(0,0) = m(2,1)-m(1,2);
+		res(1,0) = m(0,2)-m(2,0);
+		res(2,0) = m(1,0)-m(0,1);
+		return res;
+	}
+
+	/**
+	\brief Compute the rotation angle from a 3x3 rotation matrix.
+	\param m A 3x3 rotation matrix (not verified).
+	\return The rotation angle, in radians.
+	\related Mat
+	**/
+	template<typename T>
+	__host__ __device__ inline T rotationAngle(const Mat<3,3,T>& m)
+	{
+		return ::acos((trace(m)-static_cast<T>(1))/static_cast<T>(2));
+	}
+
+	/**
+	\brief Compute the cross-product between two vectors.
+	\param a Input vector.
+	\param b Input vector.
+	\return The cross-product vector \f$a \times b\f$.
+	\related Mat
+	**/
 	template<typename T, typename U>
 	__host__ __device__ inline Mat<3,1,typename ResultingType<T,U>::Type> cross(const Mat<3,1,T>& a, const Mat<3,1,U>& b)
 	{
@@ -910,7 +1042,8 @@ namespace Kartet
 	\brief Print the matrix to a standard stream.
 	\param os Output standard stream.
 	\param v Input matrix.
-	\return The output stream.
+	\return A reference to the output stream.
+	\related Mat
 
 	Example :
 	\code

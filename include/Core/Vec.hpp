@@ -82,7 +82,7 @@ namespace Kartet
 
 	};
 
-	// Type aliases :
+// Type aliases :
 	/**
 	\typedef Vec2f
 	\brief Alias to Vec<2,float> type, see Kartet::Vec for more information.
@@ -134,7 +134,7 @@ namespace Kartet
 	typedef Vec<3,Complex<double> > Vec3z;
 	typedef Vec<4,Complex<double> > Vec4z;
 
-	// Traits :
+// Traits :
 	template<int d, typename T>
 	struct Traits<Vec<d,T> >
 	{
@@ -150,69 +150,119 @@ namespace Kartet
 					isVector	= true;
 	};
 
-	// Functions :
+// Functions :
+	/**
+	\brief Default constructor.
+	The elements are left unitialized.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline Vec<d,T>::Vec(void)
 	{ }
 
+	/**
+	\brief Vector constructor.
+	\param val Fill value.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline Vec<d,T>::Vec(const T& val)
 	 : Mat<d,1,T>(val)
 	{ }
 
+	/**
+	\brief Vector copy constructor.
+	\param o The vector to be copied.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline Vec<d,T>::Vec(const Mat<d,1,T>& o)
 	 : Mat<d,1,T>(o)
 	{ }
 
+	/**
+	\brief Vector copy constructor.
+	\param o The vector to be copied.
+	**/
 	template<int d, typename T>
 	template<typename U>
 	__host__ __device__ inline Vec<d,T>::Vec(const Mat<d,1,U>& o)
 	 : Mat<d,1,T>(o)
 	{ }
 
+	/**
+	\brief Matrix constructor.
+	\param ptr Pointer to the array to be copied. It must contain d elements.
+	**/
 	template<int d, typename T>
 	template<typename U>
 	__host__ __device__ inline Vec<d,T>::Vec(const U* ptr)
 	 : Mat<d,1,T>(ptr)
 	{ }
 
+	/**
+	\brief Read a vector element.
+	\param i Row index.
+	\return A constant reference to the value of the vector at the index \f$(i)\f$.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline const T& Vec<d,T>::operator()(const int& i) const
 	{
 		return Mat<d,1,T>::m[i];
 	}
 
+	/**
+	\brief Read/write a vector element.
+	\param i Row index.
+	\return A reference to the value of the vector at the index \f$(i)\f$.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline T& Vec<d,T>::operator()(const int& i)
 	{
 		return Mat<d,1,T>::m[i];
 	}
 
+	/**
+	\brief Read the first vector element.
+	\return A constant reference to the value of the first vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline const T& Vec<d,T>::x(void) const
 	{
 		return Mat<d,1,T>::m[0];
 	}
 
+	/**
+	\brief Read/write the first vector element.
+	\return A reference to the value of the first vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline T& Vec<d,T>::x(void)
 	{
 		return Mat<d,1,T>::m[0];
 	}
 
+	/**
+	\brief Read the second vector element.
+	\return A constant reference to the value of the second vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline const T& Vec<d,T>::y(void) const
 	{
 		return Mat<d,1,T>::m[1];
 	}
 
+	/**
+	\brief Read/write the second vector element.
+	\return A reference to the value of the second vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline T& Vec<d,T>::y(void)
 	{
 		return Mat<d,1,T>::m[1];
 	}
 
+	/**
+	\brief Read the third vector element.
+	\return A constant reference to the value of the third vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline const T& Vec<d,T>::z(void) const
 	{
@@ -220,6 +270,10 @@ namespace Kartet
 		return Mat<d,1,T>::m[2];
 	}
 
+	/**
+	\brief Read/write the third vector element.
+	\return A reference to the value of the third vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline T& Vec<d,T>::z(void)
 	{
@@ -227,6 +281,10 @@ namespace Kartet
 		return Mat<d,1,T>::m[2];
 	}
 
+	/**
+	\brief Read the fourth vector element.
+	\return A constant reference to the value of the fourth vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline const T& Vec<d,T>::w(void) const
 	{
@@ -234,6 +292,10 @@ namespace Kartet
 		return Mat<d,1,T>::m[3];
 	}
 
+	/**
+	\brief Read/write the fourth vector element.
+	\return A reference to the value of the fourth vector element.
+	**/
 	template<int d, typename T>
 	__host__ __device__ inline T& Vec<d,T>::w(void)
 	{
@@ -241,7 +303,14 @@ namespace Kartet
 		return Mat<d,1,T>::m[3];
 	}
 
-	// Non-members :
+// Non-members :
+	/**
+	\brief Make a 2D vector.
+	\param x Element at \f$(0)\f$.
+	\param y Element at \f$(1)\f$.
+	\return A 2D vector with the given elements and the highest rated type.
+	\related Vec
+	**/
 	template<typename T0, typename T1>
 	__host__ __device__ inline Vec<2,typename ResultingType<T0,T1>::Type> makeVec2(const T0& x, const T1& y)
 	{
@@ -251,6 +320,14 @@ namespace Kartet
 		return v;
 	}
 
+	/**
+	\brief Make a 3D vector.
+	\param x Element at \f$(0)\f$.
+	\param y Element at \f$(1)\f$.
+	\param z Element at \f$(2)\f$.
+	\return A 3D vector with the given elements and the highest rated type.
+	\related Vec
+	**/
 	template<typename T0, typename T1, typename T2>
 	__host__ __device__ inline Vec<3,typename ResultingType3<T0,T1,T2>::Type> makeVec3(const T0& x, const T1& y, const T2& z)
 	{
@@ -261,6 +338,15 @@ namespace Kartet
 		return v;
 	}
 
+	/**
+	\brief Make a 4D vector.
+	\param x Element at \f$(0)\f$.
+	\param y Element at \f$(1)\f$.
+	\param z Element at \f$(2)\f$.
+	\param w Element at \f$(3)\f$.
+	\return A 4D vector with the given elements and the highest rated type.
+	\related Vec
+	**/
 	template<typename T0, typename T1, typename T2, typename T3>
 	__host__ __device__ inline Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type> makeVec4(const T0& x, const T1& y, const T2& z, const T2& w)
 	{
@@ -272,6 +358,13 @@ namespace Kartet
 		return v;
 	}
 
+	/**
+	\brief Binary matrix-vector product operator.
+	\param a Input matrix.
+	\param b Input vector.
+	\return A new vector set to \f$a \times b\f$.
+	\related Vec
+	**/
 	template<int ra, int ca, typename Ta, int rb, typename Tb>
 	__host__ __device__ inline Vec<ra,typename ResultingType<Ta,Tb>::Type> operator*(const Mat<ra,ca,Ta>& a, const Vec<rb,Tb>& b)
 	{
@@ -282,6 +375,21 @@ namespace Kartet
 		return res;
 	}
 
+// Misc. :
+	/**
+	\brief Print the vector to a standard stream.
+	\param os Output standard stream.
+	\param v Input vector.
+	\return A reference to the output stream.
+	\related Vec
+
+	Example :
+	\code
+		Vec4d v(1.0);
+		std::cout << "4D Vector : " << std::endl;
+		std::cout << v << std::endl;
+	\endcode
+	**/
 	template<int d, typename T>
 	__host__ std::ostream& operator<<(std::ostream& os, const Vec<d,T>& v)
 	{
