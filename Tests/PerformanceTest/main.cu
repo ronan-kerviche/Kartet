@@ -252,11 +252,10 @@ int main(int argc, char** argv)
 		TEST_BINARY_EXPRESSION("[Binary] Extra(x+y) : ",A = sqrt(exp(tan(cos(sin(A+B))))), bextra)
 		#undef TEST_BINARY_EXPRESSION
 
-		// Test :	
+		// Reduction :
 		v = 0.0;
 		A = 1;
 		A = Kartet::IndexI() + Kartet::IndexJ();
-		A.writeToFile("tmp.dat");
 		timer.start();
 		for(int l=0; l<L; l++)
 			v += reduceContext.sum(A);
