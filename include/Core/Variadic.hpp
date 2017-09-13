@@ -46,9 +46,6 @@
 				print '#define OARGS_%d(%s)\t%s' % (k, ', '.join([('_%d' % s) for s in range(k+1)]), ', '.join([('_%d' % s) for s in range(1,k+1,2)]));
 		def genZARGS(maxIndex):
 			for k in range(maxIndex):
-				print '#define OARGS_%d(%s)\t%s' % (k, ', '.join([('_%d' % s) for s in range(k+1)]), ', '.join([('_%d' % s) for s in range(1,k+1,2)]));
-		def genZARGS(maxIndex):
-			for k in range(maxIndex):
 				print '#define ZARGS_%d(zPre, zPost, %s)\t%s' % (k, ', '.join([('_%d' % s) for s in range(k+1)]), ', '.join([('zPre _%d zPost _%d' % (s, s+1)) for s in range(0,k,2)]));
 		def genCallers(maxIndex):
 			print '#define GET_VARIADIC_MACRO(%s, NAME, ...) NAME' % (', '.join([('_%d' % s) for s in range(maxIndex)]));
