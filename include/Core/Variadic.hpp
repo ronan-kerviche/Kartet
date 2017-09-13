@@ -260,23 +260,29 @@
 	// ================================================================
 
 	#define VARIADIC_FUNCTION_TEMPLATES
+	#define VARIADIC_FUNCTION_COMPUTE_LAYOUT COMPUTE_LAYOUT
 
 	#ifdef __CUDACC__
-		#define VARIADIC_FUNCTION(functionName, idx, jdx, kdx, layout, ...) \
+		#define VARIADIC_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
 			VARIADIC_FUNCTION_TEMPLATES \
-			__host__ __device__ void functionName##__kernel (const index_t& idx, const index_t& jdx, const index_t& kdx, const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__)); \
+			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__)); \
 			 \
 			VARIADIC_FUNCTION_TEMPLATES \
-			__global__ void functionName##__globalCaller(const Layout& layout, ZIP_ARGS(const, , __VA_ARGS__)) \
+			__global__ void functionName##__global(const Layout& layout, ZIP_ARGS(const, , __VA_ARGS__)) \
 			{ \
-				functionName##__kernel (layout.getI(), layout.getJ(), layout.getK(), layout, ODD_ARGS(__VA_ARGS__)); \
+				functionName##__kernel (layout, layout.getI(), layout.getJ(), layout.getK(), ODD_ARGS(__VA_ARGS__)); \
 			} \
 			 \
 			VARIADIC_FUNCTION_TEMPLATES \
 			void functionName (const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__), const Location& location=KARTET_DEFAULT_LOCATION) \
 			{ \
 				if(location==DeviceSide) \
-					functionName##__globalCaller COMPUTE_LAYOUT(layout) (layout, ODD_ARGS(__VA_ARGS__)); \
+				{ \
+					functionName##__global VARIADIC_FUNCTION_COMPUTE_LAYOUT(layout) (layout, ODD_ARGS(__VA_ARGS__)); \
+					cudaError_t err = cudaGetLastError(); \
+					if(err!=cudaSuccess) \
+						throw static_cast<Exception>(CudaExceptionsOffset + err); \
+				} \
 				else \
 				{ \
 					const index_t 	R = layout.numRows(), \
@@ -287,17 +293,17 @@
 						index_t dummy, jdx, kdx; \
 						layout.unpackIndex(q*R, dummy, jdx, kdx); \
 						for(index_t idx=0; idx<R; idx++) \
-							functionName##__kernel (idx, jdx, kdx, layout, ODD_ARGS(__VA_ARGS__)); \
+							functionName##__kernel (layout, idx, jdx, kdx, ODD_ARGS(__VA_ARGS__)); \
 					} \
 				} \
 			} \
 			 \
 			VARIADIC_FUNCTION_TEMPLATES \
-			__host__ __device__ void functionName##__kernel (const index_t& idx, const index_t& jdx, const index_t& kdx, const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__))
+			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__))
 	#else
-		#define VARIADIC_FUNCTION(functionName, idx, jdx, kdx, layout, ...) \
+		#define VARIADIC_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
 			VARIADIC_FUNCTION_TEMPLATES \
-			__host__ __device__ void functionName##__kernel (const index_t& idx, const index_t& jdx, const index_t& kdx, const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__)); \
+			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__)); \
 			 \
 			VARIADIC_FUNCTION_TEMPLATES \
 			void functionName (const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__), const Location& location=KARTET_DEFAULT_LOCATION) \
@@ -314,24 +320,24 @@
 						index_t dummy, jdx, kdx; \
 						layout.unpackIndex(q*R, dummy, jdx, kdx); \
 						for(index_t idx=0; idx<R; idx++) \
-							functionName##__kernel (idx, jdx, kdx, layout, ODD_ARGS(__VA_ARGS__)); \
+							functionName##__kernel (layout, idx, jdx, kdx, ODD_ARGS(__VA_ARGS__)); \
 					} \
 				} \
 			} \
 			 \
 			VARIADIC_FUNCTION_TEMPLATES \
-			__host__ __device__ void functionName##__kernel (const index_t& idx, const index_t& jdx, const index_t& kdx, const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__))
+			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__))
 	#endif
 
 /**
 \ingroup FunctionsGroup
 \def VARIADIC_FUNCTION
 \brief Define a variadic function which can run either on host or device (see Kartet::Location).
-\param functionName Name of the function
+\param functionName Name of the function.
+\param layout Name of the layout variable.
 \param idx Name of the I index variable.
 \param jdx Name of the J index variable.
 \param kdx Name of the K index variable.
-\param layout Name of the layout variable.
 
 The function cannot be used in a template expression. However, it provides a simple mechanism to write domain-agnostic code.
 
