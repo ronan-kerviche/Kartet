@@ -28,13 +28,13 @@
 
 /**
 	\file    Variadic.hpp
-	\brief   Variadic functions tools.
+	\brief   Functions tools.
 	\author  R. Kerviche
 	\date    September 12th 2017
 **/
 
-#ifndef __KARTET_VARIADIC_TOOLS__
-#define __KARTET_VARIADIC_TOOLS__
+#ifndef __KARTET_FUNCTION_TOOLS__
+#define __KARTET_FUNCTION_TOOLS__
 
 	/* To generate the macro tools :
 		#!/usr/bin/env python
@@ -259,26 +259,26 @@
 	#define ZIP_ARGS(zPre, zPost, ...)	GET_VARIADIC_MACRO(__VA_ARGS__, ZARGS_63, ZARGS_62, ZARGS_61, ZARGS_60, ZARGS_59, ZARGS_58, ZARGS_57, ZARGS_56, ZARGS_55, ZARGS_54, ZARGS_53, ZARGS_52, ZARGS_51, ZARGS_50, ZARGS_49, ZARGS_48, ZARGS_47, ZARGS_46, ZARGS_45, ZARGS_44, ZARGS_43, ZARGS_42, ZARGS_41, ZARGS_40, ZARGS_39, ZARGS_38, ZARGS_37, ZARGS_36, ZARGS_35, ZARGS_34, ZARGS_33, ZARGS_32, ZARGS_31, ZARGS_30, ZARGS_29, ZARGS_28, ZARGS_27, ZARGS_26, ZARGS_25, ZARGS_24, ZARGS_23, ZARGS_22, ZARGS_21, ZARGS_20, ZARGS_19, ZARGS_18, ZARGS_17, ZARGS_16, ZARGS_15, ZARGS_14, ZARGS_13, ZARGS_12, ZARGS_11, ZARGS_10, ZARGS_9, ZARGS_8, ZARGS_7, ZARGS_6, ZARGS_5, ZARGS_4, ZARGS_3, ZARGS_2, ZARGS_1, ZARGS_0)(zPre, zPost, __VA_ARGS__)
 	// ================================================================
 
-	#define VARIADIC_FUNCTION_TEMPLATES
-	#define VARIADIC_FUNCTION_COMPUTE_LAYOUT COMPUTE_LAYOUT
+	#define KARTET_FUNCTION_TEMPLATES
+	#define KARTET_FUNCTION_COMPUTE_LAYOUT COMPUTE_LAYOUT
 
 	#ifdef __CUDACC__
-		#define VARIADIC_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
-			VARIADIC_FUNCTION_TEMPLATES \
+		#define KARTET_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
+			KARTET_FUNCTION_TEMPLATES \
 			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__)); \
 			 \
-			VARIADIC_FUNCTION_TEMPLATES \
+			KARTET_FUNCTION_TEMPLATES \
 			__global__ void functionName##__global(const Layout& layout, ZIP_ARGS(const, , __VA_ARGS__)) \
 			{ \
 				functionName##__kernel (layout, layout.getI(), layout.getJ(), layout.getK(), ODD_ARGS(__VA_ARGS__)); \
 			} \
 			 \
-			VARIADIC_FUNCTION_TEMPLATES \
+			KARTET_FUNCTION_TEMPLATES \
 			void functionName (const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__), const Location& location=KARTET_DEFAULT_LOCATION) \
 			{ \
 				if(location==DeviceSide) \
 				{ \
-					functionName##__global VARIADIC_FUNCTION_COMPUTE_LAYOUT(layout) (layout, ODD_ARGS(__VA_ARGS__)); \
+					functionName##__global KARTET_FUNCTION_COMPUTE_LAYOUT(layout) (layout, ODD_ARGS(__VA_ARGS__)); \
 					cudaError_t err = cudaGetLastError(); \
 					if(err!=cudaSuccess) \
 						throw static_cast<Exception>(CudaExceptionsOffset + err); \
@@ -287,7 +287,7 @@
 				{ \
 					const index_t 	R = layout.numRows(), \
 							Z = layout.numColumns() * layout.numSlices(); \
-					_Pragma("omp parallel for schedule(static)") \
+					OMP_PARALLEL_STATIC \
 					for(index_t q=0; q<Z; q++) \
 					{ \
 						index_t dummy, jdx, kdx; \
@@ -298,14 +298,14 @@
 				} \
 			} \
 			 \
-			VARIADIC_FUNCTION_TEMPLATES \
+			KARTET_FUNCTION_TEMPLATES \
 			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__))
 	#else
-		#define VARIADIC_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
-			VARIADIC_FUNCTION_TEMPLATES \
+		#define KARTET_FUNCTION(functionName, layout, idx, jdx, kdx, ...) \
+			KARTET_FUNCTION_TEMPLATES \
 			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__)); \
 			 \
-			VARIADIC_FUNCTION_TEMPLATES \
+			KARTET_FUNCTION_TEMPLATES \
 			void functionName (const Layout& layout, ZIP_ARGS(const, &, __VA_ARGS__), const Location& location=KARTET_DEFAULT_LOCATION) \
 			{ \
 				if(location==DeviceSide) \
@@ -314,7 +314,7 @@
 				{ \
 					const index_t 	R = layout.numRows(), \
 							Z = layout.numColumns() * layout.numSlices(); \
-					_Pragma("omp parallel for schedule(static)") \
+					OMP_PARALLEL_STATIC \
 					for(index_t q=0; q<Z; q++) \
 					{ \
 						index_t dummy, jdx, kdx; \
@@ -325,13 +325,13 @@
 				} \
 			} \
 			 \
-			VARIADIC_FUNCTION_TEMPLATES \
+			KARTET_FUNCTION_TEMPLATES \
 			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__))
 	#endif
 
 /**
 \ingroup FunctionsGroup
-\def VARIADIC_FUNCTION
+\def KARTET_FUNCTION
 \brief Define a variadic function which can run either on host or device (see Kartet::Location).
 \param functionName Name of the function.
 \param layout Name of the layout variable.
@@ -347,7 +347,7 @@ Define a variadic function :
 namespace Kartet
 {
 	// Define the function, the first lists the indexing parameters :
-	VARIADIC_FUNCTION(myFunction, i, j, k, layout, 
+	KARTET_FUNCTION(myFunction, i, j, k, layout, 
 	// The second line lists the input parameters with the following constraints :
 	// - the types and the variables are separated by a coma.
 	// - the type should be the base type or a pointer, the referencing mechanism is handled by the macro.
@@ -362,9 +362,9 @@ namespace Kartet
 	}
 
 	// To define template functions use :
-	#undef VARIADIC_FUNCTION_TEMPLATES
-	#define VARIADIC_FUNCTION_TEMPLATES template<typename T>
-	VARIADIC_FUNCTION(myTemplateFunction, i, j, k, layout,
+	#undef KARTET_FUNCTION_TEMPLATES
+	#define KARTET_FUNCTION_TEMPLATES template<typename T>
+	KARTET_FUNCTION(myTemplateFunction, i, j, k, layout,
 		Accessor<T>, a)
 	{
 		UNUSED_PARAMETER(k)
@@ -372,7 +372,7 @@ namespace Kartet
 		if(a.isInside(i,j))
 			a.data(i,j) = static_cast<T>(i+j);
 	}
-	#undef VARIADIC_FUNCTION_TEMPLATES
+	#undef KARTET_FUNCTION_TEMPLATES
 }
 \endcode
 

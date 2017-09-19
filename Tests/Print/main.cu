@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 			bool isComplex = true;
 			if(!file.is_open())
 			{
-				std::cerr << "Cannot open file " << argv[1] << std::endl;
+				std::cerr << "Cannot open file : " << argv[1] << "." << std::endl;
 				return -1;
 			}
 			file.seekg(0);

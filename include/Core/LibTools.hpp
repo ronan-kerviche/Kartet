@@ -103,6 +103,12 @@
 		}
 	#endif
 
+	#ifdef KARTET_USE_OMP
+		#define OMP_PARALLEL_STATIC _Pragma("omp parallel for schedule(static)")
+	#else
+		#define OMP_PARALLEL_STATIC
+	#endif
+
 	// Other tools :
 namespace Kartet
 {

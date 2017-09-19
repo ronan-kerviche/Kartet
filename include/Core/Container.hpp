@@ -84,7 +84,7 @@ a = new Kartet::Array<double>(10,10);
 	};
 
 	/**
-	\brief Container constructer.
+	\brief Container constructor.
 	**/
 	template<typename T>
 	__host__ Container<T>::Container(void)

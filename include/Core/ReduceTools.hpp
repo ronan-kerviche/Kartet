@@ -623,9 +623,7 @@ namespace Kartet
 					bnc = layout.numColumns()/output.numColumns(),
 					bnr = layout.numRows()/output.numRows(),
 					outputZ = output.numColumns()*output.numSlices();
-			#ifdef KARTET_USE_OMP
-				#pragma omp parallel for schedule(static)
-			#endif
+				OMP_PARALLEL_STATIC
 				for(index_t qo=0; qo<outputZ; qo++)
 				{
 					index_t dummy, jo, ko;

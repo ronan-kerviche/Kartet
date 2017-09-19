@@ -325,7 +325,7 @@ int main(int argc, char** argv)
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
-			for(unsigned int k=0; k<A.numColumns(); k++)
+			for(Kartet::index_t k=0; k<A.numColumns(); k++)
 				v += blasContext.nrm2(A.column(k));
 		}
 		timer.stop();
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
 		timer.start();
 		for(int l=0; l<L; l++)
 		{
-			for(unsigned int k=0; k<A.numColumns(); k++)
+			for(Kartet::index_t k=0; k<A.numColumns(); k++)
 			{
 				V = A.column(k)*A.column(k);
 				v += thrust::reduce(devPtrV, devPtrV + V.numElements(), 0.0, thrust::plus<T>());

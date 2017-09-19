@@ -360,7 +360,7 @@ namespace Kartet
 				os << "NoException(ExceptionOffset)";
 				break;
 			default :
-				os << "UnknownException";
+				os << "UnknownException (" << static_cast<unsigned int>(e) << ")";
 		}
 
 		return os;

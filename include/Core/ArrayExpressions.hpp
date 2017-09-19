@@ -415,10 +415,7 @@ namespace Kartet
 		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
-
-	#ifdef KARTET_USE_OMP
-		#pragma omp parallel for schedule(static)
-	#endif
+		OMP_PARALLEL_STATIC
 		for(index_t q=0; q<Z; q++)
 		{
 			index_t dummy, j, k;
@@ -477,9 +474,7 @@ namespace Kartet
 		//typedef typename ExpressionEvaluation<TExpr>::ReturnType ReturnType;
 		const index_t 	R = array.numRows(),
 				Z = array.numColumns()*array.numSlices();
-	#ifdef KARTET_USE_OMP
-		#pragma omp parallel for schedule(static)
-	#endif
+		OMP_PARALLEL_STATIC
 		for(index_t q=0; q<Z; q++)
 		{
 			index_t dummy, j, k;
