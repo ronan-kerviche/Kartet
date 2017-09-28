@@ -36,20 +36,22 @@
 /**
 	Example :
 	\code
+		ScalarArgument<float> scaleArg(1.0f, "Scale", "Scale of the object.");
 		VecArgument<3, float> positionArg(makeVec3(0, 0, 0), "Position", "Position of the object.");
 		MatArgument<3, 3, float> attitudeArg(Mat3d::identity(), "Attitude", "Attitude of the object.");
 		std::map<std::string, AbstractArgument*> argumentsList;
+		argumentsList["scale"] = &scaleArg;
 		argumentsList["position"] = &positionArg;
 		argumentsList["attitude"] = &attitudeArg;
 
 		if(!getArguments(argc, argv, argumentsList))
 			throw Kartet::InvalidArgument;
 		printArguments(argumentsList);
-
+		std::cout << "Scale    : " << scaleArg.val << std::endl;
 		std::cout << "Position : " << positionArg.val << std::endl;
 		std::cout << "Attitude : " << attitudeArg.val << std::endl;
 
-		// Run with : ./program --position 1,2,3 --attitude "1,0,0;0,1,0;0,0,1"
+		// Run with : ./program --scale 3.141592 --position 1,2,3 --attitude "1,0,0;0,1,0;0,0,1"
 	\endcode
 **/
 
@@ -134,9 +136,27 @@
 		const std::string name;
 		AbstractArgument(const std::string& _name);
 		virtual ~AbstractArgument(void);
-		virtual bool read(const std::string& str, const std::string& arg="") = 0;
+		virtual bool takeValue(void) const;
+		virtual bool read(const std::string& str, const std::string& arg="");
 		virtual std::string help(void) const;
 		virtual std::string value(void) const = 0;
+	};
+
+	/**
+	\brief Toggle argument class.
+
+	Test the status via the AbstractArgument::set member.
+	**/
+	struct ToggleArgument : public AbstractArgument
+	{
+		/// Base help.
+		const std::string baseHelp;
+
+		ToggleArgument(const std::string& _name, const std::string& _baseHelp);
+		virtual ~ToggleArgument(void);
+		bool takeValue(void) const;
+		std::string help(void) const;
+		std::string value(void) const;
 	};
 
 	/**

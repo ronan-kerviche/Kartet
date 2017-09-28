@@ -53,12 +53,61 @@
 	{ }
 
 	/**
+	\brief Test if the argument takes a value.
+	\return True if the argument takes a value.
+	**/
+	bool AbstractArgument::takeValue(void) const
+	{
+		return true;
+	}
+
+	bool AbstractArgument::read(const std::string&, const std::string&)
+	{
+		return true;
+	}
+
+	/**
 	\brief Returns the formatted help.
 	\return A string containing the formatted help.
 	**/
 	std::string AbstractArgument::help(void) const
 	{
 		return "";
+	}
+
+// ToggleArgument :
+	ToggleArgument::ToggleArgument(const std::string& _name, const std::string& _baseHelp)
+	 :	AbstractArgument(_name),
+		baseHelp(_baseHelp)
+	{ }
+
+	ToggleArgument::~ToggleArgument(void)
+	{ }
+
+	bool ToggleArgument::takeValue(void) const
+	{
+		return false;
+	}
+
+	/**
+	\brief Returns the formatted help.
+	\return A string containing the formatted help.
+	**/
+	std::string ToggleArgument::help(void) const
+	{
+                return baseHelp;
+        }
+
+	/**
+	\brief Returns the current value.
+	\return A string containing the current formatted value.
+	**/
+	std::string ToggleArgument::value(void) const
+	{
+		if(set)
+			return "set";
+		else
+			return "unset";
 	}
 
 // StringArgument :
@@ -167,27 +216,36 @@
 				std::cerr << "To print the help : " << programName << ' ' << argPrefix << "help" << std::endl;
 				return false;
 			}
-			it++;
-			if(it==args.end())
+
+
+			if(ita->second->takeValue())
 			{
-				std::cerr << "Missing value for argument : " << argPrefix << ita->first << ", \"" << ita->second->name << "\"." << std::endl;
-				std::cerr << "To print the help : " << programName << ' ' << argPrefix << "help" << std::endl;
-				return false;
-			}
-			else if(ita->second!=NULL)
-			{
-				if(ita->second->set)
+				it++;
+				if(it==args.end())
+				{
+					std::cerr << "Missing value for argument : " << argPrefix << ita->first << ", \"" << ita->second->name << "\"." << std::endl;
+					std::cerr << "To print the help : " << programName << ' ' << argPrefix << "help" << std::endl;
+				}
+				else if(ita->second->set)
 				{
 					std::cerr << "Argument \"" << ita->second->name << "\" (with new value : " << *it << ") was already set." << std::endl;
 					return false;
 				}
-				if(!ita->second->read(*it, argPrefix + ita->first))
+				else if(!ita->second->read(*it, argPrefix + ita->first))
 					return false;
 				else
 					ita->second->set = true;
 			}
 			else
-				std::cout << "[WARNING] Dropped value of argument \"" << ita->second->name << "\" : " << *it << std::endl;
+			{
+				if(ita->second->set)
+				{
+					std::cerr << "Argument \"" << ita->second->name << "\" was already toggled." << std::endl;
+					return false;
+				}
+				else
+					ita->second->set = true;
+			}
 		}
 		return true;
 	}

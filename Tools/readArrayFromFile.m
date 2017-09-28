@@ -15,7 +15,7 @@ function A = readArrayFromFile(arg)
 	assert(fileId>=0, 'Bad File ID.');
 
 	% Read the header :
-	header = fread(fileId, 8, 'char*1');
+	header = fread(fileId, 8, 'char*1', 0, 'l');
 	
 	% This header should match the header in Array.hpp :
 	if(strcmp(char(header.'), 'KARTET02')==0)
@@ -24,11 +24,11 @@ function A = readArrayFromFile(arg)
 	end
 
 	% Read the sizes :
-	T = fread(fileId, 1, '*int32');
-	X = fread(fileId, 1, '*uint8')>0;
-	R = fread(fileId, 1, '*int64');
-	C = fread(fileId, 1, '*int64');
-	S = fread(fileId, 1, '*int64');
+	T = fread(fileId, 1, '*int32', 0, 'l');
+	X = fread(fileId, 1, '*uint8', 0, 'l')>0;
+	R = fread(fileId, 1, '*int64', 0, 'l');
+	C = fread(fileId, 1, '*int64', 0, 'l');
+	S = fread(fileId, 1, '*int64', 0, 'l');
 	
 	% This list should match the list in TypeTools.hpp (note that void is at index 0 and is omitted)
 	types = {	struct('typename', 'uint8'), ...		% bool
@@ -53,7 +53,7 @@ function A = readArrayFromFile(arg)
 		nElements = nElements * 2;
 	end
 	
-	A = fread(fileId, nElements, sprintf('*%s', types{T}.typename));
+	A = fread(fileId, nElements, sprintf('*%s', types{T}.typename), 0, 'l');
 	if(X)
 		A = A(1:2:end) + 1i* A(2:2:end);
 	end

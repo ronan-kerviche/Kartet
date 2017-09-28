@@ -2401,6 +2401,8 @@ namespace Kartet
 	\param stream Stream to write to.
 	\param maxBufferSize Buffer size used for transfers from the device.
 
+	The output is written in a little-endian ordering.
+
 	Example :
 	\code
 	Kartet::Array<float> A(8,8), B(8,8);
