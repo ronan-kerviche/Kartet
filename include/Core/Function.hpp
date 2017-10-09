@@ -27,7 +27,7 @@
 /* ************************************************************************************************************* */
 
 /**
-	\file    Variadic.hpp
+	\file    Function.hpp
 	\brief   Functions tools.
 	\author  R. Kerviche
 	\date    September 12th 2017

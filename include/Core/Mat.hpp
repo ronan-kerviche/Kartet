@@ -777,14 +777,33 @@ namespace Kartet
 	}
 
 	/**
-	\brief Reflect the vector dir around a normal.
+	\brief Reflect the incoming vector dir around a normal (symmetry).
 	\param dir Input vector, direction.
 	\param normal Input vector, normal. This vector must be unitary, this constraint is not tested.
-	\return The vector dir reflected around the normal : \f$ dir - (dir \cdot normal) normal \f$.
+	\return The vector dir reflected around the normal as a physical bounce : \f$ 2 (dir \cdot normal) normal - dir \f$.
+
+	Note that the result vector is opposite in direction to that of Kartet::rebound().
+
 	\related Mat
 	**/
 	template<int r, typename T, typename U>
 	__host__ __device__ inline Mat<r,1,typename ResultingType<T,U>::Type> reflect(const Mat<r,1,T>& dir, const Mat<r,1,U>& normal)
+	{
+		return (static_cast<typename ResultingType<T,U>::Type>(2)*dot(dir, normal))*normal - dir;
+	}
+
+	/**
+	\brief Reflect the incoming vector dir around a normal (physical rebound).
+	\param dir Input vector, direction.
+	\param normal Input vector, normal. This vector must be unitary, this constraint is not tested.
+	\return The vector dir reflected around the normal as a physical bounce : \f$ dir - 2 (dir \cdot normal) normal \f$.
+
+	Note that the result vector is opposite in direction to that of Kartet::reflect().
+
+	\related Mat
+	**/
+	template<int r, typename T, typename U>
+	__host__ __device__ inline Mat<r,1,typename ResultingType<T,U>::Type> rebound(const Mat<r,1,T>& dir, const Mat<r,1,U>& normal)
 	{
 		return dir - (static_cast<typename ResultingType<T,U>::Type>(2)*dot(dir, normal))*normal;
 	}
