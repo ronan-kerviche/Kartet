@@ -340,6 +340,7 @@ namespace Kartet
 			case GetTypeIndex<void>::index : 
 			default :
 				throw UnknownTypeIndex;
+			#undef CASE
 		}
 	}
 

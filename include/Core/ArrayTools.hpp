@@ -93,7 +93,12 @@ namespace Kartet
 	template<typename T>
 	inline size_t Layout::StaticContainer<T>::streamHeaderLength(void)
 	{
-		return sizeof(Layout::StaticContainer<T>::streamHeader);
+		#ifdef _WIN32
+			// CL Bug? See https://connect.microsoft.com/VisualStudio/feedback/details/759407/can-not-get-size-of-static-array-defined-in-class-template
+			return 9;
+		#else
+			return sizeof(Layout::StaticContainer<T>::streamHeader);
+		#endif
 	}
 
 // Layout :
