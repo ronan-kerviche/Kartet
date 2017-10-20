@@ -104,6 +104,7 @@
 	#endif
 
 	#ifdef KARTET_USE_OMP
+		#include <omp.h>
 		#define OMP_PARALLEL_STATIC _Pragma("omp parallel for schedule(static)")
 	#else
 		#define OMP_PARALLEL_STATIC
