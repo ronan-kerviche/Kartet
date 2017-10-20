@@ -66,7 +66,7 @@ namespace Kartet
 {
 	// Required prototype :
 	template<typename T1, typename T2>
-	struct ResultingType;
+	class ResultingType;
 
 	// Complex : 
 	/**
@@ -623,42 +623,49 @@ namespace Kartet
 	#define SPECIAL_ReFUNCTION( function, CxOperation, ReOperationSigned, ReOperationUnsigned ) \
 		__host__ __device__ inline int function (const int& r) \
 		{ \
+			typedef int T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
 		__host__ __device__ inline unsigned int function (const unsigned int& r) \
 		{ \
+			typedef unsigned int T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationUnsigned ; \
 		} \
 		 \
 		__host__ __device__ inline signed long long function (const signed long long& r) \
 		{ \
+			typedef signed long long T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
 		__host__ __device__ inline unsigned long long function (const unsigned long long& r) \
 		{ \
+			typedef unsigned long long T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationUnsigned ; \
 		} \
 		 \
 		__host__ __device__ inline float function (const float& r) \
 		{ \
+			typedef float T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
 		__host__ __device__ inline double function (const double& r) \
 		{ \
+			typedef double T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
 		 \
 		__host__ inline long double function (const long double& r) \
 		{ \
+			typedef long double T; \
 			UNUSED_PARAMETER(r) \
 			return ReOperationSigned ; \
 		} \
@@ -672,22 +679,24 @@ namespace Kartet
 		 \
 		__host__ __device__ inline float function (const cuFloatComplex& z) \
 		{ \
+			typedef float T; \
 			UNUSED_PARAMETER(z) \
 			return CxOperation ; \
 		} \
 		 \
 		__host__ __device__ inline double function (const cuDoubleComplex& z) \
 		{ \
+			typedef double T; \
 			UNUSED_PARAMETER(z) \
 			return CxOperation ; \
 		}
 		
 		
-		SPECIAL_ReFUNCTION( real, 	z.x, 				r,			r)
-		SPECIAL_ReFUNCTION( imag, 	z.y, 				0,			0)
-		SPECIAL_ReFUNCTION( abs, 	::sqrt(z.x*z.x+z.y*z.y), 	r<0 ? -r : r,		r)
-		SPECIAL_ReFUNCTION( absSq, 	z.x*z.x+z.y*z.y, 		r*r,			r*r)
-		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? K_PI : 0,		0)
+		SPECIAL_ReFUNCTION( real, 	z.x, 				r,				r)
+		SPECIAL_ReFUNCTION( imag, 	z.y, 				0,				0)
+		SPECIAL_ReFUNCTION( abs, 	::sqrt(z.x*z.x+z.y*z.y), 	r<0 ? -r : r,			r)
+		SPECIAL_ReFUNCTION( absSq, 	z.x*z.x+z.y*z.y, 		r*r,				r*r)
+		SPECIAL_ReFUNCTION( arg, 	::atan2(z.y, z.x), 		r<0 ? static_cast<T>(K_PI) : 0,	0)
 	#undef SPECIAL_ReFUNCTION
 
 		// More specials :

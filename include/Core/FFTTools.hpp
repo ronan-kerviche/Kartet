@@ -305,6 +305,7 @@ namespace Kartet
 				if(err!=CUFFT_SUCCESS)
 					throw static_cast<Exception>(CuFFTExceptionOffset + err);
 			#else
+				UNUSED_PARAMETER(forward)
 				throw NotSupported;
 			#endif
 		}

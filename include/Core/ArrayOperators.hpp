@@ -80,7 +80,6 @@ namespace Kartet
 		}
 		else
 			evaluateExpressionOverLayout(*this, expr);
-
 		return *this;
 	}
 
@@ -117,7 +116,6 @@ namespace Kartet
 		}
 		else
 			evaluateExpressionOverLayout(*this, a);
-
 		return *this;
 	}
 
@@ -168,12 +166,14 @@ namespace Kartet
 	Accessor<T,l>& Accessor<T,l>::assign(const Accessor<T,l2>& a, cudaStream_t stream)
 	{
 		STATIC_ASSERT_VERBOSE(l!=l2, LHS_AND_RHS_HAVE_INCOMPATIBLE_LOCATIONS)
-
 		#ifdef __CUDACC__
 			MemCpyDualToolBox<T> op((l==DeviceSide) ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, stream);
 			dualScan(*this, dataPtr(), a, a.dataPtr(), op);
 			return *this;
 		#else
+			// This is/should never (be) happening if device-side is not defined.
+			UNUSED_PARAMETER(a)
+			UNUSED_PARAMETER(stream)
 			throw NotSupported;
 		#endif
 	}

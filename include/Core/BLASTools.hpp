@@ -468,8 +468,20 @@ namespace Kartet
 					res = cblas_sdot(x.numElements(), FPTR(x.dataPtr()), 1, FPTR(y.dataPtr()), 1);
 				else IF_DOUBLE
 					res = cblas_ddot(x.numElements(), DPTR(x.dataPtr()), 1, DPTR(y.dataPtr()), 1);
-				else
-					throw NotSupported;
+				else IF_CX_FLOAT
+				{
+					if(!conjugate)
+						cblas_cdotu_sub(x.numElements(), CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(res));
+					else
+						cblas_cdotc_sub(x.numElements(), CPTR(x.dataPtr()), 1, CPTR(y.dataPtr()), 1, CPTR(res));
+				}
+				else IF_CX_DOUBLE
+				{
+					if(!conjugate)
+						cblas_zdotu_sub(x.numElements(), ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(res));
+					else
+						cblas_zdotc_sub(x.numElements(), ZPTR(x.dataPtr()), 1, ZPTR(y.dataPtr()), 1, ZPTR(res));
+				}
 			#else
 				throw NotSupported;
 			#endif
@@ -2510,6 +2522,10 @@ namespace Kartet
 			}
 			TEST_EXCEPTION(err)
 		#else
+			UNUSED_PARAMETER(alpha)
+			UNUSED_PARAMETER(opa)
+			UNUSED_PARAMETER(beta)
+			UNUSED_PARAMETER(opb)
 			throw NotSupported;
 		#endif
 		return C;
@@ -2584,6 +2600,7 @@ namespace Kartet
 				err = cublasZdgmm(handle, getCuBLASSideMode(side), C.numRows(), C.numColumns(), ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(x.dataPtr()), 1, ZPTR(C.dataPtr()), C.columnsStride());
 			TEST_EXCEPTION(err)
 		#else
+			UNUSED_PARAMETER(side)
 			throw NotSupported;
 		#endif
 		return C;

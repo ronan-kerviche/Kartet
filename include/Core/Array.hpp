@@ -573,7 +573,7 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 				__host__	           Accessor<T,l> elements(index_t p, index_t numElements) const;
 				__host__	           Accessor<T,l> elements(void) const;
 				__host__	           Accessor<T,l> row(index_t i) const; 
-				__host__	           Accessor<T,l> endRow(index_t i) const;
+				__host__	           Accessor<T,l> endRow(void) const;
 				__host__	           Accessor<T,l> rows(index_t iBegin, index_t r) const;
 				__host__ 	           Accessor<T,l> column(index_t j) const;
 				__host__ 	           Accessor<T,l> endColumn(void) const;

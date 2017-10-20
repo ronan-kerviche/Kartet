@@ -2541,13 +2541,11 @@ namespace Kartet
 	}
 
 	/**
-	\brief Get an accesor to a particular row.
-	\param i Row index.
-	\throw Kartet::OutOfRange If the row index is out of range.
-	\return An accessor to the specified row.
+	\brief Get an accesor to the last row.
+	\return An accessor to the last row.
 	**/
 	template<typename T, Location l>
-	__host__ Accessor<T,l> Accessor<T,l>::endRow(index_t i) const
+	__host__ Accessor<T,l> Accessor<T,l>::endRow(void) const
 	{
 		return row(numRows()-1);
 	}
@@ -3125,7 +3123,7 @@ namespace Kartet
 	**/
 	template<typename T, Location l>
 	__host__ Array<T,l>::Array(const T* ptr, const Layout& lt)
-	 :	Accessor<T,l>(layout.monolithicLayout())
+	 :	Accessor<T,l>(lt.monolithicLayout())
 	{
 		if(!layout().isValid())
 			throw InvalidLayout;
