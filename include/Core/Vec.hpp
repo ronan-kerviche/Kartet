@@ -312,12 +312,24 @@ namespace Kartet
 	\related Vec
 	**/
 	template<typename T0, typename T1>
-	__host__ __device__ inline Vec<2,typename ResultingType<T0,T1>::Type> makeVec2(const T0& x, const T1& y)
+	__host__ __device__ inline Vec<2,typename ResultingType<T0,T1>::Type> vec2(const T0& x, const T1& y)
 	{
 		Vec<2,typename ResultingType<T0,T1>::Type> v;
 		v(0) = x;
 		v(1) = y;
 		return v;
+	}
+
+	/**
+	\brief Make a 2D vector.
+	\param a All values.
+	\return A 2D vector filled with the given element.
+	\related Vec
+	**/
+	template<typename T>
+	__host__ __device__ inline Vec<2,T> vec2(const T& a)
+	{
+		return Vec<2,T>(a);
 	}
 
 	/**
@@ -329,13 +341,25 @@ namespace Kartet
 	\related Vec
 	**/
 	template<typename T0, typename T1, typename T2>
-	__host__ __device__ inline Vec<3,typename ResultingType3<T0,T1,T2>::Type> makeVec3(const T0& x, const T1& y, const T2& z)
+	__host__ __device__ inline Vec<3,typename ResultingType3<T0,T1,T2>::Type> vec3(const T0& x, const T1& y, const T2& z)
 	{
 		Vec<3,typename ResultingType3<T0,T1,T2>::Type> v;
 		v(0) = x;
 		v(1) = y;
 		v(2) = z;
 		return v;
+	}
+
+	/**
+	\brief Make a 3D vector.
+	\param a All values.
+	\return A 3D vector filled with the given element.
+	\related Vec
+	**/
+	template<typename T>
+	__host__ __device__ inline Vec<3,T> vec3(const T& a)
+	{
+		return Vec<3,T>(a);
 	}
 
 	/**
@@ -348,7 +372,7 @@ namespace Kartet
 	\related Vec
 	**/
 	template<typename T0, typename T1, typename T2, typename T3>
-	__host__ __device__ inline Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type> makeVec4(const T0& x, const T1& y, const T2& z, const T2& w)
+	__host__ __device__ inline Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type> vec4(const T0& x, const T1& y, const T2& z, const T2& w)
 	{
 		Vec<4,typename ResultingType4<T0,T1,T2,T3>::Type::Type> v;
 		v(0) = x;
@@ -356,6 +380,18 @@ namespace Kartet
 		v(2) = z;
 		v(3) = w;
 		return v;
+	}
+
+	/**
+	\brief Make a 4D vector.
+	\param a All values.
+	\return A 4D vector filled with the given element.
+	\related Vec
+	**/
+	template<typename T>
+	__host__ __device__ inline Vec<4,T> vec4(const T& a)
+	{
+		return Vec<4,T>(a);
 	}
 
 	/**

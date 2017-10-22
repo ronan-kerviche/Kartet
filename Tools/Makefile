@@ -135,7 +135,7 @@ all : $(KARTET_DEFAULT_TARGET)
 	@echo '[ ALL  ] Done.'
 
 deviceBinary : $(DEVICE_OBJECTS)
-	@echo '[DEVICE] Linking (Platform code(s) : $(DEVICE_CODE))...'
+	@echo '[DEVICE] Linking (Platform code(s) : $(DEVICE_CODE)) ...'
 	@$(NVCC) -o $(EXEC_DEVICE) $(OBJ_DIR)$(notdir $^) $(NVCC_FLAGS) $(NVCC_LIB)
 
 hostBinary : $(HOST_OBJECTS)

@@ -77,22 +77,24 @@ namespace Kartet
 		__host__ __device__ inline const T& operator()(const int& i, const int& j) const;
 		__host__ __device__ inline T& operator()(const int& i, const int& j);
 		__host__ __device__ inline Mat<r,1,T> col(const int& j);
-		__host__ __device__ inline const Mat<r,c,T>& operator=(const Mat<r, c, T>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator=(const Mat<r, c, T>& o);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& operator=(const Mat<r, c, U>& o);
-		__host__ __device__ inline const Mat<r,c,T>& operator+=(const Mat<r, c, T>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator=(const Mat<r, c, U>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator+=(const Mat<r, c, T>& o);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& operator+=(const Mat<r, c, U>& o);
-		__host__ __device__ inline const Mat<r,c,T>& operator-=(const Mat<r, c, T>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator+=(const Mat<r, c, U>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator-=(const Mat<r, c, T>& o);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& operator-=(const Mat<r, c, U>& o);
+		__host__ __device__ inline Mat<r,c,T>& operator-=(const Mat<r, c, U>& o);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& operator*=(const U& o);
+		__host__ __device__ inline Mat<r,c,T>& operator*=(const U& o);
+		template<int rb, int cb, typename U>
+		__host__ __device__ inline Mat<r,c,T>& operator*=(const Mat<rb, cb, U>& m);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& operator/=(const U& o);
-		__host__ __device__ inline const Mat<r,c,T>& clear(const T& val);
+		__host__ __device__ inline Mat<r,c,T>& operator/=(const U& o);
+		__host__ __device__ inline Mat<r,c,T>& clear(const T& val);
 		template<typename U>
-		__host__ __device__ inline const Mat<r,c,T>& set(const U* ptr);
+		__host__ __device__ inline Mat<r,c,T>& set(const U* ptr);
 
 		// Tools :
 		__host__ __device__ inline static Mat<r,c,T> identity(void);
@@ -221,7 +223,7 @@ namespace Kartet
 	\brief Read a matrix element.
 	\param i Row index.
 	\param j Column index.
-	\return A constant reference to the value of the matrix at the index \f$(i,j)\f$.
+	\return A reference to the value of the matrix at the index \f$(i,j)\f$.
 	**/
 	template<int r, int c, typename T>
 	__host__ __device__ inline const T& Mat<r,c,T>::operator()(const int& i, const int& j) const
@@ -256,99 +258,116 @@ namespace Kartet
 	/**
 	\brief Copy operator.
 	\param o The matrix to be copied.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,T>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,T>& o)
 	{
 		metaUnaryEqual<dim>(this->m, o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Copy operator.
 	\param o The matrix to be copied.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,U>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator=(const Mat<r,c,U>& o)
 	{
 		metaUnaryEqual<dim>(this->m, o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound addition operator.
 	\param o The matrix to be added to this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,T>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,T>& o)
 	{
 		metaBinaryPlus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound addition operator.
 	\param o The matrix to be added to this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,U>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator+=(const Mat<r,c,U>& o)
 	{
 		metaBinaryPlus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound substraction operator.
 	\param o The matrix to be removed to this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,T>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,T>& o)
 	{
 		metaBinaryMinus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound substraction operator.
 	\param o The matrix to be removed to this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,U>& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator-=(const Mat<r,c,U>& o)
 	{
 		metaBinaryMinus<dim>(this->m, reinterpret_cast<const T*>(this->m), o.m);
-		return (*this);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound product operator.
 	\param o The scalar to be multiplied with this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator*=(const U& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator*=(const U& o)
 	{
 		metaBinaryProduct<dim>(this->m, this->m, o);
-		return (*this);
+		return *this;
+	}
+
+	/**
+	\brief Coumpound matrix product operator.
+	\param b The matrix to be multiplied (on the right hand-side) with this.
+	\return A reference to this.
+	**/
+	template<int r, int c, typename T>
+	template<int rb, int cb, typename Tb>
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator*=(const Mat<rb,cb,Tb>& b)
+	{
+		STATIC_ASSERT_VERBOSE(c==rb, INVALID_DIMENSION)
+		Mat<r,c,T> t = (*this);
+		for(int j=0; j<cb; j++)
+			for(int i=0; i<r; i++)
+				(*this)(i,j) = metaBinaryProductSum<c, typename ResultingType<T,Tb>::Type>(t.m+i, b.m+j*rb, r, 1);
+		return *this;
 	}
 
 	/**
 	\brief Coumpound quotient operator.
 	\param o The scalar to be multiplied with this.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::operator/=(const U& o)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::operator/=(const U& o)
 	{
 		metaBinaryQuotient<dim>(this->m, this->m, o);
 		return (*this);
@@ -357,10 +376,10 @@ namespace Kartet
 	/**
 	\brief Clear a matrix with a fill value.
 	\param val The fill value.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::clear(const T& val)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::clear(const T& val)
 	{
 		metaUnaryEqual<Mat<r,c,T>::dim>(this->m, val);
 		return (*this);
@@ -369,11 +388,11 @@ namespace Kartet
 	/**
 	\brief Set matrix components.
 	\param ptr A pointer to the array of r*c elements.
-	\return A constant reference to this.
+	\return A reference to this.
 	**/
 	template<int r, int c, typename T>
 	template<typename U>
-	__host__ __device__ inline const Mat<r,c,T>& Mat<r,c,T>::set(const U* ptr)
+	__host__ __device__ inline Mat<r,c,T>& Mat<r,c,T>::set(const U* ptr)
 	{
 		metaUnaryEqual<dim>(m, ptr);
 		return (*this);
@@ -819,7 +838,7 @@ namespace Kartet
 	\related Mat
 	**/
 	template<typename T0, typename T1, typename T2, typename T3>
-	__host__ __device__ inline Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> makeMat2(const T0& m0, const T1& m2, const T2& m1, const T3& m3)
+	__host__ __device__ inline Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> mat2(const T0& m0, const T1& m2, const T2& m1, const T3& m3)
 	{
 		Mat<2,2,typename ResultingType4<T0,T1,T2,T3>::Type> m;
 		m(0,0) = m0;
@@ -844,7 +863,7 @@ namespace Kartet
 	\related Mat
 	**/
 	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
-	__host__ __device__ inline Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> makeMat3(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8)
+	__host__ __device__ inline Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> mat3(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8)
 	{
 		Mat<3,3,typename ResultingType9<T0,T1,T2,T3,T4,T5,T6,T7,T8>::Type> m;
 		m(0,0) = m0;
@@ -881,7 +900,7 @@ namespace Kartet
 	\related Mat
 	**/
 	template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11, typename T12, typename T13, typename T14, typename T15>
-	__host__ __device__ inline Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> makeMat4(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8,const T9& m9, const T10& m10, const T11& m11, const T12& m12, const T13& m13, const T14& m14, const T15& m15)
+	__host__ __device__ inline Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> mat4(const T0& m0, const T1& m2, const T2& m1, const T3& m3, const T4& m4, const T5& m5, const T6& m6, const T7& m7, const T8& m8,const T9& m9, const T10& m10, const T11& m11, const T12& m12, const T13& m13, const T14& m14, const T15& m15)
 	{
 		Mat<4,4,typename ResultingType16<T0,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15>::Type> m;
 		m(0,0) = m0;
@@ -901,6 +920,39 @@ namespace Kartet
 		m(2,3) = m14;
 		m(3,3) = m15;
 		return m;
+	}
+
+	/**
+	\brief Make the 2x2 identity matrix.
+	\return The 2x2 identity matrix.
+	\related Mat
+	**/
+	template<typename T>
+	__host__ __device__ inline Mat<2,2,T> identity2(void)
+	{
+		return Mat<2,2,T>::identity();
+	}
+
+	/**
+	\brief Make the 3x3 identity matrix.
+	\return The 3x3 identity matrix.
+	\related Mat
+	**/
+	template<typename T>
+	__host__ __device__ inline Mat<3,3,T> identity3(void)
+	{
+		return Mat<3,3,T>::identity();
+	}
+
+	/**
+	\brief Make the 4x4 identity matrix.
+	\return The 4x4 identity matrix.
+	\related Mat
+	**/
+	template<typename T>
+	__host__ __device__ inline Mat<4,4,T> identity4(void)
+	{
+		return Mat<4,4,T>::identity();
 	}
 
 	/**
@@ -993,9 +1045,9 @@ namespace Kartet
 	__host__ __device__ inline Mat<3,3,typename ResultingType<T,U>::Type> rot3(const Mat<3,1,T>& axis, const U& angle)
 	{
 		Mat<3,3,typename ResultingType<T,U>::Type> res;
-		const T	c = cos(angle),
-			s = sin(angle),
-			m = (static_cast<T>(1)-c);
+		const T	c = ::cos(angle),
+			s = ::sin(angle),
+			m = static_cast<T>(1)-c;
 		const T& x = axis(0,0),
 			 y = axis(1,0),
 			 z = axis(2,0);
