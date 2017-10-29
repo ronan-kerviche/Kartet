@@ -83,7 +83,6 @@ namespace Kartet
 	SharedMemoryInterface(unsigned long,	ul)
 	SharedMemoryInterface(float, 		f)
 	SharedMemoryInterface(double,		d)
-
 	#undef SharedMemoryInterface
 
 } // namespace Kartet

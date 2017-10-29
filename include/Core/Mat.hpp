@@ -965,8 +965,8 @@ namespace Kartet
 	__host__ __device__ inline Mat<2,2,T> rot2(const T& angle)
 	{
 		Mat<2,2,T> res;
-		const T c = cos(angle),
-			s = sin(angle);
+		const T c = ::cos(angle),
+			s = ::sin(angle);
 		res(0,0) = c;
 		res(1,0) = -s;
 		res(0,1) = s;
@@ -984,8 +984,8 @@ namespace Kartet
 	__host__ __device__ inline Mat<3,3,T> rot3x(const T& angle)
 	{
 		Mat<3,3,T> res(static_cast<T>(0));
-		const T	c = cos(angle),
-			s = sin(angle);	
+		const T	c = ::cos(angle),
+			s = ::sin(angle);
 		res(0,0) = static_cast<T>(1);
 		res(1,1) = c;
 		res(2,1) = -s;
@@ -1004,8 +1004,8 @@ namespace Kartet
 	__host__ __device__ inline Mat<3,3,T> rot3y(const T& angle)
 	{
 		Mat<3,3,T> res(static_cast<T>(0));
-		const T	c = cos(angle),
-			s = sin(angle);
+		const T	c = ::cos(angle),
+			s = ::sin(angle);
 		res(0,0) = c;
 		res(2,0) = -s;	
 		res(1,1) = static_cast<T>(1);
@@ -1024,8 +1024,8 @@ namespace Kartet
 	__host__ __device__ inline Mat<3,3,T> rot3z(const T& angle)
 	{
 		Mat<3,3,T> res(static_cast<T>(0));
-		const T	c = cos(angle),
-			s = sin(angle);
+		const T	c = ::cos(angle),
+			s = ::sin(angle);
 		res(0,0) = c;
 		res(1,0) = -s;
 		res(0,1) = s;

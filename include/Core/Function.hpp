@@ -268,7 +268,7 @@
 			__host__ __device__ void functionName##__kernel (const Layout& layout, const index_t& idx, const index_t& jdx, const index_t& kdx, ZIP_ARGS(const, &, __VA_ARGS__)); \
 			 \
 			KARTET_FUNCTION_TEMPLATES \
-			__global__ void functionName##__global(const Layout& layout, ZIP_ARGS(const, , __VA_ARGS__)) \
+			__global__ void functionName##__global(const Layout layout, ZIP_ARGS(const, , __VA_ARGS__)) \
 			{ \
 				functionName##__kernel (layout, layout.getI(), layout.getJ(), layout.getK(), ODD_ARGS(__VA_ARGS__)); \
 			} \

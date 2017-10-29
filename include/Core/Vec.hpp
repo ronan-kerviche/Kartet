@@ -84,6 +84,12 @@ namespace Kartet
 
 // Type aliases :
 	/**
+	\typedef Vec2i
+	\brief Alias to Vec<2,int> type, see Kartet::Vec for more information.
+	\related Kartet::Vec
+	\typedef Vec2ui
+	\brief Alias to Vec<2,unsigned int> type, see Kartet::Vec for more information.
+	\related Kartet::Vec
 	\typedef Vec2f
 	\brief Alias to Vec<2,float> type, see Kartet::Vec for more information.
 	\related Kartet::Vec
@@ -121,6 +127,8 @@ namespace Kartet
 	\brief Alias to Vec<4,Complex<double> >, see Kartet::Vec for more information.
 	\relatedalso Kartet::Vec
 	**/
+	typedef Vec<2,int> Vec2i;
+	typedef Vec<2,int> Vec2ui;
 	typedef Vec<2,float> Vec2f;
 	typedef Vec<3,float> Vec3f;
 	typedef Vec<4,float> Vec4f;
