@@ -121,6 +121,22 @@ namespace Kartet
 		b = c;
 	}
 
+	#if !defined(isnan) && !defined(__CUDACC__)
+	template<typename T>
+	__host__ __device__ bool isnan(const T& x)
+	{
+		return (x!=x);
+	}
+	#endif
+
+	#if !defined(isinf) && !defined(__CUDACC__)
+	template<typename T>
+	__host__ __device__ bool isinf(const T& x)
+	{
+		return (x!=static_cast<T>(0) && static_cast<T>(2)*x==x);
+	}
+	#endif
+
 	template<typename T>
 	bool softLargerThan(const T& a, const T& b)
 	{
