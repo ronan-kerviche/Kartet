@@ -415,6 +415,18 @@ namespace Kartet
 
 // Non-members :
 	/**
+	\brief Unary plus operator.
+	\param a Input matrix.
+	\return A new matrix set to \f$a\f$ (identity).
+	\related Mat
+	**/
+	template<int r, int c, typename T>
+	__host__ __device__ inline Mat<r,c,T> operator+(const Mat<r,c,T>& a)
+	{
+		return a;
+	}
+
+	/**
 	\brief Unary minus operator.
 	\param a Input matrix.
 	\return A new matrix set to \f$-a\f$.
