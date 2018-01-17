@@ -89,7 +89,7 @@ namespace Kartet
 		{
 			cublasStatus_t err = cublasDestroy(handle);
 			if(err!=CUBLAS_STATUS_SUCCESS)
-				throw static_cast<Exception>(CuBLASExceptionOffset + err);
+				std::cerr << "BLASContext::~BLASContext - Exception caught : " << static_cast<Exception>(CuBLASExceptionOffset + err) << std::endl;
 		}
 	#endif
 	}
