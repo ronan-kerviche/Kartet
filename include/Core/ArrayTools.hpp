@@ -3229,9 +3229,9 @@ namespace Kartet
 					cudaDeviceSynchronize();	
 					err = cudaFree(this->ptr);
 					if(err!=cudaSuccess)
-						throw static_cast<Exception>(CudaExceptionsOffset + err);
+						std::cerr << "Array<T,l>::~Array - Exception caught : " << static_cast<Exception>(CudaExceptionsOffset + err) << std::endl;
 				#else
-					throw NotSupported;
+					std::cerr << "Array<T,l>::~Array - Exception caught : " << NotSupported << std::endl;
 				#endif
 				}
 				break;
@@ -3239,7 +3239,7 @@ namespace Kartet
 				delete[] this->ptr;
 				break;
 			default :
-				throw InvalidLocation;
+				std::cerr << "Array<T,l>::~Array - Exception caught : " << InvalidLocation << std::endl;
 		}
 		this->ptr = NULL;
 	}
