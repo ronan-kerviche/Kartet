@@ -47,6 +47,8 @@
 	#include "Core/Exceptions.hpp"
 	#include "Core/Meta.hpp"
 	#include "Core/TemplateSharedMemory.hpp"
+	#include "Core/Mat.hpp"
+	#include "Core/Vec.hpp"
 
 /**
 \def KARTET_DEFAULT_LOCATION
@@ -539,8 +541,10 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 				__host__ __device__ Accessor(T* ptr, index_t r, index_t c=1, index_t s=1);
 				__host__ __device__ Accessor(T* ptr, const Layout& layout);
 				__host__	    Accessor(const Array<T,l>& a);
-				__host__ __device__ Accessor(const Accessor<T,l>& a);	
-					
+				__host__ __device__ Accessor(const Accessor<T,l>& a);
+				template<int r, int c>
+				__host__ __device__ Accessor(const Mat<r,c,T>& m);
+
 			// Data Tools :
 				__host__ __device__ 	   Location location(void) const;
 				__host__ __device__        T* dataPtr(void) const;
@@ -676,6 +680,8 @@ functionName COMPUTE_LAYOUT_STREAM(myLayout, stream) (...)
 			__host__ Array(const Array<T,l>& a);
 			template<typename TIn, Location lin>
 			__host__ Array(const Accessor<TIn,lin>& a);
+			template<int r, int c, typename TIn>
+			__host__ Array(const Mat<r,c,TIn>& m);
 			__host__ Array(std::istream& stream, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, int sourceTypeIndex=0);
 			__host__ Array(const std::string& filename, const bool convert=true, const size_t maxBufferSize=KARTET_DEFAULT_BUFFER_SIZE, int sourceTypeIndex=0);
 			__host__ ~Array(void);
