@@ -55,9 +55,13 @@ namespace Kartet
 	#define CCST(x)					const cuFloatComplex _##x = {static_cast<float>(real(x)), static_cast<float>(imag(x))};
 	#define ZCST(x)					const cuDoubleComplex _##x = {static_cast<double>(real(x)), static_cast<double>(imag(x))};
 	#define FPTR(x)					reinterpret_cast<float*>(x)
+	#define CFPTR(x)				reinterpret_cast<const float*>(x)
 	#define DPTR(x)					reinterpret_cast<double*>(x)
+	#define CDPTR(x)				reinterpret_cast<const double*>(x)
 	#define CPTR(x)					reinterpret_cast<cuFloatComplex*>(x)
+	#define CCPTR(x)				reinterpret_cast<const cuFloatComplex*>(x)
 	#define ZPTR(x)					reinterpret_cast<cuDoubleComplex*>(x)
+	#define CZPTR(x)				reinterpret_cast<const cuDoubleComplex*>(x)
 	#define TEST_EXCEPTION(x)			{if(x!=CUBLAS_STATUS_SUCCESS) throw static_cast<Exception>(CuBLASExceptionOffset + x);}
 
 // BLAS :
@@ -1470,13 +1474,13 @@ namespace Kartet
 				{
 					CCST(alpha)
 					CCST(beta)
-					cblas_cgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, CPTR(A.dataPtr()), A.columnsStride(), CPTR(B.dataPtr()), B.columnsStride(), &_beta, CPTR(C.dataPtr()), C.columnsStride());
+					cblas_cgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, CFPTR(&_alpha), CFPTR(A.dataPtr()), A.columnsStride(), CFPTR(B.dataPtr()), B.columnsStride(), CFPTR(&_beta), FPTR(C.dataPtr()), C.columnsStride());
 				}		
 				else IF_CX_DOUBLE
 				{
 					ZCST(alpha)
 					ZCST(beta)
-					cblas_zgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, &_alpha, ZPTR(A.dataPtr()), A.columnsStride(), ZPTR(B.dataPtr()), B.columnsStride(), &_beta, ZPTR(C.dataPtr()), C.columnsStride());
+					cblas_zgemm(CblasColMajor, getCBLASOperation(opa), getCBLASOperation(opb), C.numRows(), C.numColumns(), k, CDPTR(&_alpha), CDPTR(A.dataPtr()), A.columnsStride(), CDPTR(B.dataPtr()), B.columnsStride(), CDPTR(&_beta), DPTR(C.dataPtr()), C.columnsStride());
 				}
 			#else
 				throw NotSupported;

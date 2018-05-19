@@ -105,7 +105,9 @@
 #endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp, 			exp,			return ::exp(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp2, 			exp2,			return ::exp2(a); )
+#ifndef __APPLE__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp10, 			exp10,			return ::exp10(a); )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_expm1, 			expm1,			return ::expm1(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erf, 			erf,			return ::erf(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfc, 			erfc,			return ::erfc(a); )
@@ -164,7 +166,9 @@
 #endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_expf, 			expf,			return ::expf(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp2f, 			exp2f,			return ::exp2f(a); )
+#ifndef __APPLE__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_exp10f, 			exp10f,			return ::exp10f(a); )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_expm1f, 			expm1f,			return ::expm1f(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erff, 			erff,			return ::erff(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_erfcf, 			erfcf,			return ::erfcf(a); )
@@ -182,10 +186,12 @@
 #endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_lgammaf, 			lgammaf,		return ::lgammaf(a);)
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_tgammaf, 			tgammaf,		return ::tgammaf(a); )
+#ifndef __APPLE__
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_j0f, 			j0f,			return ::j0f(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_j1f, 			j1f,			return ::j1f(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_y0f, 			y0f,			return ::y0f(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_y1f, 			y1f,			return ::y1f(a); )
+#endif
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_ceilf, 			ceilf,			return ::ceilf(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_floorf,			floorf,			return ::floorf(a); )
 	STANDARD_UNARY_OPERATOR_DEFINITION( 	UnOp_roundf, 			roundf,			return ::roundf(a); )
@@ -263,11 +269,15 @@
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_fmodf,			fmodf,			return ::fmodf(a,b); )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_hypotf,			hypotf,			return ::hypotf(a,b); )
 	//STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_rhypotf,			rhypotf,		return ::rhypotf(a,b); )
+#ifndef __APPLE__
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_jnf,			jnf,			return ::jnf(a,b); )
+#endif
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ldexpf,			ldexpf,			return ::ldexpf(a,b); )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_powf,			powf,			return ::powf(a,b); )
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_remainderf,		remainderf,		return ::remainderf(a,b); )
+#ifndef __APPLE__
 	STANDARD_BINARY_OPERATOR_DEFINITION(	BinOp_ynf,			ynf,			return ::ynf(a,b); )
+#endif
 
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_Complex,			complex,		return ReturnType(a, b); )
 	R2C_BINARY_OPERATOR_DEFINITION( 	BinOp_ComplexF,			complexf,		return Complex<float>(a, b); )

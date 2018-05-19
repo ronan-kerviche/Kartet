@@ -40,7 +40,7 @@
 		#include <cublas_v2.h>
 	#endif
 
-	#if defined(KARTET_USE_ATLAS) || defined(KARTET_USE_CBLAS)
+	#if defined(KARTET_USE_ATLAS) || defined(KARTET_USE_CBLAS) || defined(KARTET_USE_OPENBLAS)
 		#ifdef __cplusplus
 		extern "C"
 		{
