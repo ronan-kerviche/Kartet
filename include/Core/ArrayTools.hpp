@@ -1023,7 +1023,7 @@ namespace Kartet
 	\param j The column index.
 	\param k The slice index.
 
-	The index does not take stides into account. For a monolithic array index and position are the same.
+	The index does not take strides into account. For a monolithic array index and position are the same.
 	Note : the function does not perform boundary checking.
 
 	\return The index of the element corresponding to the coordinates.
@@ -1039,7 +1039,7 @@ namespace Kartet
 	\param j The column index.
 	\param k The slice index.
 
-	The position takes stides into account. For a monolithic array index and position are the same.
+	The position takes strides into account. For a monolithic array index and position are the same.
 	Note : the function does not perform boundary checking.
 
 	\return The position of the element corresponding to the coordinates.

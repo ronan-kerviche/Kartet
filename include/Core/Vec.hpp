@@ -51,8 +51,8 @@ namespace Kartet
 	\code
 	Kartet::Vec<4,double> v1; // Unitialized value.
 	Kartet::Mat<2float> v2(0.0); // Cleared to 0.
-	Vec3f v3 = makeVec3(1,0,0); // 3x<float>.
-	Vec4z v4 = makeVec4(0,0,1,1.0+2.0*I()); // 4xComplex<double>.
+	Vec3f v3 = vec3(1,0,0); // 3x<float>.
+	Vec4z v4 = vec4(0,0,1,1.0+2.0*I()); // 4xComplex<double>.
 	\endcode
 	**/
 	template<int d, typename T>
