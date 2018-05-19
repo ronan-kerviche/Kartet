@@ -1895,7 +1895,7 @@ namespace Kartet
 	\brief Accessor constructor.
 	\param a Array to be accessed.
 
-	The accessor will shadow the array provided.
+	The accessor will shadow the provided array.
 	**/
 	template<typename T, Location l>
 	__host__ Accessor<T,l>::Accessor(const Array<T,l>& a)
@@ -1907,13 +1907,28 @@ namespace Kartet
 	\brief Accessor constructor.
 	\param a Another accessor.
 
-	The accessor will shadow the accessor provided.
+	The accessor will shadow the aprovided accessor.
 	**/
 	template<typename T, Location l>
 	__host__ __device__ Accessor<T,l>::Accessor(const Accessor<T,l>& a)
 	 : 	Layout(a),
 		ptr(a.ptr)
 	{ }	
+
+	/**
+	\brief Accessor constructor.
+	\param m A static matrix or a static vector.
+
+	The accessor will shadow the provided matrix or vector.
+	**/
+	template<typename T, Location l>
+	template<int r, int c>
+	__host__ __device__ Accessor<T,l>::Accessor(const Mat<r,c,T>& m)
+	 :	Layout(r,c),
+		ptr(const_cast<T*>(m.m))
+	{
+		STATIC_ASSERT_VERBOSE(l==Kartet::HostSide, INVALID_LOCATION);
+	}
 
 	/**
 	\brief Get the location of the data manipulated by this accessor.
@@ -3158,6 +3173,19 @@ namespace Kartet
 
 	/**
 	\brief Array constructor.
+	\param m A static matrix or a static vector.
+	**/
+	template<typename T, Location l>
+	template<int r, int c, typename TIn>
+	__host__ __device__ Array<T,l>::Array(const Mat<r,c,TIn>& m)
+	 :	Accessor<T,l>(r,c)
+	{
+		allocateMemory();
+		(*this) = Accessor<TIn,Kartet::HostSide>(m);
+	}
+
+	/**
+	\brief Array constructor.
 	\param stream Input stream to read from.
 	\param convert Set to true if the data can be converted to the current type.
 	\param maxBufferSize The maximum buffer size to be allocated to perform the requested conversion.
@@ -3201,9 +3229,9 @@ namespace Kartet
 					cudaDeviceSynchronize();	
 					err = cudaFree(this->ptr);
 					if(err!=cudaSuccess)
-						throw static_cast<Exception>(CudaExceptionsOffset + err);
+						std::cerr << "Array<T,l>::~Array - Exception caught : " << static_cast<Exception>(CudaExceptionsOffset + err) << std::endl;
 				#else
-					throw NotSupported;
+					std::cerr << "Array<T,l>::~Array - Exception caught : " << NotSupported << std::endl;
 				#endif
 				}
 				break;
@@ -3211,7 +3239,7 @@ namespace Kartet
 				delete[] this->ptr;
 				break;
 			default :
-				throw InvalidLocation;
+				std::cerr << "Array<T,l>::~Array - Exception caught : " << InvalidLocation << std::endl;
 		}
 		this->ptr = NULL;
 	}

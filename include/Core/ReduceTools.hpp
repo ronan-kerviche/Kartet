@@ -241,7 +241,7 @@ namespace Kartet
 		delete[] hostPtr;
 		cudaError_t err = cudaFree(devicePtr);
 		if(err!=cudaSuccess)
-			throw static_cast<Exception>(CudaExceptionsOffset + err);
+			std::cerr << "ReduceContext::~ReduceContext - Exception caught : " << static_cast<Exception>(CudaExceptionsOffset + err) << std::endl;
 		#endif
 	}
 
