@@ -3177,7 +3177,7 @@ namespace Kartet
 	**/
 	template<typename T, Location l>
 	template<int r, int c, typename TIn>
-	__host__ __device__ Array<T,l>::Array(const Mat<r,c,TIn>& m)
+	__host__ Array<T,l>::Array(const Mat<r,c,TIn>& m)
 	 :	Accessor<T,l>(r,c)
 	{
 		allocateMemory();

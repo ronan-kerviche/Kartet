@@ -180,10 +180,11 @@
 \param idx Name of the I index variable.
 \param jdx Name of the J index variable.
 \param kdx Name of the K index variable.
+\param ... List of parameters as parentheses-delimited groups of types and variables.
 
 The function cannot be used in a template expression. However, it provides a simple mechanism to write domain-agnostic code.
 
-Define a variadic function :
+Define a function :
 \code
 // Always to be protected inside the Kartet namespace :
 namespace Kartet
@@ -203,7 +204,43 @@ namespace Kartet
 		if(a.isInside(i,j))
 			a.data(i,j) = obj.performSomeConstantOperation(i, j, a.data(i,j));
 	}
+}
+\endcode
 
+Use the previous function :
+\code
+using namespace Kartet;
+// ...
+
+Array<float> a(128, 128);
+Array<double> b(128, 128);
+MyDataStructure myData;
+// ...
+
+// Default execution, might be executed on device or host depending on the default domain :
+myFunction<KARTET_DEFAULT_LOCATION>(a.layout(), a, myData);
+\endcode
+**/
+
+/**
+\ingroup FunctionsGroup
+\def KARTET_TEMPLATE_FUNCTION
+\brief Define a variadic function which can run either on host or device (see Kartet::Location).
+\param functionName Name of the function.
+\param templates List of the templates, contained in parentheses.
+\param layout Name of the layout variable.
+\param idx Name of the I index variable.
+\param jdx Name of the J index variable.
+\param kdx Name of the K index variable.
+\param ... List of parameters as parentheses-delimited groups of types and variables.
+
+The function cannot be used in a template expression. However, it provides a simple mechanism to write domain-agnostic code.
+
+Define a template function :
+\code
+// Always to be protected inside the Kartet namespace :
+namespace Kartet
+{
 	// To define template functions use :
 	KARTET_TEMPLATE_FUNCTION(myTemplateFunction, 
 		(typename TA, typename TB)
@@ -228,9 +265,6 @@ Array<float> a(128, 128);
 Array<double> b(128, 128);
 MyDataStructure myData;
 // ...
-
-// Default execution, might be executed on device or host depending on the default domain :
-myFunction<KARTET_DEFAULT_LOCATION>(a.layout(), a, myData);
 
 // Infer the location from the arguments :
 myTemplateFunction(a.layout(), a, b);

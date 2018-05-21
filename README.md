@@ -20,6 +20,7 @@ or 'hostBinary' to generate only one binary.
 * -D KARTET_USE_64BITS_INDEXING			Use 64 bits indexing, slower operation (2x) but enable large arrays (>2e9 elements).
 * -D KARTET_USE_ATLAS				Use ATLAS (requires -llapack -lf77blas -lcblas -latlas).
 * -D KARTET_USE_CBLAS				Use CBLAS only (requires -lcblas, ignored if KARTET_USE_ATLAS).
+* -D KARTET_USE_OPENBLAS			Use OpenBLAS only (OSX).
 * -D KARTET_USE_FFTW				Use FFTW (v3, requires -lfftw3 -lfftw3f).
 * -D KARTET_USE_OPENMP				Use OpenMP (preliminary, only a few constructs will benefit).
 * -D KARTET_DEFAULT_LOCATION=newLocation	Change the default location (HostSide or DeviceSide).

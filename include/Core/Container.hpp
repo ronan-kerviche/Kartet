@@ -121,6 +121,7 @@ a = new Kartet::Array<double>(10,10);
 
 	/**
 	\brief Take ownership of data from another container. The previous data is released.
+	\param c The replacing value.
 	**/
 	template<typename T>
 	__host__ void Container<T>::replace(Container<T>& c)
