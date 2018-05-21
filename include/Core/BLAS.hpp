@@ -40,7 +40,7 @@
 		#include <cublas_v2.h>
 	#endif
 
-	#if defined(KARTET_USE_ATLAS) || defined(KARTET_USE_CBLAS) || defined(KARTET_USE_OPENBLAS)
+	#if defined(KARTET_USE_ATLAS) || defined(KARTET_USE_SATLAS) || defined(KARTET_USE_TATLAS) || defined(KARTET_USE_CBLAS) || defined(KARTET_USE_OPENBLAS)
 		#ifdef __cplusplus
 		extern "C"
 		{
@@ -115,6 +115,9 @@ namespace Kartet
 	\code	
 	-D KARTET_USE_CBLAS
 	-D KARTET_USE_ATLAS
+	-D KARTET_USE_TATLAS
+	-D KARTET_USE_SATLAS
+	-D KARTET_USE_OPENBLAS
 	\endcode
 
 	Example :

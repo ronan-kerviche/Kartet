@@ -77,9 +77,11 @@
 		-D KARTET_USE_64BITS_INDEXING
 	\endcode
 
-	- Use ATLAS (requires -llapack -lf77blas -lcblas -latlas to be installed).
+	- Use ATLAS (requires -llapack -lf77blas -lcblas -latlas to be installed for the old versions).
 	\code
 		-D KARTET_USE_ATLAS
+		-D KARTET_USE_SATLAS
+		-D KARTET_USE_TATLAS
 	\endcode
 
 	- Use CBLAS only (requires -lcblas to be installed, ignored if KARTET_USE_ATLAS).

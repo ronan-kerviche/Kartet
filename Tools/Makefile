@@ -19,6 +19,8 @@
 # KARTET_OPTIONS	: Options for the library
 #     -D KARTET_USE_64BITS_INDEXING		Use 64 bits indexing, slower operation (2x) but enable large arrays (>2e9 elements).
 #     -D KARTET_USE_ATLAS			Use ATLAS (requires -llapack -lf77blas -lcblas -latlas).
+#     -D KARTET_USE_SATLAS			Use SATLAS (serial).
+#     -D KARTET_USE_TATLAS			Use TATLAS (threaded).
 #     -D KARTET_USE_OPENBLAS			USe OpenBLAS.
 #     -D KARTET_USE_CBLAS			Use CBLAS only (requires -lcblas, ignored if KARTET_USE_ATLAS).
 #     -D KARTET_USE_FFTW			Use FFTW (v3, requires -lfftw3 -lfftw3f).
@@ -26,7 +28,7 @@
 #     -D KARTET_DEFAULT_LOCATION=newLocation	Change the default location (HostSide or DeviceSide).
 #
 #     Note : 
-#     You can also use the multithreaded versions of ATLAS by replacing with : -lptlapack -lptf77blas -lptcblas -latlas	
+#     You can also use the older multithreaded versions of ATLAS by replacing with : -lptlapack -lptf77blas -lptcblas -latlas
 #     Make sure that Atlas was compile for the number of core you are targeting.
 #     See http://math-atlas.sourceforge.net/faq.html#tnum
 #
@@ -121,6 +123,8 @@ DEVICE_OBJECTS	= $(patsubst %.o,%.device.o,$(OBJECTS))
 HOST_OBJECTS	= $(patsubst %.o,%.host.o,$(OBJECTS))
 CC_INCLUDE	= -I$(KARTET_PATH)/include/ \
 			$(subst KARTET_USE_ATLAS, -I/usr/include/atlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
+			$(subst KARTET_USE_SATLAS, -I/usr/include/atlas, $(findstring KARTET_USE_SATLAS,$(KARTET_OPTIONS))) \
+			$(subst KARTET_USE_TATLAS, -I/usr/include/atlas, $(findstring KARTET_USE_TATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_OPENBLAS, -I/usr/local/opt/openblas/include, $(findstring KARTET_USE_OPENBLAS,$(KARTET_OPTIONS))) \
 			$(CC_EXTRA_INCLUDE)
 NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
@@ -129,6 +133,8 @@ CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs
 		   $(CC_EXTRA_FLAGS)
 NVCC_FLAGS	= $(CUDA_GENCODES) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)" -ccbin=$(HSCC)
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
+			$(subst KARTET_USE_SATLAS, -L/usr/lib64/atlas/ -lsatlas, $(findstring KARTET_USE_SATLAS,$(KARTET_OPTIONS))) \
+			$(subst KARTET_USE_TATLAS, -L/usr/lib64/atlas/ -ltatlas, $(findstring KARTET_USE_TATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_OPENBLAS, -L/usr/local/opt/openblas/lib/ -lblas -llapack -lopenblas, $(findstring KARTET_USE_OPENBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_CBLAS, -lcblas, $(findstring KARTET_USE_CBLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_LAPACK, -llapack, $(findstring KARTET_USE_LAPACK,$(KARTET_OPTIONS))) \
