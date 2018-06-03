@@ -183,7 +183,7 @@
 		\param _minVal Minimum authorized value.
 		\param _maxVal Maximum authorized value.
 		**/
-		ScalarArgument(const T& _val, const std::string& _name, const std::string& _baseHelp, const T& _minVal=std::numeric_limits<T>::min(), const T& _maxVal=std::numeric_limits<T>::max())
+		ScalarArgument(const T& _val, const std::string& _name, const std::string& _baseHelp, const T& _minVal=(std::numeric_limits<T>::is_signed && !std::numeric_limits<T>::is_integer ? -std::numeric_limits<T>::max() : std::numeric_limits<T>::min()), const T& _maxVal=std::numeric_limits<T>::max())
 		 :	AbstractArgument(_name),
 			val(_val),
 			minVal(_minVal),
