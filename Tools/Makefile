@@ -8,6 +8,7 @@
 # CC_EXTRA_FLAGS	: Extra flags for the compilers.
 # CC_EXTRA_INCLUDE	: Extra flags for the compilers.
 # CC_EXTRA_LIB		: Extra flags for the linkers.
+# NVCC_EXTRA_FLAGS	: Extra flags for NVCC.
 # HSCC			: Host side compiler.
 # NVCC			: Device side compiler.
 # KARTET_DEFAULT_TARGET	: Default compilation target amon deviceBinary and hostBinary.
@@ -131,7 +132,7 @@ NVCC_INCLUDE	= -I$(CUDA_INCLUDE_PATH) $(CC_INCLUDE)
 CC_FLAGS	= -fPIC -m64 -O3 -march=native -Wall -Wextra -Wno-unused-local-typedefs \
 			$(subst KARTET_USE_OMP, -fopenmp, $(findstring KARTET_USE_OMP,$(KARTET_OPTIONS))) \
 		   $(CC_EXTRA_FLAGS)
-NVCC_FLAGS	= $(CUDA_GENCODES) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)" -ccbin=$(HSCC)
+NVCC_FLAGS	= $(NVCC_EXTRA_FLAGS) $(CUDA_GENCODES) $(NVCC_PERFORMANCE_FLAGS) -O3 -D__INTEL_COMPILER -Xcompiler "$(CC_FLAGS)" -ccbin=$(HSCC)
 CC_LIB		= -lm	$(subst KARTET_USE_ATLAS, -L/usr/lib64/atlas/ -llapack -lf77blas -lcblas -latlas, $(findstring KARTET_USE_ATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_SATLAS, -L/usr/lib64/atlas/ -lsatlas, $(findstring KARTET_USE_SATLAS,$(KARTET_OPTIONS))) \
 			$(subst KARTET_USE_TATLAS, -L/usr/lib64/atlas/ -ltatlas, $(findstring KARTET_USE_TATLAS,$(KARTET_OPTIONS))) \
@@ -198,6 +199,7 @@ test:
 	@echo "  CC_EXTRA_FLAGS        : $(CC_EXTRA_FLAGS)"
 	@echo "  CC_EXTRA_INCLUDE      : $(CC_EXTRA_INCLUDE)"
 	@echo "  CC_EXTRA_LIB          : $(CC_EXTRA_LIB)"
+	@echo "  NVCC_EXTRA_FLAGS      : $(NVCC_EXTRA_FLAGS)"
 	@echo "  HSCC                  : $(HSCC)"
 	@echo "  NVCC                  : $(NVCC)"
 	@echo "  KARTET_DEFAULT_TARGET : $(DEFAULT_TARGET)"
